@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="plagiarism/programming/db" VERSION="20120403" COMMENT="XMLDB file for Moodle plagiarism/programming"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="programming_plagiarism" COMMENT="This table saves settings for source code plagiarism detection in programming assignments" NEXT="programming_jplag">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The id of the course" PREVIOUS="id" NEXT="scandate"/>
+        <FIELD NAME="scandate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="The date submissions are scanned" PREVIOUS="courseid" NEXT="jplag"/>
+        <FIELD NAME="jplag" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="JPlag tool is used or not" PREVIOUS="scandate" NEXT="moss"/>
+        <FIELD NAME="moss" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="MOSS tool is used or not" PREVIOUS="jplag" NEXT="language"/>
+        <FIELD NAME="language" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Which language is used in the assignment" PREVIOUS="moss" NEXT="auto_publish"/>
+        <FIELD NAME="auto_publish" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="language" NEXT="notification"/>
+        <FIELD NAME="notification" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false" COMMENT="Used to display notifications to students" PREVIOUS="auto_publish" NEXT="starttime"/>
+        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" COMMENT="The time when last plagiarism scanning occurred" PREVIOUS="notification"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="programming_jplag" COMMENT="programming_jplag table retrofitted from MySQL" PREVIOUS="programming_plagiarism" NEXT="programming_moss">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="submissionid"/>
+        <FIELD NAME="submissionid" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" PREVIOUS="id" NEXT="status"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" PREVIOUS="submissionid" NEXT="directory"/>
+        <FIELD NAME="directory" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false" PREVIOUS="status" NEXT="message"/>
+        <FIELD NAME="message" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false" PREVIOUS="directory" NEXT="settingid"/>
+        <FIELD NAME="settingid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="message" NEXT="progress"/>
+        <FIELD NAME="progress" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" COMMENT="Show the progress (in percentage) of the current status" PREVIOUS="settingid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="programming_moss" COMMENT="programming_moss table retrofitted from MySQL" PREVIOUS="programming_jplag" NEXT="programming_result">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="settingid"/>
+        <FIELD NAME="settingid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="resultlink"/>
+        <FIELD NAME="resultlink" TYPE="char" LENGTH="200" NOTNULL="false" SEQUENCE="false" PREVIOUS="settingid" NEXT="status"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" PREVIOUS="resultlink" NEXT="message"/>
+        <FIELD NAME="message" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="status" NEXT="progress"/>
+        <FIELD NAME="progress" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" COMMENT="The progress (in percentage) of the lattest MOSS scanning" PREVIOUS="message"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="programming_result" COMMENT="store the result of the scanning" PREVIOUS="programming_moss">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="student1_id"/>
+        <FIELD NAME="student1_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="student2_id"/>
+        <FIELD NAME="student2_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="student1_id" NEXT="similarity1"/>
+        <FIELD NAME="similarity1" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="student2_id" NEXT="similarity2"/>
+        <FIELD NAME="similarity2" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity1" NEXT="comparison"/>
+        <FIELD NAME="comparison" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity2" NEXT="marked"/>
+        <FIELD NAME="marked" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comparison" NEXT="comments"/>
+        <FIELD NAME="comments" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false" PREVIOUS="marked" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comments" NEXT="detector"/>
+        <FIELD NAME="detector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="cmid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="pk_programming_result_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid_idx" UNIQUE="false" FIELDS="cmid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

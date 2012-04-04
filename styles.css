@@ -1,0 +1,26 @@
+/* 
+    Document   : style.css
+    Created on : Mar 27, 2012, 11:21:55 PM
+    Author     : thanhtri
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.programming_result_chart {
+    position: relative;
+    width: 800px;
+    height:250px;
+}
+
+.programming_result_chart .bar {
+    background-color: #a6a6ff;
+    position: absolute;
+    height: 20px;
+    left: 45px;
+}
+
+.programming_result_chart .legend {
+    position: absolute;
+    height: 20px;
+    left: 0px;
+}
