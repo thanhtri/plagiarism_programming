@@ -24,10 +24,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(__FILE__)) . '/../config.php');
-require_once($CFG->libdir.'/adminlib.php');
-require_once($CFG->libdir.'/plagiarismlib.php');
-require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
+require_once dirname(__FILE__).'/../../config.php';
+require_once $CFG->libdir.'/adminlib.php';
+require_once $CFG->libdir.'/plagiarismlib.php';
+require_once $CFG->dirroot.'/plagiarism/programming/plagiarism_form.php';
+require_once dirname(__FILE__).'/constants.php';
 
 require_login();
 admin_externalpage_setup('plagiarismprogramming');
@@ -74,7 +75,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             }
         }
     }
-    notify(get_string('savedconfigsuccess', 'plagiarism_new'), 'notifysuccess');
+    notify(get_string('savedconfigsuccess', PLAGIARISM_PROGRAMMING), 'notifysuccess');
 }
 $plagiarismsettings = (array)get_config('plagiarism');
 $plagiarismsettings['jplag_pass'] = "************"; // clear the password for security

@@ -70,3 +70,4 @@ $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
 $string['submit'] = 'Submit';
 $string['showHideLabel'] = 'Show plagiarism options';
+$string['savedconfigsuccess'] = 'Configuration saved';
