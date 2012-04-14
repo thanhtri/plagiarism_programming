@@ -53,13 +53,13 @@ class moss_tool extends plagiarism_tool {
         // send to server
         $language = $this->get_language_code($assignment->language);
         $progress_handler = new progress_handler('moss', $moss_param);
-        $result_link = $this->moss_stub->scan_assignment($files,$language,$progress_handler);
-        if (substr($result_link,0,4)=='http') {
-            $moss_param->resultlink = $result_link;
+        $result = $this->moss_stub->scan_assignment($files,$language,$progress_handler);
+        if ($result['status']=='OK') {
+            $moss_param->resultlink = $result['link'];
             $moss_param->status = 'done';
             $moss_param->progress = 100;
         } else {
-            $moss_param->message = $result_link;
+            $moss_param->message = $result['error'];
             $moss_param->status = 'error';
             $moss_param->progress = 100;
         }

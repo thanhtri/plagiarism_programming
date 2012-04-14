@@ -26,7 +26,11 @@ class moss_stub {
         $this->update_progress($handler,'uploading', 0, $total_size);
         $userid = $this->userid;
 
-        $socket = fsockopen(MOSS_HOST,MOSS_PORT);
+        $error_no = 0;
+        $message = '';
+        if (!$socket = fsockopen(MOSS_HOST,MOSS_PORT,&$error_no,&$message)) {
+            return array('status'=>'KO','error'=>$message);
+        }
 
         fwrite($socket,"moss $userid\n");
         fwrite($socket, "directory 1\n");
@@ -59,7 +63,12 @@ class moss_stub {
         $this->update_progress($handler,'done', 0, $total_size);
         fwrite($socket,"end\n");
         fclose($socket);
-        return $answer;
+        if (substr($answer,0,4)=='http') {
+            $result = array('status'=>'OK','link'=>$answer);
+        } else {
+            $result = array('status'=>'KO','error'=>$answer);
+        }
+        return $result;
     }
     
     public function download_result($url,$download_dir,$handler=null) {

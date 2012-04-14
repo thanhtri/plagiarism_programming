@@ -24,3 +24,31 @@
     height: 20px;
     left: 0px;
 }
+
+.plagiarsm_programming_course_selection_wrapper {
+    padding: 0px;
+    margin: -10px;
+    background-color: white;
+    font-size: larger
+}
+.plagiarsm_programming_course_selection_wrapper .row {
+    height: 20px;
+    padding: 10px
+}
+
+.plagiarsm_programming_course_selection_wrapper .odd {
+    background-color: #F9F9F9;
+}
+
+.plagiarsm_programming_course_selection_wrapper .enabled {
+    background-color: #00EE00;
+    opacity: 0.7;
+}
+
+.plagiarsm_programming_course_selection_wrapper .coursename {
+    float: left;
+}
+
+.plagiarsm_programming_course_selection_wrapper .selectbutton {
+    float: right;
+}

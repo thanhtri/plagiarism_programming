@@ -31,6 +31,8 @@ $string['jplag_username'] = 'JPlag Username';
 $string['jplag_password'] = 'JPlag Password';
 $string['jplag_modify_account'] = 'Change JPlag account';
 $string['moss'] = 'MOSS global config';
+$string['enable_global'] = 'Enable this plugin for the whole Moodle';
+$string['enable_course'] = 'Enable this plugin at course level';
 
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';

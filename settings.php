@@ -30,6 +30,8 @@ require_once $CFG->libdir.'/plagiarismlib.php';
 require_once $CFG->dirroot.'/plagiarism/programming/plagiarism_form.php';
 require_once dirname(__FILE__).'/constants.php';
 
+global $PAGE;
+
 require_login();
 admin_externalpage_setup('plagiarismprogramming');
 
@@ -44,44 +46,54 @@ if ($mform->is_cancelled()) {
     redirect('');
 }
 
-echo $OUTPUT->header();
-
 if (($data = $mform->get_data()) && confirm_sesskey()) {
-    if (!isset($data->programming_use)) {
-        $data->programming_use = 0;
-    }
-    $variables = array('programming_use');
-    if ($data->jplag_modify_account) { // change the user name and password
-        // TODO: test username and password valid ??
-        $variables[] = 'jplag_user';
-        $variables[] = 'jplag_pass';
-    }
-    foreach ($data as $field=>$value) {
-        if (in_array($field, $variables)) {
-            $tiiconfigfield = $DB->get_record('config_plugins', array('name'=>$field, 'plugin'=>'plagiarism'));
-            if ($tiiconfigfield) {
-                $tiiconfigfield->value = $value;
-                if (! $DB->update_record('config_plugins', $tiiconfigfield)) {
-                    error("errorupdating");
-                }
-            } else {
-                $tiiconfigfield = new stdClass();
-                $tiiconfigfield->value = $value;
-                $tiiconfigfield->plugin = 'plagiarism';
-                $tiiconfigfield->name = $field;
-                if (! $DB->insert_record('config_plugins', $tiiconfigfield)) {
-                    error("errorinserting");
-                }
-            }
+    // update programming_use variable
+    $programming_use = (isset($data->programming_use))?$data->programming_use:0;
+    set_config('programming_use', $programming_use, 'plagiarism');
+    $variables = array('level_enabled');
+    
+    if (isset($data->jplag_modify_account)) { // change the user name and password
+        
+        $jplag_stub = new jplag_stub();
+        if ($jplag_stub->check_credential($data->jplag_user, $data->jplag_pass)) {
+            $variables[] = 'jplag_user';
+            $variables[] = 'jplag_pass';
+        } else {
+            // TODO: inform error
         }
+    }
+    foreach ($variables as $field) {
+        set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
     }
     notify(get_string('savedconfigsuccess', PLAGIARISM_PROGRAMMING), 'notifysuccess');
 }
+
+$plagiarism_programming_setting = (array) get_config('plagiarism_programming');
 $plagiarismsettings = (array)get_config('plagiarism');
-$plagiarismsettings['jplag_pass'] = "************"; // clear the password for security
-$mform->set_data($plagiarismsettings);
+$plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
+
+// clear the password for security
+if (!empty($plagiarism_programming_setting['jplag_pass']))
+    $plagiarism_programming_setting['jplag_pass'] = "************";
+
+$mform->set_data($plagiarism_programming_setting);
+
+echo $OUTPUT->header();
+
+$PAGE->requires->yui2_lib('yahoo-dom-event');
+$PAGE->requires->yui2_lib('dragdrop');
+$PAGE->requires->yui2_lib('container');
+$PAGE->requires->yui2_lib('element');
+$PAGE->requires->yui2_lib('json');
+
+$jsmodule = array(
+    'name' => 'plagiarism_programming',
+    'fullpath' => '/plagiarism/programming/course_selection.js'
+);
+$PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init',null,true,$jsmodule);
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
 $mform->display();
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer();
+// include the javascript

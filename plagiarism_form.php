@@ -38,6 +38,11 @@ class plagiarism_setup_form extends moodleform {
         $mform->addElement('html', get_string('programmingexplain', PLAGIARISM_PROGRAMMING));
         // if the plugin is used
         $mform->addElement('checkbox', 'programming_use', get_string('use_programming', PLAGIARISM_PROGRAMMING));
+        // enable the plugin at the course level
+        $enable_level = array();
+        $enable_level[] = &MoodleQuickForm::createElement('radio','level_enabled','',get_string('enable_global',PLAGIARISM_PROGRAMMING),'global',array('class'=>'plagiarism_programming_enable_level'));
+        $enable_level[] = &MoodleQuickForm::createElement('radio','level_enabled','',get_string('enable_course',PLAGIARISM_PROGRAMMING),'course',array('class'=>'plagiarism_programming_enable_level'));
+        $mform->addGroup($enable_level,'level_enabled','   ',array('  '),false);
 
         $mform->addElement('header','jplag_config',get_string('jplag',PLAGIARISM_PROGRAMMING));
 		$mform->addElement('checkbox','jplag_modify_account', get_string('jplag_modify_account',PLAGIARISM_PROGRAMMING));

@@ -53,12 +53,26 @@ class jplag_stub {
         $credential = array('username' => $username,'password' => $password,'compatLevel' => 4);
         $header = new SoapHeader(JPLAG_TYPE_NAMESPACE,'Access',$credential);
         $this->client->__setSoapHeaders($header);
-        /*try {
-            $this->client->getServerInfo();
-        } catch (SoapFault $fault) {
-            throw new Exception('Invaild credential', INVALID_CREDENTIAL);
-        }*/
     }
+    
+    public function check_credential($username=null,$password=null) {
+        if ($username && $password) {
+            $credential = array('username' => $username,'password' => $password,'compatLevel' => 4);
+            $header = new SoapHeader(JPLAG_TYPE_NAMESPACE,'Access',$credential);
+            $client = new SoapClient(JPLAG_WSDL_URL);
+            $client->__setSoapHeaders($header);
+        } else {
+            $client = $this->client;
+        }
+        try {
+            $server_info = $client->getServerInfo();
+            return $server_info;
+        } catch (SoapFault $fault) {
+            return false;
+        }
+    }
+
+
     /** Send the compressed file to jplag service using SOAP
      *  @param $zip_full_path: path to the zip file
      *  @param $options: options of jplag specifying its parameters. See class jplag_option for detail
