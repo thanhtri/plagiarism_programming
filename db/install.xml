@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/programming/db" VERSION="20120403" COMMENT="XMLDB file for Moodle plagiarism/programming"
+<XMLDB PATH="plagiarism/programming/db" VERSION="20120417" COMMENT="XMLDB file for Moodle plagiarism/programming"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -47,7 +47,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="programming_result" COMMENT="store the result of the scanning" PREVIOUS="programming_moss">
+    <TABLE NAME="programming_result" COMMENT="store the result of the scanning" PREVIOUS="programming_moss" NEXT="programming_course_enabled">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="student1_id"/>
         <FIELD NAME="student1_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="student2_id"/>
@@ -66,6 +66,15 @@
       <INDEXES>
         <INDEX NAME="cmid_idx" UNIQUE="false" FIELDS="cmid"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="programming_course_enabled" COMMENT="programming_course_enabled table retrofitted from MySQL" PREVIOUS="programming_result">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="id" TYPE="primary" FIELDS="id" COMMENT="Primary key"/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>
