@@ -53,19 +53,19 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     $variables = array('level_enabled');
     
     if (isset($data->jplag_modify_account)) { // change the user name and password
-        
+        include_once dirname(__FILE__).'/jplag/jplag_stub.php';
         $jplag_stub = new jplag_stub();
         if ($jplag_stub->check_credential($data->jplag_user, $data->jplag_pass)) {
             $variables[] = 'jplag_user';
             $variables[] = 'jplag_pass';
         } else {
-            // TODO: inform error
+            $OUTPUT->notification(get_string('jplag_account_error',PLAGIARISM_PROGRAMMING),'notifyproblem');
         }
     }
     foreach ($variables as $field) {
         set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
     }
-    notify(get_string('savedconfigsuccess', PLAGIARISM_PROGRAMMING), 'notifysuccess');
+    $OUTPUT->notification(get_string('savedconfigsuccess', PLAGIARISM_PROGRAMMING), 'notifysuccess');
 }
 
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
