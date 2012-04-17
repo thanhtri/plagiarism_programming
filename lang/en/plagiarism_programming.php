@@ -33,6 +33,8 @@ $string['jplag_modify_account'] = 'Change JPlag account';
 $string['moss'] = 'MOSS global config';
 $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
+$string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';
+$string['save_config_success'] = 'Configuration saved';
 
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';
@@ -72,4 +74,3 @@ $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
 $string['submit'] = 'Submit';
 $string['showHideLabel'] = 'Show plagiarism options';
-$string['savedconfigsuccess'] = 'Configuration saved';

@@ -59,13 +59,12 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             $variables[] = 'jplag_user';
             $variables[] = 'jplag_pass';
         } else {
-            $OUTPUT->notification(get_string('jplag_account_error',PLAGIARISM_PROGRAMMING),'notifyproblem');
+            $error = true;
         }
     }
     foreach ($variables as $field) {
         set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
     }
-    $OUTPUT->notification(get_string('savedconfigsuccess', PLAGIARISM_PROGRAMMING), 'notifysuccess');
 }
 
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
@@ -93,6 +92,11 @@ $jsmodule = array(
 $PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init',null,true,$jsmodule);
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
+if (isset($error)) {
+    echo $OUTPUT->notification(get_string('jplag_account_error', PLAGIARISM_PROGRAMMING), 'notifyproblem');
+} else {
+    echo $OUTPUT->notification(get_string('save_config_success', PLAGIARISM_PROGRAMMING), 'notifysuccess');
+}
 $mform->display();
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer();
