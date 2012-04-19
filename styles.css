@@ -10,6 +10,7 @@
     position: relative;
     width: 800px;
     height:250px;
+    margin-bottom: 10px;
 }
 
 .programming_result_chart .bar {
@@ -58,4 +59,8 @@
 
 .plagiarsm_programming_course_selection_wrapper .selectbutton {
     float: right;
+}
+
+a.plagiarism_programming_student_link:link,a.plagiarism_programming_student_link:visited {
+    color: black;
 }

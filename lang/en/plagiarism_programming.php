@@ -74,3 +74,8 @@ $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
 $string['submit'] = 'Submit';
 $string['showHideLabel'] = 'Show plagiarism options';
+
+// in the report
+$string['yours'] = 'Yours';
+$string['another'] = "Someone's";
+$string['chart_legend'] = 'Similarity rate distribution of the whole course';   

@@ -34,15 +34,22 @@ function create_table_list_mode(&$list,&$student_names,$cmid) {
     global $CFG;
     
     $table = new html_table();
+    $rownum = 1;
+    $report_url = qualified_me();
     foreach ($list as $pair) {
         $row = new html_table_row();
         
-        $cell = new html_table_cell();
-        $cell->text = $student_names[$pair->student1_id];
+        $cell = new html_table_cell($rownum++);
         $row->cells[] = $cell;
         
         $cell = new html_table_cell();
-        $cell->text = $student_names[$pair->student2_id];
+        $cell->text = html_writer::tag('a', $student_names[$pair->student1_id],
+                array('href'=>$report_url."&student=$pair->student1_id",'class'=>'plagiarism_programming_student_link'));
+        $row->cells[] = $cell;
+        
+        $cell = new html_table_cell();
+        $cell->text = html_writer::tag('a', $student_names[$pair->student2_id],
+                array('href'=>$report_url."&student=$pair->student2_id",'class'=>'plagiarism_programming_student_link'));
         $row->cells[] = $cell;
         
         $cell = new html_table_cell();
@@ -83,7 +90,7 @@ function create_chart($cmid,$tool,$similarity_type) {
     foreach ($histogram as $key=>$val) {
         $upper = $key*10+10;
         $lower = $key*10;
-        $range = ''.$upper.'-'.$lower;
+        $range = ''.$lower.'-'.$upper;
         $pos_y = (9-$key)*(BAR_WIDTH+5).'px'; // 2 is the space between bars
         $width = max($val*$length_ratio,1).'px';
         // legend of the bar

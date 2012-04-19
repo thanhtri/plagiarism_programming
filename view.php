@@ -49,6 +49,9 @@ if (!has_capability('mod/assignment:grade', $context)) {
         redirect($CFG->wwwroot,"You don't have permission to see this page");
     }
     $student_id = $USER->id;
+}
+
+if (is_number($student_id)) {
     $display_mode = 'table';
 }
 
@@ -80,8 +83,8 @@ foreach ($result as $pair) {
     
     $similarity_table[$student1][$student2] = array('rate'=>$pair->similarity1,'file'=>$pair->comparison);
     $similarity_table[$student2][$student1] = array('rate'=>$pair->similarity1,'file'=>$pair->comparison);
-    $student_names[$student1] = "a student's";
-    $student_names[$student2] = "a student's";
+    $student_names[$student1] = "someone's";
+    $student_names[$student2] = "someone's";
 }
 
 // replace the students' id with real name if it's the lecturer
@@ -115,6 +118,7 @@ $filter_forms->set_data(array('cmid'=>$cmid,
     'display_mode'=>$display_mode));
 $filter_forms->display();
 
+echo html_writer::tag('div',get_string('chart_legend',PLAGIARISM_PROGRAMMING));
 echo html_writer::tag('div', create_chart($cmid,$tool,$rate_type),array('class'=>'programming_result_chart'));
 
 echo html_writer::table($table);
