@@ -19,6 +19,13 @@
     left: 45px;
 }
 
+.programming_result_chart .bar:hover {
+    background-color: #a6ffff;
+    position: absolute;
+    height: 20px;
+    left: 45px;
+}
+
 .programming_result_chart .legend {
     position: absolute;
     height: 20px;

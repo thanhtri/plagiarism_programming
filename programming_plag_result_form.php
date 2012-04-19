@@ -28,8 +28,8 @@ include_once dirname(__FILE__).'/detection_tools.php';
 
 class programming_plag_result_form extends moodleform {
 
-    public function __construct($defaults) {
-        parent::__construct(null,$defaults,'get');
+    public function __construct() {
+        parent::__construct(null,null,'get');
     }
     
     protected function definition() {
@@ -39,7 +39,7 @@ class programming_plag_result_form extends moodleform {
         
         // similarity threshold
         $mform->addElement('header','option_header',  get_string('option_header',PLAGIARISM_PROGRAMMING));
-        $mform->addElement('text','filter_threshold', get_string('threshold',PLAGIARISM_PROGRAMMING));
+        $mform->addElement('text','lower_threshold', get_string('threshold',PLAGIARISM_PROGRAMMING));
         
         // select the similarity type average or maximal
         $rate_type = array('max'=>'Maximum similarity','avg'=>'Average similarity');
@@ -59,7 +59,7 @@ class programming_plag_result_form extends moodleform {
         // other elements
         $mform->addElement('hidden','cmid',$this->_customdata['cmid']);
         if ($this->_customdata['student_id']) {
-            $mform->addElement('hidden','cmid',$this->_customdata['student_id']);
+            $mform->addElement('hidden','student_id',$this->_customdata['student_id']);
         }
         
         $mform->addElement('submit','submitbutton',get_string('submit',PLAGIARISM_PROGRAMMING));
