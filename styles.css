@@ -33,12 +33,18 @@
     left: 0px;
 }
 
+div.programming_result_table {
+    width: 100%;
+    overflow: auto;
+}
+
 .plagiarsm_programming_course_selection_wrapper {
     padding: 0px;
     margin: -10px;
     background-color: white;
-    font-size: larger
+    font-size: larger;
 }
+
 .plagiarsm_programming_course_selection_wrapper .row {
     height: 20px;
     padding: 10px

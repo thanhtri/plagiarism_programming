@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The main entry file of the plugin.
+ * Report viewing page
  * Provide the site-wide setting and specific configuration for each assignment
  *
  * @package    plagiarism
@@ -121,6 +121,6 @@ $filter_forms->display();
 
 echo html_writer::tag('div',get_string('chart_legend',PLAGIARISM_PROGRAMMING));
 echo html_writer::tag('div', create_chart($cmid,$tool,$rate_type),array('class'=>'programming_result_chart'));
-
-echo html_writer::table($table);
+echo html_writer::tag('div',  html_writer::table($table), array('class'=>'programming_result_table'));
+//echo html_writer::table($table);
 echo $OUTPUT->footer();
