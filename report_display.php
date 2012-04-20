@@ -22,7 +22,7 @@ function create_table_grouping_mode(&$similarity_table,&$student_names,$cmid) {
             $cell = new html_table_cell();
             $compare_link = html_writer::tag('a', $similarity['rate'].'%',
                 array('href'=>$CFG->wwwroot.'/plagiarism/programming/reportviewing.php/'.$cmid.'/report'.$cmid.'/'.$similarity['file']));
-            $cell->text = $student_names[$s2_id].'<br/>'.$compare_link;
+            $cell->text = create_student_link($student_names[$s2_id], $s2_id).'<br/>'.$compare_link;
             $row->cells[] = $cell;
         }
         $table->data[] = $row;
@@ -35,7 +35,6 @@ function create_table_list_mode(&$list,&$student_names,$cmid) {
     
     $table = new html_table();
     $rownum = 1;
-    $report_url = qualified_me();
     foreach ($list as $pair) {
         $row = new html_table_row();
         
@@ -43,13 +42,11 @@ function create_table_list_mode(&$list,&$student_names,$cmid) {
         $row->cells[] = $cell;
         
         $cell = new html_table_cell();
-        $cell->text = html_writer::tag('a', $student_names[$pair->student1_id],
-                array('href'=>$report_url."&student=$pair->student1_id",'class'=>'plagiarism_programming_student_link'));
+        $cell->text = create_student_link($student_names[$pair->student1_id], $pair->student1_id);
         $row->cells[] = $cell;
         
         $cell = new html_table_cell();
-        $cell->text = html_writer::tag('a', $student_names[$pair->student2_id],
-                array('href'=>$report_url."&student=$pair->student2_id",'class'=>'plagiarism_programming_student_link'));
+        $cell->text = create_student_link($student_names[$pair->student2_id], $pair->student2_id);
         $row->cells[] = $cell;
         
         $cell = new html_table_cell();
@@ -108,4 +105,10 @@ function create_chart($cmid,$tool,$similarity_type) {
         }
     }
     return $div;
+}
+
+function create_student_link($student_name,$student_id) {
+    $report_url = me();
+    return html_writer::tag('a', $student_name,
+                array('href'=>$report_url."&student=$student_id",'class'=>'plagiarism_programming_student_link'));
 }

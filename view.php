@@ -31,6 +31,7 @@ include_once dirname(__FILE__).'/programming_plag_result_form.php';
 include_once dirname(__FILE__).'/report_display.php';
 
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
+require_login();
 
 $cmid = optional_param('cmid', null, PARAM_INT);
 $student_id = optional_param('student', NULL, PARAM_INT);
