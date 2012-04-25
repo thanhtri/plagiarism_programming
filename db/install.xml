@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/programming/db" VERSION="20120417" COMMENT="XMLDB file for Moodle plagiarism/programming"
+<XMLDB PATH="plagiarism/programming/db" VERSION="20120425" COMMENT="XMLDB file for Moodle plagiarism/programming"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -58,7 +58,8 @@
         <FIELD NAME="marked" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comparison" NEXT="comments"/>
         <FIELD NAME="comments" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false" PREVIOUS="marked" NEXT="cmid"/>
         <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comments" NEXT="detector"/>
-        <FIELD NAME="detector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="cmid"/>
+        <FIELD NAME="detector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="cmid" NEXT="mark"/>
+        <FIELD NAME="mark" TYPE="char" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="used to mark a pair of assignment as having unusually high similarities" PREVIOUS="detector"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="pk_programming_result_id" TYPE="primary" FIELDS="id"/>
