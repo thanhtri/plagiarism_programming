@@ -8,5 +8,5 @@ global $DB;
 $assignment = $DB->get_record('programming_plagiarism',array('id'=>5));
 $moss_param = $DB->get_record('programming_moss',array('settingid'=>5));
 
-$moss_tool = new moss_tool();
-$moss_tool->download_result($assignment, $moss_param);
+$jplag_tool = new moss_tool();
+$jplag_tool->download_result($assignment, $moss_param);

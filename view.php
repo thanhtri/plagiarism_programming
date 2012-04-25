@@ -25,13 +25,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-include_once dirname(__FILE__).'/../../config.php';
-include_once dirname(__FILE__).'/constants.php';
-include_once dirname(__FILE__).'/programming_plag_result_form.php';
-include_once dirname(__FILE__).'/report_display.php';
+include_once __DIR__.'/../../config.php';
+include_once __DIR__.'/constants.php';
+include_once __DIR__.'/programming_plag_result_form.php';
+include_once __DIR__.'/reportlib.php';
 
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
-require_login();
 
 $cmid = optional_param('cmid', null, PARAM_INT);
 $student_id = optional_param('student', NULL, PARAM_INT);
@@ -63,32 +62,24 @@ $course = $DB->get_record('course',array('id'=>$course_module->course));
 if (!$course) {
     redirect($CFG-->wwwroot,'Invalid course id');
 }
+require_login($course, true, $course_module);
 
 $PAGE->set_url(new moodle_url('/plagiarism/programming/view.php',array('cmid'=>$cmid)));
-require_login($course, true, $course_module);
 assert($cmid!=null);
 
-$select = "cmid=$cmid AND similarity1>=$lower_threshold AND similarity1<=$upper_threshold AND detector='$tool'";
+$select = "cmid=$cmid AND similarity1>=$lower_threshold AND similarity1<$upper_threshold AND detector='$tool'";
 if ($student_id) {
     $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
 }
 $result = $DB->get_records_select('programming_result',$select,null,'similarity1 DESC');
 
-$similarity_table = array();
 $student_names = array();
-
 foreach ($result as $pair) {
-    // make sure student1 id > student2 id to avoid repetition latter
-    $student1 = max($pair->student1_id,$pair->student2_id);
-    $student2 = min($pair->student1_id,$pair->student2_id);
-    
-    $similarity_table[$student1][$student2] = array('rate'=>$pair->similarity1,'file'=>$pair->comparison);
-    $similarity_table[$student2][$student1] = array('rate'=>$pair->similarity1,'file'=>$pair->comparison);
-    $student_names[$student1] = "someone's";
-    $student_names[$student2] = "someone's";
+    $student_names[$pair->student1_id] = "someone's";
+    $student_names[$pair->student2_id] = "someone's";
 }
 
-// replace the students' id with real name if it's the lecturer
+// find students' name if he is the lecturer
 if (has_capability('mod/assignment:grade', $context)) {
     $ids = array_keys($student_names);
     $students = $DB->get_records_list('user','id',$ids,null,'id,firstname,lastname');
@@ -100,7 +91,7 @@ if (has_capability('mod/assignment:grade', $context)) {
 }
 
 if ($display_mode=='group') {
-    $table = create_table_grouping_mode($similarity_table, $student_names,$cmid);
+    $table = create_table_grouping_mode($result, $student_names,$cmid);
 } else {
     $table = create_table_list_mode($result, $student_names,$cmid);
 }

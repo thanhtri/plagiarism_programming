@@ -64,7 +64,6 @@ $string['rescan_hlp_help'] = 'If there are some changes after the scanning, e.g.
 
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
-$string['result'] = 'Similarity scanning result';
 
 // options for displaying results
 $string['option_header'] = 'Options';
@@ -72,10 +71,17 @@ $string['threshold'] = 'Similarity filter (%)';
 $string['similarity_type'] = 'Similarity type';
 $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
-$string['submit'] = 'Submit';
+$string['submit'] = 'Filter';
 $string['showHideLabel'] = 'Show plagiarism options';
 
 // in the report
 $string['yours'] = 'Yours';
 $string['another'] = "Someone's";
-$string['chart_legend'] = 'Similarity rate distribution of the whole course';   
+$string['chart_legend'] = 'Similarity rate distribution of the whole course';
+$string['result'] = 'Similarity scanning result';
+$string['comparison_title'] = 'Similarities';
+$string['comparison'] = 'Comparison';
+
+$string['plagiarism_action'] = 'Action';
+$string['mark_suspicious'] = 'Mark this pair as suspicious';
+$string['mark_nonsuspicious'] = 'Mark this pair as normal';

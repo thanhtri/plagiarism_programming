@@ -70,3 +70,66 @@ div.programming_result_table {
 a.plagiarism_programming_student_link:link,a.plagiarism_programming_student_link:visited {
     color: black;
 }
+
+table.plagiarism_programming_result_table {
+    background-color: white;
+}
+
+table.plagiarism_programming_result_table .normal {
+    background-color: #99FF66;
+}
+
+table.plagiarism_programming_result_table .suspicious{
+    background-color: #FF00FF;
+}
+
+.programming_result_comparison_top_left {
+    width:40%;
+    height: 150px;
+    float: left;
+}
+
+.programming_result_comparison_top_right {
+    width:60%;
+    height: 150px;
+    float: right;
+    border: none;
+    overflow: auto;
+}
+
+.programming_result_comparison_top_right table {
+    margin-left: auto;
+    margin-right: 5px;
+}
+
+.programming_result_comparison_bottom_left {
+    width:50%;
+    height: 600px;
+    float: left;
+    overflow: auto;
+    margin-top: 5px;
+    position: relative;
+}
+
+.programming_result_comparison_bottom_right {
+    width:50%;
+    height:600px;
+    float: right;
+    overflow: auto;
+    margin-top: 5px;
+    position: relative;
+}
+
+.programming_result_comparison_separator {
+    border-top: 1px solid black;
+    clear: both;
+    margin-top: 5px;
+}
+
+.programming_result_mark_img {
+    display: inline;
+    vertical-align: middle;
+    margin-left: 20px;
+    width: 50px;
+    height: 50px;
+}

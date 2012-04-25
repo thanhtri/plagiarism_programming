@@ -24,29 +24,31 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-include dirname(__FILE__).'/../../config.php';
-$link_component = substr($_SERVER['PATH_INFO'], 1); // strip the first slash
-$components = explode('/', $link_component);
-$cmid = $components[0];
-$link = '';
-for ($i=1;$i<count($components);$i++) {
-    $link .= '/'.$components[$i];
-}
-$filename = $CFG->dataroot.'/plagiarism_report'.$link;
+include __DIR__.'/../../config.php';
+include __DIR__.'/reportlib.php';
+include __DIR__.'/jplag_tool.php';
+global $OUTPUT;
+
+// extract the link component first
+$components = analyse_report_link();
+$cmid = $components['cmid'];
+$file = $components['file'];
+
+// get the path of the report
+$jplag_tool = new jplag_tool();
+$filename = $jplag_tool->get_report_path($cmid).DIRECTORY_SEPARATOR.$file;
+
 $file_handle = fopen($filename, 'r');
 $content = fread($file_handle, filesize($filename));
-if (substr($link,-4)=='html') {	// an html file
-    modify_content($content, $cmid,$components[2]);
-} elseif (substr($link, -2)=='js') {
-    header('Content-Type: application/javascript');
-} elseif (substr($link, -3)=='gif') {
+if (substr($file,-4)=='html') {	// an html file
+    modify_content($content, $cmid, $file);
+} elseif (substr($file, -3)=='gif') {
     header('Content-Type: image/gif');
 }
 echo $content;
-	
+
 function modify_content(&$content,$cmid,$filename) {
     global $CFG,$USER;
-    include_once $CFG->dirroot.'/lib/accesslib.php';
     $context = get_context_instance(CONTEXT_MODULE,$cmid);
     if (has_capability('mod/assignment:grade', $context, $USER->id)) { // teacher
         if ($filename=='index.html') {

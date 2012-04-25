@@ -63,12 +63,6 @@ class programming_plag_result_form extends moodleform {
         }
         
         $mform->addElement('submit','submitbutton',get_string('submit',PLAGIARISM_PROGRAMMING));
-        
-        // previous values
-        $mform->setDefault('filter_threshold', $this->_customdata['filter_threshold']);
-        $mform->setDefault('rate_type', $this->_customdata['rate_type']);
-        $mform->setDefault('tool', $this->_customdata['tool']);
-        $mform->setDefault('display_mode', $this->_customdata['display_mode']);
     }
 
 }
