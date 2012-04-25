@@ -104,7 +104,7 @@ echo $OUTPUT->header();
 
 $filter_forms = new programming_plag_result_form();
 $filter_forms->set_data(array('cmid'=>$cmid,
-    'student_id'=>$student_id,
+    'student'=>$student_id,
     'lower_threshold'=>$lower_threshold,
     'tool'=>$tool,'rate_type'=>$rate_type,
     'display_mode'=>$display_mode));

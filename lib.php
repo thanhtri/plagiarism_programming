@@ -32,8 +32,9 @@ if (!defined('MOODLE_INTERNAL')) {
 //get global class
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
-require_once dirname(__FILE__).'/constants.php';
-require_once dirname(__FILE__).'/detection_tools.php';
+require_once __DIR__.'/constants.php';
+require_once __DIR__.'/detection_tools.php';
+require_once __DIR__.'/reportlib.php';
 
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
@@ -138,32 +139,24 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     public function get_links($linkarray) {
-        global $DB, $detection_tools;
+        global $DB, $CFG;
         
-        // caching this one for better performance since it will be called many times (according to the doc)
-        static $tool_classes = null;
+        static $students;
         
+        if (!$this->is_plugin_enabled($linkarray['cmid']))
+            return;
+
+        if ($students==null) {
+            $students = get_suspicious_students_in_assignment($linkarray['cmid']);
+        }
         // check if programming plagiarism is used and the scanning has been carried out
         $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$linkarray['cmid']));
         if (!$setting) // not turned on
             return;
-        
-        // initiate tool classes (one time only)
-        if (!$tool_classes) {
-            $tool_classes = array();
-            foreach ($detection_tools as $tool=>$info) {
-                $scan_info = $DB->get_record('programming_'.$tool,array('settingid'=>$setting->id));
-                if ($setting->$tool && $scan_info && $scan_info->status=='finished') {
-                    include_once $info['code_file'];
-                    $class_name = $info['class_name'];
-                    $tool_classes[] = new $class_name;
-                }
-            }
-        }
-
-        $output = '';
-        foreach ($tool_classes as $tool) {
-            $output .= ' '.$tool->display_link($setting);
+        $link = get_report_link($linkarray['cmid'], $linkarray['userid']); 
+        $output = html_writer::tag('a', 'Report',array('href'=>$link));
+        if (isset($students[$linkarray['userid']])) {
+            $output .= ' '.html_writer::tag('span', get_string('suspicious',PLAGIARISM_PROGRAMMING), array('class'=>'programming_result_warning'));
         }
         return $output;
     }
@@ -172,7 +165,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         global $OUTPUT,$DB, $USER, $CFG, $PAGE, $detection_tools;
         $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
 
-        // if the assignment is configured with the plugin turned on
+        // the plugin is enabled for this course ?
+        if (!$this->is_plugin_enabled($cmid))
+            return;
+        
         if (!$setting) // plagiarism scanning turned off
             return;
 
@@ -239,6 +235,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',
                     array('cmid'=>$setting->courseid,'lasttime'=>$setting->starttime,'checkprogress'=>$check),true,$jsmodule);
 
+        }
+        
+        // if this is a student
+        if (has_capability('mod/assignment:submit', $context, $USER->id)) {
+            if (count(get_suspicious_works($USER->id, $cmid))>0) {
+                $warning = get_string('high_similarity_warning',PLAGIARISM_PROGRAMMING);
+                $content .= html_writer::tag('span', $warning, array('class'=>'programming_result_warning'));
+            }
         }
 
         if (!empty($content)) {

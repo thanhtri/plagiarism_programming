@@ -85,3 +85,8 @@ $string['comparison'] = 'Comparison';
 $string['plagiarism_action'] = 'Action';
 $string['mark_suspicious'] = 'Mark this pair as suspicious';
 $string['mark_nonsuspicious'] = 'Mark this pair as normal';
+
+// notification
+$string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';
+$string['report'] = 'Report';
+$string['suspicious'] = 'suspicious';

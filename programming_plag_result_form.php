@@ -58,9 +58,7 @@ class programming_plag_result_form extends moodleform {
         
         // other elements
         $mform->addElement('hidden','cmid',$this->_customdata['cmid']);
-        if ($this->_customdata['student_id']) {
-            $mform->addElement('hidden','student_id',$this->_customdata['student_id']);
-        }
+        $mform->addElement('hidden','student',$this->_customdata['student_id']);
         
         $mform->addElement('submit','submitbutton',get_string('submit',PLAGIARISM_PROGRAMMING));
     }

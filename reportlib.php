@@ -126,7 +126,7 @@ function create_chart($cmid,$tool,$similarity_type) {
     }
     
     $div = '';
-    $report_url = new moodle_url(me());
+    $report_url = new moodle_url(qualified_me());
     foreach ($histogram as $key=>$val) {
         $upper = $key*10+10;
         $lower = $key*10;
@@ -156,16 +156,29 @@ function create_student_link($student_name,$student_id) {
                 array('href'=>$report_url."&student=$student_id",'class'=>'plagiarism_programming_student_link'));
 }
 
-/** extract the link components of a report.
- *  Link has the form: <moodle_path>/plagiarism/programming/reportviewing.php/cmid/html_file */
-function analyse_report_link() {
-    $filename = basename(__FILE__);
-    $full_link = me();
-    $script_position = strpos($full_link,'.php/');
-    $path_info = substr($full_link, $script_position+5); // take the link component after the script,
-    $base_link = substr($full_link, 0, strrpos($full_link, '/', $script_position-strlen($full_link)));
-    $components = explode('/', $path_info);
-    $link_component = array('cmid'=>$components[0],'file'=>$components[1],'baselink'=>$base_link);
-    return $link_component;
+function get_suspicious_works($student_id,$cmid) {
+    global $DB;
+    $select = "(student1_id=$student_id OR student2_id=$student_id) AND cmid=$cmid AND mark='Y'";
+    return $DB->get_records_select('programming_result',$select);
 }
 
+function get_suspicious_students_in_assignment($cmid) {
+    global $DB;
+    $sql = "Select id,student1_id,student2_id FROM {programming_result} Where cmid=$cmid AND mark='Y'";
+    $records = $DB->get_records_sql($sql);
+    $students = array();
+    foreach ($records as $rec) {
+        $students[$rec->student1_id] = $rec->student1_id;
+        $students[$rec->student2_id] = $rec->student2_id;
+    }
+    return $students;
+}
+
+function get_report_link($cmid,$student_id=null) {
+    global $CFG;
+    $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$cmid";
+    if ($student_id) {
+        $link .= "&student=$student_id";
+    }
+    return $link;
+}
