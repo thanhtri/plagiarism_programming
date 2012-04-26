@@ -55,11 +55,11 @@ if (!$is_teacher) {
     }
     
     if ($result_record->student1_id==$USER->id) {
-        $student1 = 'Yours';
-        $student2 = 'Another\'s';
+        $student1 = 'yours';
+        $student2 = 'another\'s';
     } elseif ($result_record->student2_id==$USER->id) {
-        $student1 = 'Another\'s';
-        $student2 = 'Yours';
+        $student1 = 'another\'s';
+        $student2 = 'yours';
     } else {
         redirect($CFG->wwwroot,"You can only see the report on your work"); // this condition cannot happen unless users fabricate the link
     }
@@ -99,15 +99,18 @@ $actions = array(
     'Y'=>get_string('mark_suspicious',PLAGIARISM_PROGRAMMING),
     'N'=>  get_string('mark_nonsuspicious',PLAGIARISM_PROGRAMMING)
 );
-$content .= html_writer::select($actions, 'mark', $result_record->mark,'Action...',array('id'=>'action_menu'));
+
+if ($is_teacher) { // only teachers can mark the suspicious pairs
+    $content .= html_writer::select($actions, 'mark', $result_record->mark,'Action...',array('id'=>'action_menu'));
+}
 $content .= html_writer::empty_tag('img',array('src'=>'','id'=>'mark_image','class'=>'programming_result_mark_img'));
 
 echo html_writer::tag('div',$content,array('name'=>'link','frameborder'=>'0','width'=>'40%','class'=>'programming_result_comparison_top_left'));
 // the link bar
 if ($detector=='jplag') {
-    get_top_file_content_jplag($report_dir.'/'.$name_no_ext.'-top.html', $content);
+    get_top_file_content_jplag($report_dir.'/'.$name_no_ext.'-top.html', $content,$is_teacher);
 } else {
-    get_top_file_content_moss($report_dir.'/'.$name_no_ext.'-top.html', $content);
+    get_top_file_content_moss($report_dir.'/'.$name_no_ext.'-top.html', $content,$is_teacher);
 }
 echo html_writer::tag('div',$content,array('class'=>'programming_result_comparison_top_right'));
 
@@ -127,17 +130,17 @@ $jsmodule = array(
     'fullpath' => '/plagiarism/programming/compare_code.js',
     'strings' => array()
 );
-$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',array('id'=>$result_id),true,$jsmodule);
+$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',array('id'=>$result_id,$result_record->mark),true,$jsmodule);
 echo $OUTPUT->footer();
 
-/** Get content of the header file
+/** Get content of JPlag header file, which contain a table lising all the similar portions between 2 assignments
  *  @param $filename: full path to the link file
  *  @param $content:  reference to the returned content.
  *         This param will hold the content of the file after the call
  *  @param $show_name: show the name of the student
  */
 function get_top_file_content_jplag($filename,&$content,$show_name=true) {
-    global $DB;
+    global $DB, $USER;
 
     // read the file first
     $content = file_get_contents($filename);
@@ -146,18 +149,29 @@ function get_top_file_content_jplag($filename,&$content,$show_name=true) {
     $pattern = '/<TR><TH><TH>([0-9]*) \([0-9]*\.[0-9]*%\)<TH>([0-9]*) \([0-9]*\.[0-9]*%\)<TH>/';
     preg_match($pattern, $content,$matches);
     $users = $DB->get_records_list('user','id',array($matches[1],$matches[2]),'firstname,lastname,idnumber');
-    $user1 = $users[$matches[1]];
-    $student1 = $user1->firstname.' '.$user1->lastname;
-    $user2 = $users[$matches[2]];
-    $student2 = $user2->firstname.' '.$user2->lastname;
+    if ($show_name) {
+        $user1 = $users[$matches[1]];
+        $student1 = $user1->firstname.' '.$user1->lastname;
+        $user2 = $users[$matches[2]];
+        $student2 = $user2->firstname.' '.$user2->lastname;
+    } else {
+        $student1 = ($matches[1]==$USER->id)?'Yours':'someone\'s';
+        $student2 = ($matches[2]==$USER->id)?'Yours':'someone\'s';
+    }
     $replaced = $matches[0];
-    $replaced = str_replace('<TH><TH>'.$user1->id, '<TH><TH>'.$student1, $replaced);
-    $replaced = str_replace('<TH>'.$user2->id, '<TH>'.$student2, $replaced);
+    $replaced = str_replace('<TH><TH>'.$matches[1], '<TH><TH>'.$student1, $replaced);
+    $replaced = str_replace('<TH>'.$matches[2], '<TH>'.$student2, $replaced);
     $content = str_replace($matches[0], $replaced, $content);
 }
 
+/** Get content of MOSS header file, which contain a table lising all the similar portions between 2 assignments
+ *  @param $filename: full path to the link file
+ *  @param $content:  reference to the returned content.
+ *         This param will hold the content of the file after the call
+ *  @param $show_name: show the name of the student
+ */
 function get_top_file_content_moss($filename,&$content,$show_name=true) {
-    global $DB;
+    global $DB, $USER;
 
     $content = file_get_contents($filename);
     strip_tag_content($content, 'TABLE');
@@ -166,12 +180,19 @@ function get_top_file_content_moss($filename,&$content,$show_name=true) {
     preg_match_all($pattern, $content, &$matches); // matches[0] contains the whole pattern, matches[1] contain userids (number in the brackets)
     $user_ids = $matches[1];
     $users = $DB->get_records_list('user','id',$user_ids,'firstname,lastname,idnumber');
+    if ($show_name) {
+        $user1 = $users[$user_ids[0]];
+        $student1 = $user1->firstname.' '.$user1->lastname;
+        $user2 = $users[$user_ids[1]];
+        $student2 = $user2->firstname.' '.$user2->lastname;
+    } else {
+        $student1 = ($user_ids[0]==$USER->id)?'Yours':'someone\'s';
+        $student2 = ($user_ids[1]==$USER->id)?'Yours':'someone\'s';
+    }
     $searched = $matches[0];
     $replace = array();
-    $user1 = $users[$user_ids[0]];
-    $replace[0] = str_replace($user_ids[0], "$user1->firstname $user1->lastname", $searched[0]);
-    $user2 = $users[$user_ids[1]];
-    $replace[1] = str_replace($user_ids[1], "$user2->firstname $user2->lastname", $searched[0]);
+    $replace[0] = str_replace($user_ids[0].'/', $student1, $searched[0]);
+    $replace[1] = str_replace($user_ids[1].'/', $student2, $searched[1]);
     $content = str_replace($searched, $replace, $content);
 }
 

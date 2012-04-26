@@ -33,7 +33,6 @@ M.plagiarism_programming.select_course = {
     },
     
     display_courses: function(o) {
-        console.log('display courses');
         var courses = YAHOO.lang.JSON.parse(o.responseText);
         var wrapperDiv = document.createElement('div');
         var wrapperElement = new YAHOO.util.Element(wrapperDiv);

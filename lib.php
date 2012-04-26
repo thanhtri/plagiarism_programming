@@ -154,7 +154,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if (!$setting) // not turned on
             return;
         $link = get_report_link($linkarray['cmid'], $linkarray['userid']); 
-        $output = html_writer::tag('a', 'Report',array('href'=>$link));
+        $output = ' '.html_writer::tag('a', 'Report',array('href'=>$link));
         if (isset($students[$linkarray['userid']])) {
             $output .= ' '.html_writer::tag('span', get_string('suspicious',PLAGIARISM_PROGRAMMING), array('class'=>'programming_result_warning'));
         }

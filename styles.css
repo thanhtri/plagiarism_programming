@@ -127,11 +127,12 @@ table.plagiarism_programming_result_table .suspicious{
 }
 
 .programming_result_mark_img {
-    display: inline;
+    border: none;
+    display: none;
     vertical-align: middle;
     margin-left: 20px;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
 }
 
 .programming_result_warning {

@@ -10,10 +10,10 @@ M.plagiarism_programming.compare_code = {
     pattern: /match[0-9]+-[01]\.html#([0-9]+)/,
     id: 0, //set in init function
     
-    init : function(Y,id) {
+    init : function(Y,id,mark) {
         this.id = id;
         this.init_links();
-        this.init_action();
+        this.init_action(mark);
     },
     
     init_links: function() {
@@ -33,9 +33,9 @@ M.plagiarism_programming.compare_code = {
         }
     },  
     
-    init_action: function() {
+    init_action: function(mark) {
         var action_select = document.getElementById('action_menu');
-        this.change_image(action_select.options[action_select.selectedIndex].value);
+        this.change_image(mark);
         YAHOO.util.Event.addListener(action_select,'change',this.action_menu_onchange,true);
     },
     
@@ -60,13 +60,19 @@ M.plagiarism_programming.compare_code = {
         }
         var img = document.getElementById('mark_image');
         img.setAttribute('src', src);
+        if (action==null || action=='') {
+            img.style.display = 'none';
+        } else {
+            img.style.display = 'inline';
+        }
     },
     
     move_frame: function(div_class,anchorName) {
         var div = document.getElementsByClassName(div_class)[0];
-        var anchors = div.getElementsByTagName('a');
+        var anchors = YAHOO.util.Selector.query('div.'+div_class+' a');
         for (var i=0;i<anchors.length;i++) {
             if (anchors[i].getAttribute('name')==anchorName) {
+                anchors[i].innerHTML=' '; // there must be sth in the tag for some browser to figure out the configuration
                 div.scrollTop = anchors[i].offsetTop;
             }
         }
