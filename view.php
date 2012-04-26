@@ -33,7 +33,7 @@ include_once __DIR__.'/reportlib.php';
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
 
 $cmid = optional_param('cmid', null, PARAM_INT);
-$student_id = optional_param('student', NULL, PARAM_INT);
+$student_id = optional_param('student', -1, PARAM_INT);
 $lower_threshold = optional_param('lower_threshold', 20, PARAM_FLOAT); // rate will be above this similarity
 $upper_threshold = optional_param('upper_threshold', 100, PARAM_FLOAT);
 $tool = optional_param('tool', 'jplag', PARAM_TEXT);
@@ -51,7 +51,7 @@ if (!has_capability('mod/assignment:grade', $context)) {
     $student_id = $USER->id;
 }
 
-if (is_number($student_id)) {
+if ($student_id > 0) {
     $display_mode = 'table';
 }
 
