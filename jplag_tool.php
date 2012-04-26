@@ -37,7 +37,7 @@ class jplag_tool extends plagiarism_tool {
         // the stub is initiated lazily at most one time (per request) when it is required
         if ($this->jplag_stub==null) {
             // get the username and password
-            $settings = (array) get_config('plagiarism');
+            $settings = (array) get_config('plagiarism_programming');
             $this->jplag_stub = new jplag_stub($settings['jplag_user'],$settings['jplag_pass']);
             return $this->jplag_stub;
         }
@@ -56,7 +56,6 @@ class jplag_tool extends plagiarism_tool {
         $this->stub_init();
         $option = new jplag_option();
         $option->set_language($assignment_param->language);
-        // TODO: select the real name of the assignment or generate the report into Moodle interface
         $option->title = 'Test';
 
         // initialise progress handler
