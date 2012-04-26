@@ -42,7 +42,7 @@ function create_table_grouping_mode(&$list,&$student_names,$cmid) {
     }
     
     $table = new html_table();
-    $table->attributes['class']='plagiarism_programming_result_table';
+    $table->attributes['class']='plagiarism_programming_result_table generaltable';
     foreach ($similarity_table as $s_id=>$similarity_array) {
         $row = new html_table_row();
         // first cell
@@ -73,7 +73,7 @@ function create_table_list_mode(&$list,&$student_names,$cmid) {
     global $CFG;
     
     $table = new html_table();
-    $table->attributes['class'] = 'plagiarism_programming_result_table';
+    $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
     $rownum = 1;
     foreach ($list as $pair) {
         $row = new html_table_row();
