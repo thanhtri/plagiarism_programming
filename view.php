@@ -68,7 +68,7 @@ $PAGE->set_url(new moodle_url('/plagiarism/programming/view.php',array('cmid'=>$
 assert($cmid!=null);
 
 $select = "cmid=$cmid AND similarity1>=$lower_threshold AND similarity1<$upper_threshold AND detector='$tool'";
-if ($student_id) {
+if ($student_id>0) {
     $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
 }
 $result = $DB->get_records_select('programming_result',$select,null,'similarity1 DESC');
