@@ -46,12 +46,14 @@ if ($mform->is_cancelled()) {
     redirect('');
 }
 
+$notification = '';
 if (($data = $mform->get_data()) && confirm_sesskey()) {
     // update programming_use variable
     $programming_use = (isset($data->programming_use))?$data->programming_use:0;
     set_config('programming_use', $programming_use, 'plagiarism');
     $variables = array('level_enabled');
-    
+
+    $is_error = false;
     if (isset($data->jplag_modify_account)) { // change the user name and password
         include_once dirname(__FILE__).'/jplag/jplag_stub.php';
         $jplag_stub = new jplag_stub();
@@ -59,11 +61,15 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             $variables[] = 'jplag_user';
             $variables[] = 'jplag_pass';
         } else {
-            $error = true;
+            $is_error = true;
+            $notification = $OUTPUT->notification(get_string('jplag_account_error', PLAGIARISM_PROGRAMMING), 'notifyproblem');
         }
     }
-    foreach ($variables as $field) {
-        set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
+    if (!$is_error) {
+        foreach ($variables as $field) {
+            set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
+        }
+        $notification = $OUTPUT->notification(get_string('save_config_success', PLAGIARISM_PROGRAMMING), 'notifysuccess');
     }
 }
 
@@ -79,6 +85,7 @@ $mform->set_data($plagiarism_programming_setting);
 
 echo $OUTPUT->header();
 
+// include the javascript
 $PAGE->requires->yui2_lib('yahoo-dom-event');
 $PAGE->requires->yui2_lib('dragdrop');
 $PAGE->requires->yui2_lib('container');
@@ -92,12 +99,7 @@ $jsmodule = array(
 $PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init',null,true,$jsmodule);
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
-if (isset($error)) {
-    echo $OUTPUT->notification(get_string('jplag_account_error', PLAGIARISM_PROGRAMMING), 'notifyproblem');
-} else {
-    echo $OUTPUT->notification(get_string('save_config_success', PLAGIARISM_PROGRAMMING), 'notifysuccess');
-}
+echo $notification;
 $mform->display();
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer();
-// include the javascript
