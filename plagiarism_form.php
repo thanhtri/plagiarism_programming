@@ -54,6 +54,7 @@ class plagiarism_setup_form extends moodleform {
 		$mform->disabledIf('jplag_pass', 'jplag_modify_account', 'notchecked');
         
         $mform->addElement('header','moss_config',get_string('moss',PLAGIARISM_PROGRAMMING));
+        $mform->addElement('text','moss_user_id', get_string('moss_id',PLAGIARISM_PROGRAMMING));
 
         $this->add_action_buttons(true);
     }

@@ -31,6 +31,7 @@ $string['jplag_username'] = 'JPlag Username';
 $string['jplag_password'] = 'JPlag Password';
 $string['jplag_modify_account'] = 'Change JPlag account';
 $string['moss'] = 'MOSS global config';
+$string['moss_id'] = 'User id provided by MOSS';
 $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
 $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';

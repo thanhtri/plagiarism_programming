@@ -51,7 +51,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     // update programming_use variable
     $programming_use = (isset($data->programming_use))?$data->programming_use:0;
     set_config('programming_use', $programming_use, 'plagiarism');
-    $variables = array('level_enabled');
+    $variables = array('level_enabled','moss_user_id');
 
     $is_error = false;
     if (isset($data->jplag_modify_account)) { // change the user name and password
