@@ -28,13 +28,15 @@
 
 include_once dirname(__FILE__).'/plagiarism_tool.php';
 include_once dirname(__FILE__).'/moss/moss_stub.php';
+include_once dirname(__FILE__).'/moss/moss_parser.php';
+include_once __DIR__.'/constants.php';
 
 class moss_tool extends plagiarism_tool {
 
     private $moss_stub;
     
     public function __construct() {
-        $this->moss_stub = new moss_stub(658775742);
+        $this->moss_stub = new moss_stub(get_config(PLAGIARISM_PROGRAMMING,'moss_user_id'));
     }
     
     public function submit_assignment($inputdir,$assignment,$moss_param) {
@@ -128,36 +130,10 @@ class moss_tool extends plagiarism_tool {
     }
     
     public function parse_result($assignment,$moss_info) {
-        global $DB;
         
-        $report_path = $this->get_report_path($assignment->courseid);
+        $parser = new moss_parser($assignment->courseid);
+        $parser->parse();
         
-        $result_file = $report_path.'/index.html';
-        assert(is_file($result_file));
-        
-        // delete the old records (in case this tool is run several times on one assignment)
-        $DB->delete_records('programming_result',array('cmid'=>$assignment->courseid,'detector'=>'moss'));
-        
-        $content = file_get_contents($result_file);
-        // this pattern extract the link
-        $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([0-9]*)\/\s\(([0-9]*)%\)<\/A>/';
-        preg_match_all($pattern, $content, $matches);
-        $filenames = $matches[1];
-        $studentids = $matches[2];
-        $similarity = $matches[3];
-        $num = count($filenames);
-
-        $record = new stdClass();
-        $record->detector = $this->get_name();
-        $record->cmid = $assignment->courseid;
-        for ($i=0; $i<$num; $i+=2) {
-            $record->student1_id = $studentids[$i];
-            $record->student2_id = $studentids[$i+1];
-            $record->similarity1 = $similarity[$i];
-            $record->similarity2 = $similarity[$i+1];
-            $record->comparison = $filenames[$i];
-            $DB->insert_record('programming_result',$record);
-        }
         $moss_info->status = 'finished';
         $moss_info->progress = 100;
         

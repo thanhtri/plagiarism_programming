@@ -71,15 +71,11 @@ a.plagiarism_programming_student_link:link,a.plagiarism_programming_student_link
     color: black;
 }
 
-table.plagiarism_programming_result_table {
-    background-color: white;
-}
-
-table.plagiarism_programming_result_table .normal {
+table.plagiarism_programming_result_table .normal, table.plagiarism_programming_result_table .normal .cell {
     background-color: #99FF66;
 }
 
-table.plagiarism_programming_result_table .suspicious{
+table.plagiarism_programming_result_table .suspicious, table.plagiarism_programming_result_table .suspicious .cell {
     background-color: #FF00FF;
 }
 
@@ -100,6 +96,9 @@ table.plagiarism_programming_result_table .suspicious{
 .programming_result_comparison_top_right table {
     margin-left: auto;
     margin-right: 5px;
+    margin-top: 5px;
+    background-color: #d0d0d0;
+    border: 1px solid black;
 }
 
 .programming_result_comparison_bottom_left {
@@ -137,5 +136,23 @@ table.plagiarism_programming_result_table .suspicious{
 
 .programming_result_warning {
     color: red;
+    font-weight: bold;
+}
+
+.enable_course_footer_panel {
+    text-align: center;
+}
+
+.student_similarity_view_img {
+    cursor: pointer;
+}
+
+.compare_header {
+    font-weight: bold;
+    font-size: large;
+    text-align: center;
+}
+
+.colored {
     font-weight: bold;
 }

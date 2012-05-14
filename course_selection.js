@@ -11,6 +11,7 @@ M.plagiarism_programming.select_course = {
         });
         panel.setHeader('Select courses to enable the plugin');
         panel.setBody('<div></div>');
+        panel.setFooter(this.create_footer_panel());
         panel.render('page');
         M.plagiarism_programming.select_course.panel = panel;
         
@@ -67,6 +68,26 @@ M.plagiarism_programming.select_course = {
             wrapperElement.appendChild(row);
         }
         M.plagiarism_programming.select_course.panel.setBody(wrapperDiv);
+    },
+    
+    create_footer_panel : function() {
+        var footer = new YAHOO.util.Element(document.createElement('div'));
+        footer.addClass('enable_course_footer_panel');
+        
+        var label = new YAHOO.util.Element(document.createElement('label'));
+        label.textContent = 'Search for course ';
+        var text = new YAHOO.util.Element(document.createElement('input'));
+        text.setAttribute('id', 'course_search_id');
+        text.setAttribute('type', 'text');
+        var button = new YAHOO.util.Element(document.createElement('input'));
+        button.setAttribute('type','button');
+        button.setAttribute('value','Close window');
+        
+        footer.appendChild(label);
+        footer.appendChild(text);
+        footer.appendChild(button);
+        
+        return footer;
     },
     
     enable_disable_course: function(id,enable,button) {

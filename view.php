@@ -42,7 +42,8 @@ $display_mode = optional_param('display_mode', 'group', PARAM_TEXT); //either ta
 
 // if the user is a student (does not have grade capability), he can only see the report on his assignment if allowed
 $context = get_context_instance(CONTEXT_MODULE,$cmid);
-if (!has_capability('mod/assignment:grade', $context)) {
+$is_teacher = has_capability('mod/assignment:grade', $context);
+if (!$is_teacher) {
     // check if he is allowed to see the assignment
     if (!has_capability('mod/assignment:submit', $context) ||
             !$DB->get_field('programming_plagiarism','auto_publish',array('courseid'=>$cmid))) {
@@ -73,22 +74,7 @@ if ($student_id>0) {
 }
 $result = $DB->get_records_select('programming_result',$select,null,'similarity1 DESC');
 
-$student_names = array();
-foreach ($result as $pair) {
-    $student_names[$pair->student1_id] = "someone's";
-    $student_names[$pair->student2_id] = "someone's";
-}
-
-// find students' name if he is the lecturer
-if (has_capability('mod/assignment:grade', $context)) {
-    $ids = array_keys($student_names);
-    $students = $DB->get_records_list('user','id',$ids,null,'id,firstname,lastname');
-    foreach ($students as $student) {
-        $student_names[$student->id] = $student->firstname.' '.$student->lastname;
-    }
-} else {    // if user is a student
-    $student_names[$student_id] = 'Yours';
-}
+create_student_name_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
 
 if ($display_mode=='group') {
     $table = create_table_grouping_mode($result, $student_names,$cmid);

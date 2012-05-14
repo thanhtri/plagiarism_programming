@@ -150,6 +150,27 @@ function create_chart($cmid,$tool,$similarity_type) {
     return $div;
 }
 
+function create_student_name_lookup_table(&$result_table,$is_teacher,&$student_names) {
+    global $USER, $DB;
+
+    $student_names = array();
+    foreach ($result_table as $pair) {
+        $student_names[$pair->student1_id] = "someone's";
+        $student_names[$pair->student2_id] = "someone's";
+    }
+
+    // find students' name if he is the lecturer
+    if ($is_teacher) {
+        $ids = array_keys($student_names);
+        $students = $DB->get_records_list('user','id',$ids,null,'id,firstname,lastname');
+        foreach ($students as $student) {
+            $student_names[$student->id] = $student->firstname.' '.$student->lastname;
+        }
+    } else {    // if user is a student
+        $student_names[$USER->id] = 'Yours';
+    }
+}
+
 function create_student_link($student_name,$student_id) {
     $report_url = me();
     return html_writer::tag('a', $student_name,

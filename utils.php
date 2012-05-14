@@ -95,6 +95,12 @@ function curl_download($links,$directory) {
     }
 }
 
+function count_line(&$text) {
+    $line_count = substr_count($text, "\n");
+    $char_num = strlen($text)-strrpos($text, "\n");
+    return array($line_count,$char_num);
+}
+
 class progress_handler {
     private $tool_name;
     private $tool_param;

@@ -195,8 +195,7 @@ class jplag_tool extends plagiarism_tool {
     }
 
     public function parse_result($assignment,$jplag_info) {
-        $resultfile = $jplag_info->directory.'/index.html';
-        $parser = new jplag_parser($resultfile,$assignment->courseid);
+        $parser = new jplag_parser($assignment->courseid);
         $parser->parse();
         $jplag_info->status = 'finished';
         return $jplag_info;

@@ -26,13 +26,27 @@
 
 include_once __DIR__.'/../../config.php';
 include_once __DIR__.'/constants.php';
+include_once __DIR__.'/reportlib.php';
 
 global $OUTPUT, $PAGE, $DB, $USER, $CFG;
 
-// get the result information first
+//----------------------------------------Processing of parameters----------------------------------------------//
 $result_id = required_param('id', PARAM_INT); //id in the programming_result table
+$anchor = optional_param('anchor', -1, PARAM_INT);
 $result_record = $DB->get_record('programming_result',array('id'=>$result_id));
 $cmid = $result_record->cmid;
+
+// get the report directory
+$detector = $result_record->detector;
+if ($detector=='jplag') {
+    include_once __DIR__.'/jplag_tool.php';
+    $tool = new jplag_tool();
+} else {
+    include_once __DIR__.'/moss_tool.php';
+    $tool = new moss_tool();
+}
+$directory = $tool->get_report_path($cmid);
+//-------------------------------------end parameter processing--------------------------------------------------//
 
 // create page context
 if (!$course_module = get_coursemodule_from_id('assignment', $cmid)) {
@@ -44,7 +58,7 @@ if (!$course) {
 }
 require_login($course, true, $course_module);
 
-// authorisation
+//------------------------------------- authorisation: only teacher can see the names ----------------------------------------------------------//
 $context = get_context_instance(CONTEXT_MODULE,$cmid);
 $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
@@ -72,6 +86,7 @@ if (!$is_teacher) {
     $user2 = $users[$result_record->student2_id];
     $student2 = $user2->firstname.' '.$user2->lastname;
 }
+//---------------------------------end autorisation--------------------------------------------------------------------//
 
 // strip .html
 $name_no_ext = substr($result_record->comparison,0,-5);
@@ -85,124 +100,161 @@ $PAGE->set_heading($heading);
 $PAGE->navbar->add($heading);
 echo $OUTPUT->header();
 
-$detector =  $result_record->detector;
-$detector_class_name = $detector."_tool";
-include_once __DIR__.'/'.$detector_class_name.'.php';
-$tool = new $detector_class_name();
-$report_dir = $tool->get_report_path($cmid);
-
 // the top bar
-$content = html_writer::tag('h1', "Similarities between $student1 and $student2 ($result_record->similarity1%)");
+$content = html_writer::tag('div', "Similarities between $student1 and $student2 ($result_record->similarity1%)",array('class'=>'compare_header'));
 $content .= html_writer::empty_tag('br');
 
 $actions = array(
     'Y'=>get_string('mark_suspicious',PLAGIARISM_PROGRAMMING),
-    'N'=>  get_string('mark_nonsuspicious',PLAGIARISM_PROGRAMMING)
+    'N'=>get_string('mark_nonsuspicious',PLAGIARISM_PROGRAMMING)
 );
 
-if ($is_teacher) { // only teachers can mark the suspicious pairs
+if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the select box
     $content .= html_writer::select($actions, 'mark', $result_record->mark,'Action...',array('id'=>'action_menu'));
 }
 $content .= html_writer::empty_tag('img',array('src'=>'','id'=>'mark_image','class'=>'programming_result_mark_img'));
-
 echo html_writer::tag('div',$content,array('name'=>'link','frameborder'=>'0','width'=>'40%','class'=>'programming_result_comparison_top_left'));
-// the link bar
-if ($detector=='jplag') {
-    get_top_file_content_jplag($report_dir.'/'.$name_no_ext.'-top.html', $content,$is_teacher);
-} else {
-    get_top_file_content_moss($report_dir.'/'.$name_no_ext.'-top.html', $content,$is_teacher);
-}
-echo html_writer::tag('div',$content,array('class'=>'programming_result_comparison_top_right'));
+
+$result1 = reconstruct_file($result_record->student1_id,$result_record->student2_id,$directory);
+$result2 = reconstruct_file($result_record->student2_id,$result_record->student1_id,$directory);
+$table = construct_similarity_summary_table($result1['list'],$student1,$result_record->similarity1,
+                                            $result2['list'],$student2,$result_record->similarity2);
+
+echo html_writer::tag('div',$table,array('class'=>'programming_result_comparison_top_right'));
 
 echo html_writer::tag('div','',array('class'=>'programming_result_comparison_separator'));
 // left panel
-get_code_file_content($report_dir.'/'.$name_no_ext.'-0.html',$content);
-echo html_writer::tag('div',$content,array('class'=>'programming_result_comparison_bottom_left'));
+echo html_writer::tag('div',$result1['content'],array('class'=>'programming_result_comparison_bottom_left'));
 
 // right panel
-get_code_file_content($report_dir.'/'.$name_no_ext.'-1.html',$content);
-echo html_writer::tag('div',$content,array('class'=>'programming_result_comparison_bottom_right'));
+echo html_writer::tag('div',$result2['content'],array('class'=>'programming_result_comparison_bottom_right'));
 
+//----- name lookup table for javascript--------
+$result_select = "cmid=$cmid AND detector='$detector' ".
+    "AND (student1_id=$result_record->student1_id OR student1_id=$result_record->student2_id ".
+    "OR student2_id=$result_record->student1_id OR student2_id=$result_record->student2_id)";
+$result = $DB->get_records_select('programming_result',$result_select);
+
+create_student_name_lookup_table($result, $is_teacher, $all_names);
+
+//----------id lookup table for javascript-----------------------
+$result_id_table = array();
+foreach ($result as $pair) {
+    $std1 = max($pair->student1_id,$pair->student2_id);
+    $std2 = min($pair->student1_id,$pair->student2_id);
+    $result_id_table[$std1][$std2] = $pair->id;
+}
+$result_info = array('id'=>$result_id,'mark'=>$result_record->mark,'student1'=>$result_record->student1_id,'student2'=>$result_record->student2_id);
 $PAGE->requires->yui2_lib('selector');
 $PAGE->requires->yui2_lib('event');
+$PAGE->requires->yui2_lib('container');
+$PAGE->requires->yui2_lib('yahoo-dom-event');
+$PAGE->requires->yui2_lib('menu');
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',
     'strings' => array()
 );
-$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',array('id'=>$result_id,$result_record->mark),true,$jsmodule);
+$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',array($result_info,$all_names,$result_id_table,$anchor),true,$jsmodule);
 echo $OUTPUT->footer();
 
-/** Get content of JPlag header file, which contain a table lising all the similar portions between 2 assignments
- *  @param $filename: full path to the link file
- *  @param $content:  reference to the returned content.
- *         This param will hold the content of the file after the call
- *  @param $show_name: show the name of the student
- */
-function get_top_file_content_jplag($filename,&$content,$show_name=true) {
-    global $DB, $USER;
-
-    // read the file first
-    $content = file_get_contents($filename);
-    strip_tag_content($content, 'TABLE');
-
-    $pattern = '/<TR><TH><TH>([0-9]*) \([0-9]*\.[0-9]*%\)<TH>([0-9]*) \([0-9]*\.[0-9]*%\)<TH>/';
-    preg_match($pattern, $content,$matches);
-    $users = $DB->get_records_list('user','id',array($matches[1],$matches[2]),'firstname,lastname,idnumber');
-    if ($show_name) {
-        $user1 = $users[$matches[1]];
-        $student1 = $user1->firstname.' '.$user1->lastname;
-        $user2 = $users[$matches[2]];
-        $student2 = $user2->firstname.' '.$user2->lastname;
-    } else {
-        $student1 = ($matches[1]==$USER->id)?'Yours':'someone\'s';
-        $student2 = ($matches[2]==$USER->id)?'Yours':'someone\'s';
+function construct_similarity_summary_table($list1,$student1,$rate1,$list2,$student2,$rate2) {
+    // header
+    $rows = '<table>';
+    $rows .="<tr><th></th><th>$student1 ($rate1%)</th><th>$student2 ($rate2%)</th></tr>";
+    foreach ($list1 as $anchor=>$portion) {
+        $line1 = $portion['line'];
+        $file1 = $portion['file'];
+        $line2 = $list2[$anchor]['line'];
+        $file2 = $list2[$anchor]['file'];
+        
+        $color = $portion['color'];
+        $rows .= "<tr><td bgcolor='#$color'></td><td><a class='similarity_link' href='sim_$anchor'>$file1 ($line1)</a></td>"
+                ."<td><a class='similarity_link' href='sim_$anchor'>$file2 ($line2)</a></td></tr>";
     }
-    $replaced = $matches[0];
-    $replaced = str_replace('<TH><TH>'.$matches[1], '<TH><TH>'.$student1, $replaced);
-    $replaced = str_replace('<TH>'.$matches[2], '<TH>'.$student2, $replaced);
-    $content = str_replace($matches[0], $replaced, $content);
+    $rows .= '</table>';
+    return $rows;
 }
 
-/** Get content of MOSS header file, which contain a table lising all the similar portions between 2 assignments
- *  @param $filename: full path to the link file
- *  @param $content:  reference to the returned content.
- *         This param will hold the content of the file after the call
- *  @param $show_name: show the name of the student
- */
-function get_top_file_content_moss($filename,&$content,$show_name=true) {
-    global $DB, $USER;
+function reconstruct_file($student_id,$other_student_id,$dir) {
+    $code_file = $dir.'/'.$student_id;
 
-    $content = file_get_contents($filename);
-    strip_tag_content($content, 'TABLE');
-    
-    $pattern = '/<TH>([0-9]+)\//';
-    preg_match_all($pattern, $content, &$matches); // matches[0] contains the whole pattern, matches[1] contain userids (number in the brackets)
-    $user_ids = $matches[1];
-    $users = $DB->get_records_list('user','id',$user_ids,'firstname,lastname,idnumber');
-    if ($show_name) {
-        $user1 = $users[$user_ids[0]];
-        $student1 = $user1->firstname.' '.$user1->lastname;
-        $user2 = $users[$user_ids[1]];
-        $student2 = $user2->firstname.' '.$user2->lastname;
-    } else {
-        $student1 = ($user_ids[0]==$USER->id)?'Yours':'someone\'s';
-        $student2 = ($user_ids[1]==$USER->id)?'Yours':'someone\'s';
+    $dom = new DOMDocument();
+    $dom->preserveWhiteSpace = FALSE;
+    $content = file_get_contents($code_file);
+    @$dom->loadHTML('<pre>'.$content.'</pre>');
+
+    $pre = $dom->childNodes->item(1)->firstChild->firstChild; // root->html->body->pre
+
+    $lineNo = 1;
+    $current_file = '';
+    $portion_list = array();
+    $node = $pre->firstChild;
+    while ($node!=null) {
+        if ($node->nodeType==XML_TEXT_NODE) {
+            $node_content_XXX = $node->nodeValue;
+        } else {
+            $node_tag_XXX = $node->tagName;
+        }
+        if ($node->nodeType==XML_TEXT_NODE) {
+            $lineNo += substr_count($node->nodeValue, "\n");  // count the line
+        } elseif ($node->tagName=='h3') {
+            $current_file = $node->nodeValue;
+            $lineNo = 1;
+        } elseif ($node->tagName=='span' && $node->getAttribute('type')=='begin') {
+            $sid = explode(',', $node->getAttribute('sid'));
+            $key = array_search($other_student_id, $sid);
+            if ($key!==FALSE) { // matching portion
+                $anchors = explode(',',$node->getAttribute('anchor'));
+                $anchor = $anchors[$key];
+                $colors = explode(',', $node->getAttribute('color'));
+                $color = $colors[$key];
+
+                $font = $dom->createElement('font');
+                $font->setAttribute('color', $color);
+                $font->setAttribute('class','sim_'.$anchor);
+                $font = $node->parentNode->insertBefore($font,$node);
+                $sibling = $node->nextSibling;
+                $start_line = $lineNo;
+                while (!end_span_node($sibling, $other_student_id)) {
+
+                    if ($sibling->nodeType==XML_TEXT_NODE) {
+                        $node_content_XXX = $sibling->nodeValue;
+                    } else {
+                        $node_tag_XXX = $sibling->tagName;
+                    }
+
+                    if ($sibling->nodeType==XML_TEXT_NODE) {
+                        $lineNo += substr_count($sibling->nodeValue, "\n");
+                    }
+                    $next_sibling = $sibling->nextSibling;
+                    $font->appendChild($sibling);
+                    $sibling = $next_sibling;
+                }
+                if (count($sid)==1) { // remove the mark if this portion has in common with only one student
+                    $node->parentNode->removeChild($node);
+                    $sibling->parentNode->removeChild($sibling);
+                } else { // if not, move the marks within the font
+                    $font->insertBefore($node,$font->firstChild);
+                    $font->appendChild($sibling);
+                }
+                $node = $font;
+
+                $portion_list[$anchor] = array('file'=>$current_file,'line'=>"$start_line-$lineNo",'color'=>$color);
+            }
+        }
+        $node = $node->nextSibling;
     }
-    $searched = $matches[0];
-    $replace = array();
-    $replace[0] = str_replace($user_ids[0].'/', $student1, $searched[0]);
-    $replace[1] = str_replace($user_ids[1].'/', $student2, $searched[1]);
-    $content = str_replace($searched, $replace, $content);
+    return array('list'=>$portion_list,'content'=>$dom->saveHTML());
 }
 
-function get_code_file_content($filename,&$content) {
-    $content = file_get_contents($filename);
-    strip_tag_content($content, 'PRE');
-}
-
-function strip_tag_content(&$content,$tag) {
-    $begin_pos = strpos($content, "<$tag");
-    $end_pos = strrpos($content, "</$tag>");
-    $content = substr($content,$begin_pos,$end_pos-strlen($content)+strlen($tag)+3);
+function end_span_node($node,$student_id) {
+    if ($node->nodeType==XML_ELEMENT_NODE &&
+           $node->tagName=='span' &&
+           $node->getAttribute('type')=='end') {
+        $end_sid = explode(',', $node->getAttribute('sid'));
+        return in_array($student_id, $end_sid);
+    } else {
+        return FALSE;
+    }
 }

@@ -7,36 +7,69 @@ M.plagiarism_programming = M.plagiarism_programming || {};
 
 M.plagiarism_programming.compare_code = {
     
-    pattern: /match[0-9]+-[01]\.html#([0-9]+)/,
     id: 0, //set in init function
+    menu: null, //the student similarity menu,
+    name_table: null,
+    result_table: null,
+    student1: null,
+    student2: null,
     
-    init : function(Y,id,mark) {
-        this.id = id;
+    init : function(Y,info,name_table,result_table,anchor) {
+        this.id = info.id;
+        this.student1 = info.student1;
+        this.student2 = info.student2;
+        this.name_table = name_table;
+        this.result_table = result_table;
+
         this.init_links();
-        this.init_action(mark);
+        this.init_action(info.mark);
+        this.init_similarity_menu();
+        this.init_compare_code();
+        if (anchor>=0) {
+            this.move_frame('programming_result_comparison_bottom_left', 'sim_'+anchor);
+            this.move_frame('programming_result_comparison_bottom_right','sim_'+anchor);
+        }
     },
     
     init_links: function() {
-        var links = YAHOO.util.Selector.query('div.programming_result_comparison_top_right a, '
-            +'div.programming_result_comparison_bottom_left a, '
-            +'div.programming_result_comparison_bottom_right a')
+        var links = YAHOO.util.Selector.query('div.programming_result_comparison_top_right a.similarity_link');
         for (var i=0;i<links.length;i++) {
             if (links[i].getAttribute('href')!=null) {
                 YAHOO.util.Event.addListener(links[i],'click',function(e) {
                     YAHOO.util.Event.preventDefault(e);
-                    var href = this.getAttribute('href');
-                    var matches = M.plagiarism_programming.compare_code.pattern.exec(href);
-                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left',matches[1]);
-                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right',matches[1]);
+                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left',this.getAttribute('href'));
+                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right',this.getAttribute('href'));
                 },true);
             }
         }
-    },  
+    },
+    
+    init_compare_code: function() {
+        var div = document.getElementsByClassName('programming_result_comparison_top_left')[0];
+        div.appendChild(document.createElement('br'));
+        var checkbox1 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_left');
+        div.appendChild(checkbox1);
+        div.appendChild(document.createTextNode(' Show similarity of '+this.name_table[this.student1]+' with other students'));
+        
+        div.appendChild(document.createElement('br'));
+        var checkbox2 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_right');
+        div.appendChild(checkbox2);
+        div.appendChild(document.createTextNode(' Show similarity of '+this.name_table[this.student2]+' with other students'));
+    },
     
     init_action: function(mark) {
         var action_select = document.getElementById('action_menu');
         this.change_image(mark);
         YAHOO.util.Event.addListener(action_select,'change',this.action_menu_onchange,true);
+    },
+    
+    init_similarity_menu: function() {
+        var div = document.createElement('div');
+        div.id = 'similarity_menu_div';
+        document.body.appendChild(div);
+
+        var menu = new YAHOO.widget.Menu('basicMenu',{});        
+        M.plagiarism_programming.compare_code.menu = menu;
     },
     
     action_menu_onchange: function(e) {
@@ -69,12 +102,140 @@ M.plagiarism_programming.compare_code = {
     
     move_frame: function(div_class,anchorName) {
         var div = document.getElementsByClassName(div_class)[0];
-        var anchors = YAHOO.util.Selector.query('div.'+div_class+' a');
-        for (var i=0;i<anchors.length;i++) {
-            if (anchors[i].getAttribute('name')==anchorName) {
-                anchors[i].innerHTML=' '; // there must be sth in the tag for some browser to figure out the configuration
-                div.scrollTop = anchors[i].offsetTop;
+        var portion = YAHOO.util.Selector.query('div.'+div_class+' font.'+anchorName)[0];
+        div.scrollTop = portion.offsetTop;
+    },
+    
+    show_similarity_other_students: function(div_class) {
+        var div = document.getElementsByClassName(div_class)[0];
+        var spans = div.getElementsByTagName('span');
+        for (var i=0; i<spans.length; i++) {
+            if (spans[i].getAttribute('type')=='end') {
+                var img = this.create_image_to_show_similarity_with_others();
+                spans[i].appendChild(img,spans[i]);
             }
         }
+    },
+    
+    hide_similarity_with_other_students: function(div_class) {
+        var div = document.getElementsByClassName(div_class)[0];
+        var imgs = div.getElementsByClassName('student_similarity_view_img');
+        var num = imgs.length;
+        for (var i=0; i<num; i++) {
+            imgs[0].parentNode.removeChild(imgs[0]);
+        }
+    },
+    
+    create_image_to_show_similarity_with_others: function() {
+        var img = document.createElement('img');
+        img.src = 'list_student.png';
+        img.setAttribute('class', 'student_similarity_view_img');
+        YAHOO.util.Event.addListener(img,'mouseover',function(e) {
+            console.log('Colored');
+            var end_span = img.parentNode;
+            M.plagiarism_programming.compare_code.color_portion(end_span);
+        });
+        YAHOO.util.Event.addListener(img,'mouseout',function(e) {
+            var end_span = img.parentNode;
+            M.plagiarism_programming.compare_code.uncolor_portion(end_span);
+        });
+        YAHOO.util.Event.addListener(img,'click',function(e) {
+            var end_span = img.parentNode;
+            M.plagiarism_programming.compare_code.show_menu(end_span);
+        });
+        return img;
+    },
+    
+    color_portion: function(end_span) {
+        console.log('Color portion');
+        var sid = end_span.getAttribute('sid');
+        var prev_node = this.previous_node(end_span);
+        while (!this.is_end_node(prev_node,sid)) {
+            if (prev_node.nodeType==3) {
+                console.log('Color text');
+                var font = document.createElement('font');
+                font.setAttribute('class','colored');
+                font.setAttribute('color', 'red');
+                prev_node.parentNode.insertBefore(font, prev_node);
+                prev_node = font.appendChild(prev_node);
+            }
+            prev_node = this.previous_node(prev_node);
+        }
+    },
+    
+    uncolor_portion: function(end_span) {
+        var sid = end_span.getAttribute('sid');
+        var prev_node = this.previous_node(end_span);
+        while (!this.is_end_node(prev_node,sid)) {
+            if (prev_node.nodeType==3 && prev_node.parentNode.getAttribute('class')=='colored') {
+                var font = prev_node.parentNode;
+                font.parentNode.insertBefore(prev_node, font);
+                font.parentNode.removeChild(font);
+            }
+            prev_node = this.previous_node(prev_node);
+        }
+    },
+    
+    previous_node: function(node) {
+        var prev_node;
+        prev_node = node.previousSibling;
+        while (prev_node==null) {
+            node = node.parentNode;
+            prev_node = node.previousSibling;
+        }
+        while (prev_node.nodeType==1 && prev_node.tagName=='FONT') {
+            console.log('Last child: '+prev_node.lastChild.nodeValue);
+            prev_node = prev_node.lastChild;
+        }
+//        if (prev_node.nodeType==1) {
+//            console.log(prev_node.tagName);
+//        } else {
+//            console.log('Text');
+//        }
+        return prev_node;
+    },
+    
+    is_end_node: function(node,sid) {
+        return node.nodeType==1 && node.tagName=='SPAN' && node.getAttribute('type')=='begin' && node.getAttribute('sid')==sid;
+    },
+    
+    show_menu: function(span) {
+        console.log('Show menu');
+        var menu = M.plagiarism_programming.compare_code.menu;
+        menu.clearContent();
+        var sids = span.getAttribute('sid').split(',');
+        var anchors = span.getAttribute('anchor').split(',');
+        var this_student = this.student1;
+        var buble_up = span.parentNode;
+        var className = buble_up.getAttribute('class');
+        while (className!='programming_result_comparison_bottom_left' && className!='programming_result_comparison_bottom_right') {
+            buble_up = buble_up.parentNode;
+            className = buble_up.getAttribute('class');
+        }
+        if (className=='programming_result_comparison_bottom_right') {
+            this_student = this.student2;
+        }
+        for (var i=0; i<sids.length; i++) {
+            var name = this.name_table[sids[i]];
+            var std1 = Math.max(this_student, sids[i]);
+            var std2 = Math.min(this_student, sids[i]);
+            menu.addItem({text:name,url:'view_compare.php?id='+this.result_table[std1][std2]+'&anchor='+anchors[i]});
+        }
+        menu.cfg.setProperty('context',[span.firstChild,'tl','bl']);
+        menu.render('similarity_menu_div');
+        menu.show();
+    },
+    
+    create_checkbox_for_turning_on_cross_similarity: function(className) {
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        YAHOO.util.Event.addListener(checkbox,'click',function() {
+            if (this.checked) {
+                M.plagiarism_programming.compare_code.show_similarity_other_students(className);
+            } else {
+                M.plagiarism_programming.compare_code.hide_similarity_with_other_students(className);
+            }
+        },true);
+        return checkbox;
     }
 }
