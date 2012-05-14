@@ -22,7 +22,6 @@
  */
 
 include_once dirname(__FILE__).'/../../../config.php';
-include_once dirname(__FILE__).'/../constants.php';
 
 $task = optional_param('task', 'getcourse', PARAM_TEXT);
 
@@ -64,7 +63,7 @@ function enable_level($level) {
     global $DB;
     // just two values global and course are accepted
     $level = ($level=='global')?'global':'course';
-    set_config('level_enabled', $level, PLAGIARISM_PROGRAMMING);
+    set_config('level_enabled', $level, 'plagiarism_programming');
 }
 
 function enable_code_plagiarism_checking_for_course($id) {

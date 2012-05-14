@@ -23,7 +23,6 @@
  */
 
 include_once $CFG->dirroot.'/lib/formslib.php';
-include_once dirname(__FILE__).'/constants.php';
 include_once dirname(__FILE__).'/detection_tools.php';
 
 class programming_plag_result_form extends moodleform {
@@ -38,29 +37,29 @@ class programming_plag_result_form extends moodleform {
         $mform = $this->_form;
         
         // similarity threshold
-        $mform->addElement('header','option_header',  get_string('option_header',PLAGIARISM_PROGRAMMING));
-        $mform->addElement('text','lower_threshold', get_string('threshold',PLAGIARISM_PROGRAMMING));
+        $mform->addElement('header','option_header',  get_string('option_header','plagiarism_programming'));
+        $mform->addElement('text','lower_threshold', get_string('threshold','plagiarism_programming'));
         
         // select the similarity type average or maximal
         $rate_type = array('max'=>'Maximum similarity','avg'=>'Average similarity');
-        $mform->addElement('select','rate_type',get_string('similarity_type',PLAGIARISM_PROGRAMMING),$rate_type);
+        $mform->addElement('select','rate_type',get_string('similarity_type','plagiarism_programming'),$rate_type);
         
         // select the tool to display
         $tools = array();
         foreach ($detection_tools as $tool=>$info) {
             $tools[$tool] = $info['name'];
         }
-        $mform->addElement('select','tool',get_string('detectors',PLAGIARISM_PROGRAMMING),$tools);
+        $mform->addElement('select','tool',get_string('detectors','plagiarism_programming'),$tools);
         
         // select the mode of display
         $display_modes = array('group'=>'Grouping students','table'=>'Ordered table');
-        $mform->addElement('select','display_mode',  get_string('display_mode',PLAGIARISM_PROGRAMMING),$display_modes);
+        $mform->addElement('select','display_mode',  get_string('display_mode','plagiarism_programming'),$display_modes);
         
         // other elements
         $mform->addElement('hidden','cmid',$this->_customdata['cmid']);
         $mform->addElement('hidden','student',$this->_customdata['student_id']);
         
-        $mform->addElement('submit','submitbutton',get_string('submit',PLAGIARISM_PROGRAMMING));
+        $mform->addElement('submit','submitbutton',get_string('submit','plagiarism_programming'));
     }
 
 }

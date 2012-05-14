@@ -26,7 +26,6 @@
  */
 
 include_once __DIR__.'/../../config.php';
-include_once __DIR__.'/constants.php';
 include_once __DIR__.'/programming_plag_result_form.php';
 include_once __DIR__.'/reportlib.php';
 
@@ -82,7 +81,7 @@ if ($display_mode=='group') {
     $table = create_table_list_mode($result, $student_names,$cmid);
 }
 
-$header = get_string('result',PLAGIARISM_PROGRAMMING);
+$header = get_string('result','plagiarism_programming');
 $PAGE->set_title('Similarity result report');
 $PAGE->set_heading($header);
 $PAGE->navbar->add($header);
@@ -96,7 +95,7 @@ $filter_forms->set_data(array('cmid'=>$cmid,
     'display_mode'=>$display_mode));
 $filter_forms->display();
 
-echo html_writer::tag('div',get_string('chart_legend',PLAGIARISM_PROGRAMMING));
+echo html_writer::tag('div',get_string('chart_legend','plagiarism_programming'));
 echo html_writer::tag('div', create_chart($cmid,$tool,$rate_type),array('class'=>'programming_result_chart'));
 echo html_writer::tag('div',  html_writer::table($table), array('class'=>'programming_result_table'));
 //echo html_writer::table($table);

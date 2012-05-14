@@ -71,15 +71,15 @@ M.plagiarism_programming.select_course = {
     },
     
     create_footer_panel : function() {
-        var footer = new YAHOO.util.Element(document.createElement('div'));
-        footer.addClass('enable_course_footer_panel');
+        var footer = document.createElement('div');
+        footer.setAttribute('class','enable_course_footer_panel');
         
-        var label = new YAHOO.util.Element(document.createElement('label'));
-        label.textContent = 'Search for course ';
-        var text = new YAHOO.util.Element(document.createElement('input'));
+        var label = document.createElement('label');
+        label.innerHTML = 'Search for course ';
+        var text = document.createElement('input');
         text.setAttribute('id', 'course_search_id');
         text.setAttribute('type', 'text');
-        var button = new YAHOO.util.Element(document.createElement('input'));
+        var button = document.createElement('input');
         button.setAttribute('type','button');
         button.setAttribute('value','Close window');
         

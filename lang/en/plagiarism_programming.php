@@ -31,23 +31,33 @@ $string['jplag_username'] = 'JPlag Username';
 $string['jplag_password'] = 'JPlag Password';
 $string['jplag_modify_account'] = 'Change JPlag account';
 $string['moss'] = 'MOSS global config';
-$string['moss_id'] = 'User id provided by MOSS';
+$string['moss_id'] = 'User id';
+$string['moss_id_help'] = 'Locate the line $userid=some number in the reply email from MOSS and put that number in the box below';
+$string['moss_id_help_2'] = 'Or copy and paste the email content in the box below';
 $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
 $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';
+$string['jplag_account_expired'] = 'Your account has expired!';
+$string['connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
 $string['save_config_success'] = 'Configuration saved';
-
+$string['username_missing'] = 'Please provide JPlag username';
+$string['password_missing'] = 'Please provide JPlag password';
+$string['moss_userid_missing'] = 'Please provide MOSS user id or email';
+$string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the background. An account is required to use these engines';
+$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at ';/* + jplag_link*/
+$string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
+$string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';
 $string['programmingYN'] = 'Programming assignment';
-$string['programmingLanguage'] = 'Programming language';
-$string['scanDate'] = 'Submit date';
-$string['detectionTools'] = 'Detection tools';
+$string['programming_language'] = 'Programming language';
+$string['scan_date'] = 'Submit date';
+$string['detection_tools'] = 'Detection tools';
 $string['jplag'] = 'JPlag';
 $string['moss'] = 'MOSS';
 $string['auto_publish'] = 'Publish scanning result to students';
 $string['notification'] = 'Display notification';
-$string['notification_text'] = 'Notification text';
+$string['notification_text'] = 'Notification';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Enable programming plagiarism detection for this assignment';
@@ -59,12 +69,15 @@ $string['auto_publish_hlp'] = '';
 $string['auto_publish_hlp_help'] = 'Allowing the students to see the plagiarism report';
 $string['notification_hlp'] = '';
 $string['notification_hlp_help'] = 'Notify the student that their submission will be scanned for plagiarism';
-$string['rescan_text'] = 'Rescan this assignment';
-$string['rescan_hlp'] = '';
-$string['rescan_hlp_help'] = 'If there are some changes after the scanning, e.g. new submissions or update, you can select this option to perform a rescan. The rescanning of the report often be available the next hour';
+$string['programming_language_missing'] = 'Programming language is required';
+
+$string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
+$string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
 
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
+$string['no_tool_selected'] = 'No detector was selected. Please select at least one among MOSS and JPlag';
+$string['not_enough_submission'] = 'Not enough submissions to scan!';
 
 // options for displaying results
 $string['option_header'] = 'Options';

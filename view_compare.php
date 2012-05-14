@@ -25,7 +25,6 @@
  */
 
 include_once __DIR__.'/../../config.php';
-include_once __DIR__.'/constants.php';
 include_once __DIR__.'/reportlib.php';
 
 global $OUTPUT, $PAGE, $DB, $USER, $CFG;
@@ -58,7 +57,7 @@ if (!$course) {
 }
 require_login($course, true, $course_module);
 
-//------------------------------------- authorisation: only teacher can see the names ----------------------------------------------------------//
+//------------------------------------- authorisation: only teacher can see the names -----------------------------//
 $context = get_context_instance(CONTEXT_MODULE,$cmid);
 $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
@@ -91,8 +90,8 @@ if (!$is_teacher) {
 // strip .html
 $name_no_ext = substr($result_record->comparison,0,-5);
 
-$title = get_string('comparison_title',PLAGIARISM_PROGRAMMING);
-$heading = get_string('comparison',PLAGIARISM_PROGRAMMING);
+$title = get_string('comparison_title','plagiarism_programming');
+$heading = get_string('comparison','plagiarism_programming');
 
 $PAGE->set_url(me());
 $PAGE->set_title($title);
@@ -105,8 +104,8 @@ $content = html_writer::tag('div', "Similarities between $student1 and $student2
 $content .= html_writer::empty_tag('br');
 
 $actions = array(
-    'Y'=>get_string('mark_suspicious',PLAGIARISM_PROGRAMMING),
-    'N'=>get_string('mark_nonsuspicious',PLAGIARISM_PROGRAMMING)
+    'Y'=>get_string('mark_suspicious','plagiarism_programming'),
+    'N'=>get_string('mark_nonsuspicious','plagiarism_programming')
 );
 
 if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the select box

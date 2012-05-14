@@ -29,14 +29,13 @@
 include_once dirname(__FILE__).'/plagiarism_tool.php';
 include_once dirname(__FILE__).'/moss/moss_stub.php';
 include_once dirname(__FILE__).'/moss/moss_parser.php';
-include_once __DIR__.'/constants.php';
 
 class moss_tool extends plagiarism_tool {
 
     private $moss_stub;
     
     public function __construct() {
-        $this->moss_stub = new moss_stub(get_config(PLAGIARISM_PROGRAMMING,'moss_user_id'));
+        $this->moss_stub = new moss_stub(get_config('plagiarism_programming','moss_user_id'));
     }
     
     public function submit_assignment($inputdir,$assignment,$moss_param) {

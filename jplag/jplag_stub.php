@@ -36,6 +36,10 @@ define('SUBMISSION_STATUS_RESULT',230);
 define('SUBMISSION_STATUS_DONE',300);
 define('SUBMISSION_STATUS_ERROR',400);
 
+define('JPLAG_CREDENTIAL_ERROR', 'server_error');
+define('JPLAG_CREDENTIAL_EXPIRED','credential_expired');
+define('WS_CONNECT_ERROR','connect_error');
+
 include_once dirname(__FILE__).'/jplag_option.php';
 
 class jplag_stub {
@@ -66,9 +70,9 @@ class jplag_stub {
         }
         try {
             $server_info = $client->getServerInfo();
-            return $server_info;
+            return TRUE;
         } catch (SoapFault $fault) {
-            return false;
+            return $this->interpret_soap_fault($fault);
         }
     }
 
@@ -130,6 +134,18 @@ class jplag_stub {
     private function update_progress($handler,$stage,$percentage) {
         if ($handler) {
             $handler->update_progress($stage,intval($percentage*100));
+        }
+    }
+    
+    public function interpret_soap_fault($fault) {
+        if (strpos($fault->faultcode,'Server')!==FALSE) {
+            if (strpos($fault->detail->JPlagException->repair,'expired')!==FALSE) {
+                return JPLAG_CREDENTIAL_EXPIRED;
+            } elseif (strpos($fault->detail->JPlagException->repair,'username')!==FALSE) {
+                return JPLAG_CREDENTIAL_ERROR;
+            }
+        } elseif (strpos($fault->faultcode,'HTTP')!==FALSE) {
+            return WS_CONNECT_ERROR;
         }
     }
 }

@@ -26,7 +26,6 @@
  */
 
 require_once($CFG->dirroot.'/lib/formslib.php');
-require_once dirname(__FILE__).'/constants.php';
 
 class plagiarism_setup_form extends moodleform {
 
@@ -35,27 +34,50 @@ class plagiarism_setup_form extends moodleform {
 
         $mform =& $this->_form;
         $choices = array('No','Yes');
-        $mform->addElement('html', get_string('programmingexplain', PLAGIARISM_PROGRAMMING));
+        $mform->addElement('html', get_string('programmingexplain', 'plagiarism_programming'));
         // if the plugin is used
-        $mform->addElement('checkbox', 'programming_use', get_string('use_programming', PLAGIARISM_PROGRAMMING));
+        $mform->addElement('checkbox', 'programming_use', get_string('use_programming', 'plagiarism_programming'));
         // enable the plugin at the course level
         $enable_level = array();
-        $enable_level[] = &MoodleQuickForm::createElement('radio','level_enabled','',get_string('enable_global',PLAGIARISM_PROGRAMMING),'global',array('class'=>'plagiarism_programming_enable_level'));
-        $enable_level[] = &MoodleQuickForm::createElement('radio','level_enabled','',get_string('enable_course',PLAGIARISM_PROGRAMMING),'course',array('class'=>'plagiarism_programming_enable_level'));
+        $enable_level[] = $mform->createElement('radio','level_enabled','',get_string('enable_global','plagiarism_programming'),'global',array('class'=>'plagiarism_programming_enable_level'));
+        $enable_level[] = $mform->createElement('radio','level_enabled','',get_string('enable_course','plagiarism_programming'),'course',array('class'=>'plagiarism_programming_enable_level'));
         $mform->addGroup($enable_level,'level_enabled','   ',array('  '),false);
 
-        $mform->addElement('header','jplag_config',get_string('jplag',PLAGIARISM_PROGRAMMING));
-		$mform->addElement('checkbox','jplag_modify_account', get_string('jplag_modify_account',PLAGIARISM_PROGRAMMING));
-		
-		$mform->addElement('text','jplag_user',get_string('jplag_username',PLAGIARISM_PROGRAMMING));
-		$mform->addElement('password','jplag_pass',get_string('jplag_password',PLAGIARISM_PROGRAMMING));
-		
-		$mform->disabledIf('jplag_user', 'jplag_modify_account', 'notchecked');
-		$mform->disabledIf('jplag_pass', 'jplag_modify_account', 'notchecked');
+        $mform->addElement('html',html_writer::tag('div', get_string('account_instruction','plagiarism_programming')));
         
-        $mform->addElement('header','moss_config',get_string('moss',PLAGIARISM_PROGRAMMING));
-        $mform->addElement('text','moss_user_id', get_string('moss_id',PLAGIARISM_PROGRAMMING));
+        $mform->addElement('header','jplag_config',get_string('jplag','plagiarism_programming'));
+        
+        $jplag_link = html_writer::link('https://www.ipd.uni-karlsruhe.de/jplag/', ' https://www.ipd.uni-karlsruhe.de/jplag/');
+        $mform->addElement('html',html_writer::tag('div', get_string('jplag_account_instruction','plagiarism_programming').$jplag_link));
+        $mform->addElement('text','jplag_user',get_string('jplag_username','plagiarism_programming'));
+        $mform->addElement('password','jplag_pass',get_string('jplag_password','plagiarism_programming'));
+
+        $mform->addElement('header','moss_config',get_string('moss','plagiarism_programming'));
+        $moss_link = html_writer::link('http://theory.stanford.edu/~aiken/moss/', ' http://theory.stanford.edu/~aiken/moss/');
+        $mform->addElement('html',html_writer::tag('div', get_string('moss_account_instruction','plagiarism_programming').$moss_link));
+        $mform->addElement('html',html_writer::tag('div', get_string('moss_id_help','plagiarism_programming')));
+        $mform->addElement('text','moss_user_id', get_string('moss_id','plagiarism_programming'));
+        
+        $mform->addElement('html',html_writer::tag('div', get_string('moss_id_help_2','plagiarism_programming')));
+        $mform->addElement('textarea','moss_email', '', 'wrap="virtual" rows="20" cols="80"');
+
+//        $mform->addRule('jplag_user', get_string('username_missing','plagiarism_programming'), 'required');
+//        $mform->addRule('jplag_pass', get_string('password_missing','plagiarism_programming'), 'required');
 
         $this->add_action_buttons(true);
+    }
+    
+    public function validation($data, $files) {
+//        $errors = parent::validation($data, $files);
+//        if (empty($data['jplag_user'])) {
+//            $errors['jplag_user'] = get_string('username_missing','plagiarism_programming');
+//        }
+//        if (empty($data['jplag_pass'])) {
+//            $errors['jplag_pass'] = get_string('password_missing','plagiarism_programming');
+//        }
+//        if (empty($data['moss_user_id']) && empty($data['moss_email'])) {
+//            $errors['moss_user_id'] = get_string('moss_userid_missing','plagiarism_programming');
+//        }
+//        return $errors;
     }
 }

@@ -28,7 +28,6 @@ require_once dirname(__FILE__).'/../../config.php';
 require_once $CFG->libdir.'/adminlib.php';
 require_once $CFG->libdir.'/plagiarismlib.php';
 require_once $CFG->dirroot.'/plagiarism/programming/plagiarism_form.php';
-require_once dirname(__FILE__).'/constants.php';
 
 global $PAGE;
 
@@ -42,44 +41,61 @@ require_capability('moodle/site:config', $context, $USER->id, true, "nopermissio
 require_once('plagiarism_form.php');
 $mform = new plagiarism_setup_form();
 
-if ($mform->is_cancelled()) {
-    redirect('');
-}
-
 $notification = '';
-if (($data = $mform->get_data()) && confirm_sesskey()) {
+if ($mform->is_cancelled()) {
+    redirect($CFG->wwwroot);
+} elseif (($data = $mform->get_data()) && confirm_sesskey()) {
     // update programming_use variable
     $programming_use = (isset($data->programming_use))?$data->programming_use:0;
     set_config('programming_use', $programming_use, 'plagiarism');
+    
     $variables = array('level_enabled','moss_user_id');
-
+    
     $is_error = false;
-    if (isset($data->jplag_modify_account)) { // change the user name and password
-        include_once dirname(__FILE__).'/jplag/jplag_stub.php';
-        $jplag_stub = new jplag_stub();
-        if ($jplag_stub->check_credential($data->jplag_user, $data->jplag_pass)) {
-            $variables[] = 'jplag_user';
-            $variables[] = 'jplag_pass';
+    include_once dirname(__FILE__).'/jplag/jplag_stub.php';
+    $jplag_stub = new jplag_stub();
+//    $check_result = $jplag_stub->check_credential($data->jplag_user, $data->jplag_pass);
+    $check_result = TRUE;
+    if ($check_result === TRUE) {
+        $variables[] = 'jplag_user';
+        $variables[] = 'jplag_pass';
+    } else {
+        $is_error = true;
+        switch ($check_result) {
+            case JPLAG_CREDENTIAL_ERROR:
+                $notification = $OUTPUT->notification(get_string('jplag_account_error', 'plagiarism_programming'), 'notifyproblem');
+                break;
+            case JPLAG_CREDENTIAL_EXPIRED:
+                $notification = $OUTPUT->notification(get_string('jplag_account_expired', 'plagiarism_programming'), 'notifyproblem');
+                break;
+            case WS_CONNECT_ERROR:
+                $notification = $OUTPUT->notification(get_string('connection_error', 'plagiarism_programming'), 'notifyproblem');
+                break;
+        }
+    }
+    $email = $data->moss_email;
+    if (!empty($email)) { // check and extract userid from email
+        $pattern = '/\$userid=([0-9]+);/';
+        preg_match($pattern, $email, $match);
+        if ($match) {
+            $data->moss_user_id = $match[1];
         } else {
             $is_error = true;
-            $notification = $OUTPUT->notification(get_string('jplag_account_error', PLAGIARISM_PROGRAMMING), 'notifyproblem');
+            $notification = $OUTPUT->notification(get_string('moss_userid_notfound', 'plagiarism_programming'), 'notifyproblem');
         }
     }
     if (!$is_error) {
         foreach ($variables as $field) {
-            set_config($field, $data->$field, PLAGIARISM_PROGRAMMING);
+            set_config($field, $data->$field, 'plagiarism_programming');
         }
-        $notification = $OUTPUT->notification(get_string('save_config_success', PLAGIARISM_PROGRAMMING), 'notifysuccess');
+        $notification = $OUTPUT->notification(get_string('save_config_success', 'plagiarism_programming'), 'notifysuccess');
     }
 }
 
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
-$plagiarismsettings = (array)get_config('plagiarism');
+$plagiarismsettings = (array) get_config('plagiarism');
 $plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
-
-// clear the password for security
-if (!empty($plagiarism_programming_setting['jplag_pass']))
-    $plagiarism_programming_setting['jplag_pass'] = "************";
+$plagiarism_programming_setting['level_enabled'] = !isset ($plagiarismsettings['level_enabled'])?'global':$plagiarismsettings['level_enabled'];
 
 $mform->set_data($plagiarism_programming_setting);
 
