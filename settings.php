@@ -54,24 +54,13 @@ if ($mform->is_cancelled()) {
     $is_error = false;
     include_once dirname(__FILE__).'/jplag/jplag_stub.php';
     $jplag_stub = new jplag_stub();
-//    $check_result = $jplag_stub->check_credential($data->jplag_user, $data->jplag_pass);
-    $check_result = TRUE;
+    $check_result = $jplag_stub->check_credential($data->jplag_user, $data->jplag_pass);
     if ($check_result === TRUE) {
         $variables[] = 'jplag_user';
         $variables[] = 'jplag_pass';
     } else {
         $is_error = true;
-        switch ($check_result) {
-            case JPLAG_CREDENTIAL_ERROR:
-                $notification = $OUTPUT->notification(get_string('jplag_account_error', 'plagiarism_programming'), 'notifyproblem');
-                break;
-            case JPLAG_CREDENTIAL_EXPIRED:
-                $notification = $OUTPUT->notification(get_string('jplag_account_expired', 'plagiarism_programming'), 'notifyproblem');
-                break;
-            case WS_CONNECT_ERROR:
-                $notification = $OUTPUT->notification(get_string('connection_error', 'plagiarism_programming'), 'notifyproblem');
-                break;
-        }
+        $notification = $OUTPUT->notification($check_result['message'], 'notifyproblem');
     }
     $email = $data->moss_email;
     if (!empty($email)) { // check and extract userid from email

@@ -68,16 +68,13 @@ class plagiarism_setup_form extends moodleform {
     }
     
     public function validation($data, $files) {
-//        $errors = parent::validation($data, $files);
-//        if (empty($data['jplag_user'])) {
-//            $errors['jplag_user'] = get_string('username_missing','plagiarism_programming');
-//        }
-//        if (empty($data['jplag_pass'])) {
-//            $errors['jplag_pass'] = get_string('password_missing','plagiarism_programming');
-//        }
-//        if (empty($data['moss_user_id']) && empty($data['moss_email'])) {
-//            $errors['moss_user_id'] = get_string('moss_userid_missing','plagiarism_programming');
-//        }
-//        return $errors;
+        $errors = parent::validation($data, $files);
+        if (!empty($data['jplag_user']) && empty($data['jplag_pass'])) {
+            $errors['jplag_pass'] = get_string('password_missing','plagiarism_programming');
+        }
+        if (!empty($data['jplag_pass']) && empty($data['jplag_user'])) {
+            $errors['jplag_user'] = get_string('username_missing','plagiarism_programming');
+        }
+        return $errors;
     }
 }

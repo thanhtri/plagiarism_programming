@@ -33,17 +33,27 @@ class jplag_tool extends plagiarism_tool {
 
     private $jplag_stub=null;
 
-    private function stub_init() {
+    private function stub_init($jplag_info) {
         // the stub is initiated lazily at most one time (per request) when it is required
         if ($this->jplag_stub==null) {
             // get the username and password
             $settings = (array) get_config('plagiarism_programming');
-            $this->jplag_stub = new jplag_stub($settings['jplag_user'],$settings['jplag_pass']);
-            return $this->jplag_stub;
+            if (isset($settings['jplag_user']) && isset($settings['jplag_pass'])) {
+                $this->jplag_stub = new jplag_stub($settings['jplag_user'],$settings['jplag_pass']);
+            } else {
+                $jplag_info->status = 'error';
+                $jplag_info->message = 'Credential not provided!';
+                return FALSE;
+            }
         }
+        return $this->jplag_stub;
     }
-
+    
     public function submit_assignment($inputdir, $assignment, $scan_info) {
+        if (!$this->stub_init($scan_info)) {
+            return $scan_info;
+        }
+        
         $zip_full_path = PLAGIARISM_TEMP_DIR.'zip_jplag_'.$assignment->id.'_'.time().'.zip'; //prevent collision
         $submit_zip_file = new ZipArchive();
         $submit_zip_file->open($zip_full_path,ZipArchive::CREATE);
@@ -53,7 +63,10 @@ class jplag_tool extends plagiarism_tool {
     }
 
     private function jplag_send_to_server($zip_file_path,$assignment_param,$scan_info) {
-        $this->stub_init();
+        if (!$this->stub_init($scan_info)) {
+            return $scan_info;
+        }
+
         $option = new jplag_option();
         $option->set_language($assignment_param->language);
         $option->title = 'Test';
@@ -75,8 +88,9 @@ class jplag_tool extends plagiarism_tool {
     }
 
     public function check_status($assignment_param, $jplag_param) {
-
-        $this->stub_init();
+        if (!$this->stub_init($jplag_param)) {
+            return $scan_info;
+        }
 
         // TODO: handle network error
         $submissionid = $jplag_param->submissionid;
@@ -101,6 +115,9 @@ class jplag_tool extends plagiarism_tool {
      *  Note that the scanning status must be "done"
      */
     public function download_result($assignment_param,$jplag_param) {
+        if (!$this->stub_init($jplag_param)) {
+            return $scan_info;
+        }
 
         // create a directory
         $report_path = $this->get_report_path();
@@ -115,7 +132,6 @@ class jplag_tool extends plagiarism_tool {
         $result_file = $assignment_report_path.'/download.zip';
         $fileHandle = fopen($result_file, 'w');
         echo "Downloading result...\n";
-        $this->stub_init();
 
         // initialise the handler
         $progress_handler = new progress_handler('jplag', $jplag_param);

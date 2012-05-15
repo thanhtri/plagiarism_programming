@@ -61,11 +61,17 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('date_selector','scan_date',get_string('scan_date','plagiarism_programming'));
 
         $selectedTools = array();
+        $warning_style = array('class'=>'programming_result_warning');
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $mform->addElement('html',html_writer::tag('div',get_string('jplag_credential_missing','plagiarism_programming')));
+            $mform->addElement('html',html_writer::tag('div',get_string('jplag_credential_missing','plagiarism_programming'),$warning_style));
+            $missing_credential = html_writer::tag('div',get_string('credential_missing_instruction','plagiarism_programming'),$warning_style);
         }
         if (empty($settings->moss_user_id)) {
-            $mform->addElement('html',html_writer::tag('div',get_string('moss_credential_missing','plagiarism_programming')));
+            $mform->addElement('html',html_writer::tag('div',get_string('moss_credential_missing','plagiarism_programming'),$warning_style));
+            $missing_credential = html_writer::tag('div',get_string('credential_missing_instruction','plagiarism_programming'),$warning_style);
+        }
+        if (isset($missing_credential)) {
+            $mform->addElement('html',$missing_credential);
         }
         $selectedTools[] = &$mform->createElement('checkbox','jplag','',get_string('jplag','plagiarism_programming'));
         $selectedTools[] = &$mform->createElement('checkbox','moss','',get_string('moss','plagiarism_programming'));
@@ -214,28 +220,29 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $already_scanned |= ($scanning_info && ($scanning_info->status=='finished'||$scanning_info->status!='error'));
             }
             
-            $button_disabled = '';
+            $button_disabled = false;
             // check at least one detector is selected
             if (!$setting->moss && !$setting->jplag) {
                 $content .= html_writer::tag('div',get_string('no_tool_selected','plagiarism_programming'),array('class'=>'programming_result_warning'));
-                $button_disabled = 'disabled';
+                $button_disabled = true;
             }
             // check at least two assignments submitted
             $fs = get_file_storage();
             $file_records = $fs->get_area_files($context->id, 'mod_assignment', 'submission', false, 'userid', false);
             if (count($file_records)<2) {
                 $content .= html_writer::tag('div',get_string('not_enough_submission','plagiarism_programming'));
-                $button_disabled = 'disabled';
+                $button_disabled = true;
             }
             // write the rescan button
             $button_label = ($already_scanned)?
                     get_string('rescanning','plagiarism_programming'):
                     get_string('start_scanning','plagiarism_programming');
-            $content .= html_writer::empty_tag('input',
-                    array('type' => 'button',
-                          'id' => 'plagiarism_programming_scan',
-                          'value' => $button_label,
-                          'disabled'=>$button_disabled));
+            $button_attr = array('type' => 'button',
+                  'id' => 'plagiarism_programming_scan',
+                  'value' => $button_label);
+            if ($button_disabled)
+                $button_attr['disabled'] = 'disabled';
+            $content .= html_writer::empty_tag('input',$button_attr);
 
             $PAGE->requires->yui2_lib('progressbar');
             $PAGE->requires->yui2_lib('json');

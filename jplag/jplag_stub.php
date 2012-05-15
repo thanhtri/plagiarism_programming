@@ -72,7 +72,7 @@ class jplag_stub {
             $server_info = $client->getServerInfo();
             return TRUE;
         } catch (SoapFault $fault) {
-            return $this->interpret_soap_fault($fault);
+            return self::interpret_soap_fault($fault);
         }
     }
 
@@ -137,15 +137,18 @@ class jplag_stub {
         }
     }
     
-    public function interpret_soap_fault($fault) {
+    static function interpret_soap_fault($fault) {
         if (strpos($fault->faultcode,'Server')!==FALSE) {
             if (strpos($fault->detail->JPlagException->repair,'expired')!==FALSE) {
-                return JPLAG_CREDENTIAL_EXPIRED;
+                return array('code'=>JPLAG_CREDENTIAL_EXPIRED,
+                    'message'=>get_string('jplag_account_expired', 'plagiarism_programming'));
             } elseif (strpos($fault->detail->JPlagException->repair,'username')!==FALSE) {
-                return JPLAG_CREDENTIAL_ERROR;
+                return array('code'=>JPLAG_CREDENTIAL_ERROR,
+                    'message'=>get_string('jplag_account_error', 'plagiarism_programming'));
             }
         } elseif (strpos($fault->faultcode,'HTTP')!==FALSE) {
-            return WS_CONNECT_ERROR;
+            return array('code'=>WS_CONNECT_ERROR,
+                'message'=>get_string('connection_error', 'plagiarism_programming'));
         }
     }
 }

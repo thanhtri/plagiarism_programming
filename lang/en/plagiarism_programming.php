@@ -73,6 +73,7 @@ $string['programming_language_missing'] = 'Programming language is required';
 
 $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
 $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
+$string['credential_missing_instruction'] = 'Please enter the required credential in Administrator -> Plugin -> Plagiarism -> Programming assignment';
 
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
