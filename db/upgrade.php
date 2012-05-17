@@ -27,12 +27,31 @@ function xmldb_qtype_myqtype_upgrade($oldversion = 0) {
     global $DB;
     $dbman = $DB->get_manager();
 
-    $result = true;
-
     /// Add a new column newcol to the mdl_myqtype_options
-    if ($result && $oldversion < 2011083106) {
-        // no database change
+    if ($oldversion < 2012050103) {
+
+        // Define field token to be added to programming_jplag
+        $table = new xmldb_table('programming_jplag');
+        $field = new xmldb_field('token', XMLDB_TYPE_CHAR, '32', null, null, null, null, 'progress');
+
+        // Conditionally launch add field token
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field token to be added to programming_moss
+        $table = new xmldb_table('programming_moss');
+        $field = new xmldb_field('token', XMLDB_TYPE_CHAR, '32', null, null, null, null, 'progress');
+
+        // Conditionally launch add field token
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // programming savepoint reached
+        upgrade_plugin_savepoint(true, 2012050103, 'plagiarism', 'programming');
+
     }
 
-    return $result;
+    return TRUE;
 }
