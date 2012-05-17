@@ -29,20 +29,20 @@ include_once dirname(__FILE__).'/plagiarism_tool.php';
 include_once dirname(__FILE__).'/jplag/jplag_stub.php';
 include_once dirname(__FILE__).'/jplag/jplag_parser.php';
 
-class jplag_tool extends plagiarism_tool {
+class jplag_tool implements plagiarism_tool {
 
     private $jplag_stub=null;
 
-    private function stub_init($jplag_info) {
+    private function stub_init($jplag_info=null) {
         // the stub is initiated lazily at most one time (per request) when it is required
         if ($this->jplag_stub==null) {
             // get the username and password
             $settings = (array) get_config('plagiarism_programming');
-            if (isset($settings['jplag_user']) && isset($settings['jplag_pass'])) {
+            if (!empty($settings['jplag_user']) && !empty($settings['jplag_pass'])) {
                 $this->jplag_stub = new jplag_stub($settings['jplag_user'],$settings['jplag_pass']);
-            } else {
+            } elseif ($jplag_info!=null) {
                 $jplag_info->status = 'error';
-                $jplag_info->message = 'Credential not provided!';
+                $jplag_info->message = get_string('credential_not_provided','plagiarism_programming');
                 return FALSE;
             }
         }
@@ -81,8 +81,9 @@ class jplag_tool extends plagiarism_tool {
             $scan_info->status = 'scanning';
             $scan_info->submissionid = $submissionID;
         } catch (SoapFault $ex) {
+            $error = jplag_stub::interpret_soap_fault($ex);
             $scan_info->status = 'error';
-            $scan_info->message= $ex->detail->JPlagException->description.' '.$ex->detail->JPlagException->repair;
+            $scan_info->message= $error['message'];
         }
         return $scan_info;
     }
@@ -147,8 +148,9 @@ class jplag_tool extends plagiarism_tool {
             $jplag_param->message = 'success';
         } catch (SoapFault $fault) {
             echo 'Error occurs while downloading: '.$fault->detail->JPlagException->description."\n";
+            $error = jplag_stub::interpret_soap_fault($fault);
             $jplag_param->status='error';
-            $jplag_param->message=$fault->detail->JPlagException->description;
+            $jplag_param->message=$error['message'];
             fclose($fileHandle);
         }
 

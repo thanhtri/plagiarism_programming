@@ -42,8 +42,8 @@ class moss_stub {
 
         $error_no = 0;
         $message = '';
-        if (!$socket = fsockopen(MOSS_HOST,MOSS_PORT,&$error_no,&$message)) {
-            return array('status'=>'KO','error'=>$message);
+        if (!$socket = @fsockopen(MOSS_HOST,MOSS_PORT,&$error_no,&$message)) {
+            return array('status'=>'KO','error'=>get_string('moss_connection_error','plagiarism_programming'));
         }
 
         fwrite($socket,"moss $userid\n");
@@ -95,9 +95,7 @@ class moss_stub {
         }
         $main_page = file_get_contents($url);
         $main_page = str_replace($url, '', $main_page); // strip full link (absolute link -> relative link)
-        $index_file = fopen($download_dir.'index.html', 'w');
-        fwrite($index_file,$main_page);
-        fclose($index_file);
+        file_put_contents($download_dir.'index.html', $main_page);
 
         // download other comparison files
         $link_pattern = '/<A HREF=\"(match[0-9]*\.html)\"/'; // (extract the links to other files)
@@ -106,9 +104,7 @@ class moss_stub {
 
         $all_links = array();
         foreach ($matches as $match) {
-            $all_links[]= $url.$match;
             $name_no_ext = substr($match,0,-5);  // trip the html extension
-            $all_links[]= $url.$name_no_ext.'-top.html';
             $all_links[]= $url.$name_no_ext.'-0.html';
             $all_links[]= $url.$name_no_ext.'-1.html';
         }

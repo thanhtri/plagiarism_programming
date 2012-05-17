@@ -38,7 +38,8 @@ $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
 $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';
 $string['jplag_account_expired'] = 'Your account has expired!';
-$string['connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
+$string['jplag_connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
+$string['moss_connection_error'] =  'Cannot connect to MOSS server on port 7690 - Please check the connection';
 $string['save_config_success'] = 'Configuration saved';
 $string['username_missing'] = 'Please provide JPlag username';
 $string['password_missing'] = 'Please provide JPlag password';
@@ -79,6 +80,10 @@ $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
 $string['no_tool_selected'] = 'No detector was selected. Please select at least one among MOSS and JPlag';
 $string['not_enough_submission'] = 'Not enough submissions to scan!';
+$string['credential_not_provided'] = 'Credential not provided. Please provide this information in '
+    .'Administrator -> Plugin -> Plagiarism -> Programming assignment';
+$string['unexpected_error'] = 'An unexpected error occurred! This may be due to an interruption of connection or corrupted data...'
+    .' Please try again';
 
 // options for displaying results
 $string['option_header'] = 'Options';

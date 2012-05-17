@@ -64,7 +64,7 @@ function rrmdir($dir) {
 }
 
 // download in parallel by curl
-function curl_download($links,$directory) {
+function curl_download($links,$directory=null) {
     $curl_handle_array = array();
     $multi_handler = curl_multi_init();
     
@@ -82,6 +82,10 @@ function curl_download($links,$directory) {
         curl_multi_exec($multi_handler, $still_running);
     } while ($still_running>0);
 
+    if (!$directory) {
+        return;
+    }
+    
     // save the result
     if (substr($directory, -1)!='/') {
         $directory .= '/';

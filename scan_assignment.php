@@ -32,6 +32,7 @@ include_once dirname(__FILE__).'/utils.php';
 include_once dirname(__FILE__).'/plagiarism_tool.php';
 include_once dirname(__FILE__).'/jplag_tool.php';
 include_once dirname(__FILE__).'/moss_tool.php';
+include_once __DIR__.'/utils.php';
 
 define('PLAGIARISM_TEMP_DIR', $CFG->dataroot.'/temp/plagiarism_programming/');
 
@@ -203,7 +204,8 @@ function check_scanning_status($assignment,$tool,$scan_info) {
  */
 function download_result($assignment,$tool,$scan_info) {
     global $DB;
-
+//    global $CURRENT_ASSIGNMENT_PARAM_PROCESSED;  // this is moss or jplag record to update status if a fatal error occurs
+//    $CURRENT_ASSIGNMENT_PARAM_PROCESSED = array('id'=>$scan_info->id,'tool'=>$tool->get_name());
     
     // check and update the status first
     if ($scan_info->status!='done') {
@@ -224,7 +226,7 @@ function download_result($assignment,$tool,$scan_info) {
     return $scan_info;
 }
 
-function is_all_tools_uploaded($assignment) {
+function already_uploaded($assignment) {
     global $DB, $detection_tools;
 
     $uploaded = true;
@@ -239,50 +241,99 @@ function is_all_tools_uploaded($assignment) {
     return $uploaded;
 }
 
-function scan_assignment($assignment,$check_together=true) {
-    global $DB, $detection_tools;
+function scan_assignment($assignment) {
+    global $DB, $CFG, $detection_tools;
+//    global $CURRENT_ASSIGNMENT_PARAM_PROCESSED;  // this is moss or jplag record to update status if a fatal error occurs
     // if the assignment is not submitted, extract them into a temporary directory first
-    if (!is_all_tools_uploaded($assignment)) {
+    
+    if (!already_uploaded($assignment)) {
         extract_assignment($assignment);
     }
-
+    
     // send the data
+    $links = array();
+    
+    // generating the token
+    $token = md5(time()+  rand(1000000, 9999999));
+    echo $token;
     foreach ($detection_tools as $toolname=>$tool) {
         if (!$assignment->$toolname)    // this detector is not selected
             continue;
-
-        $tool_class_name = $tool['class_name'];
-        $tool_class = new $tool_class_name();
-        $scan_info = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
-
-        if (!$scan_info) { // the record hasn't been created yet
-            $scan_info = new stdClass();
-            $scan_info->settingid=$assignment->id;
-            $scan_info->status='pending';
-            $scan_info->id = $DB->insert_record('programming_'.$toolname,$scan_info);
-        }
-
-        if ($scan_info->status=='pending' || $scan_info->status=='error') {
-            // not processed by this tool yet
-            $scan_info = submit_assignment($assignment, $tool_class, $scan_info);
-        }
-
-        if (!$check_together)
-            continue;
-
-        if ($scan_info->status=='scanning') {
-            // waiting for the detectors to process
-            // check if the result is available
-            echo "Start checking with $toolname \n";
-            check_scanning_status($assignment, $tool_class, $scan_info);
-            echo "Finished checking with $toolname. Status: $scan_info->status. Progress: $scan_info->progress \n";
-        }
-
-        if ($scan_info->status=='done') {
-            echo "Start downloading with $toolname \n";
-            download_result($assignment, $tool_class, $scan_info);
-            echo "Finish downloading with $toolname. Status: $scan_info->status \n";
-        }        
+        $scan_info = $DB->get_record('programming_'.$toolname,array('settingid'=>$assignment->id));
+        $scan_info->token = $token;
+        $DB->update_record('programming_'.$toolname,$scan_info);
+        $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?cmid=$assignment->courseid&tool=$toolname&token=$token";
     }
-    $DB->update_record('programming_plagiarism',$assignment);
+    curl_download($links,$CFG->dataroot);
+}
+
+function scan_after_extract_assignment($assignment,$toolname,$wait_to_download=true) {
+    global $detection_tools,$DB;
+    $tool = $detection_tools[$toolname];
+    $tool_class_name = $tool['class_name'];
+    $tool_class = new $tool_class_name();
+    $scan_info = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
+    
+//    if ($toolname=='jplag') {
+//        $error_trigger = null;
+//        $error_trigger->raise_error();
+//    }
+
+    if (!$scan_info) { // the record hasn't been created yet
+        $scan_info = new stdClass();
+        $scan_info->settingid=$assignment->id;
+        $scan_info->status='pending';
+        $scan_info->id = $DB->insert_record('programming_'.$toolname,$scan_info);
+    }
+
+//        $CURRENT_ASSIGNMENT_PARAM_PROCESSED = array('id'=>$scan_info->id,'tool'=>$tool->get_name());
+
+    if ($scan_info->status=='pending' || $scan_info->status=='error') {
+        // not processed by this tool yet
+        $scan_info = submit_assignment($assignment, $tool_class, $scan_info);
+    }
+
+    if (!$wait_to_download)
+        continue;
+
+    if ($scan_info->status=='scanning') {
+        // waiting for the detectors to process
+        // check if the result is available
+        while ($scan_info->status!='done') {
+            sleep(5);
+            check_scanning_status($assignment, $tool_class, $scan_info);
+        }
+    }
+
+    if ($scan_info->status=='done') {
+        echo "Start downloading with $toolname \n";
+        download_result($assignment, $tool_class, $scan_info);
+        echo "Finish downloading with $toolname. Status: $scan_info->status \n";
+    }
+}
+
+function handle_shutdown() {
+    global $PROCESSING_INFO, $DB, $detection_tools;
+
+    $error = error_get_last();
+    if ($PROCESSING_INFO && $error && ($error['type']==E_ERROR)) {
+        // the value is either "extract" (extraction of files before MOSS and JPlag)
+        $stage = $PROCESSING_INFO['stage'];
+        $cmid = $PROCESSING_INFO['cmid'];
+        
+        $assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+        
+        if ($stage=='extract') {
+            $tools = array_keys($detection_tools);
+        } else {
+            $tools = array($stage);
+        }
+        
+        foreach ($tools as $tool) {
+            $scan_info = $DB->get_record('programming_'.$tool,array('settingid'=>$assignment->id));
+            $scan_info->status = 'error';
+            $scan_info->message = get_string('unexpected_error','plagiarism_programming');
+            $DB->update_record('programming_'.$tool,$scan_info);
+        }
+    }
 }

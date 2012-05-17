@@ -30,15 +30,29 @@ include_once dirname(__FILE__).'/plagiarism_tool.php';
 include_once dirname(__FILE__).'/moss/moss_stub.php';
 include_once dirname(__FILE__).'/moss/moss_parser.php';
 
-class moss_tool extends plagiarism_tool {
+class moss_tool implements plagiarism_tool {
 
     private $moss_stub;
     
-    public function __construct() {
-        $this->moss_stub = new moss_stub(get_config('plagiarism_programming','moss_user_id'));
+    private function init_stub($moss_param=null) {
+        if (!isset($this->moss_stub)) {
+            $userid = get_config('plagiarism_programming','moss_user_id');
+            if (!empty($userid)) {
+                $this->moss_stub = new moss_stub($userid);
+            } elseif ($moss_param) {
+                $moss_param->status = 'error';
+                $moss_param->message = get_string('credential_not_provided','plagiarism_programming');
+            }
+        }
+        return $this->moss_stub;
     }
     
     public function submit_assignment($inputdir,$assignment,$moss_param) {
+        
+        if (!$this->init_stub($moss_param)) { // credential not provided
+            return $moss_param;
+        }
+        
         // MOSS require each students' submission is in a flat directory.
         // Therefore, the filename should be tweaked a bit. e.g. /assignment/main.java => assignment~main.java
 
@@ -113,6 +127,9 @@ class moss_tool extends plagiarism_tool {
     // the download page to page of the report is very slow.
     // Therefore, it call another process to function
     public function download_result($assignment,$moss_info) {
+        if (!$this->init_stub($moss_param)) { // credential not provided
+            return $moss_param;
+        }
         // Create the directory
         $report_path = $this->get_report_path($assignment->courseid);
         if (is_dir($report_path)) {

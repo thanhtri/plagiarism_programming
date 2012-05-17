@@ -158,10 +158,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$linkarray['cmid']));
         if (!$setting) // not turned on
             return;
-        $link = get_report_link($linkarray['cmid'], $linkarray['userid']); 
+        $link = get_report_link($linkarray['cmid'], $linkarray['userid']);
         $output = ' '.html_writer::tag('a', 'Report',array('href'=>$link));
         if (isset($students[$linkarray['userid']])) {
-            $output .= ' '.html_writer::tag('span', get_string('suspicious','plagiarism_programming'), array('class'=>'programming_result_warning'));
+            $output .= ' '.html_writer::tag('span',get_string('suspicious','plagiarism_programming'),array('class'=>'programming_result_warning'));
         }
         return $output;
     }
@@ -255,7 +255,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             );
 
             $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',
-                    array('cmid'=>$setting->courseid,'lasttime'=>$setting->starttime,'checkprogress'=>$check),true,$jsmodule);
+                    array('cmid'=>$setting->courseid,'checkprogress'=>$check),true,$jsmodule);
 
         }
         

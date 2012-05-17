@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class plagiarism_tool {
+interface plagiarism_tool {
 	
 	/** Submit result: submit all the code to the plagiarism detection service
 	 *  @param $inputdir: the directory containing all the extracted code.
@@ -33,24 +33,24 @@ class plagiarism_tool {
 	 *			used for the client to reorganise the files into the appropriate structure
 	 *  @param $params: containing the information of the assignment (name, context id...)
 	 */
-	public function submit_assignment($inputdir,$assignment,$params) {}
+	public function submit_assignment($inputdir,$assignment,$params);
 	
 	/**
 	 *  Check the status of the scanning after submit. If the scanning is finised, download the result and return finished
 	 *  @param $assignment_param: containing the information of the assignment
 	 *  @param $tool_param: containing the information of the configuration for that tool of the assignment
 	 */
-	public function check_status($assignment_param,$tool_param) {}
+	public function check_status($assignment_param,$tool_param);
 	
 	/**
 	 * Display the link to the report. This function return html <a> tag of the link
 	 * @param type $param: parameter of the assignment
 	 */
-	public function display_link($param) {}
+	public function display_link($param);
 	
-    public function download_result($assignment_param,$jplag_param) {}
+    public function download_result($assignment_param,$jplag_param);
 
-    public function parse_result($assignment,$moss_info) {}
+    public function parse_result($assignment,$moss_info);
     
-    public function get_name() {}
+    public function get_name();
 }

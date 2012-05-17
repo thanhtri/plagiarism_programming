@@ -38,6 +38,7 @@ define('SUBMISSION_STATUS_ERROR',400);
 
 define('JPLAG_CREDENTIAL_ERROR', 'server_error');
 define('JPLAG_CREDENTIAL_EXPIRED','credential_expired');
+define('JPLAG_SERVER_UNKNOWN_ERROR','server_unknown_error');
 define('WS_CONNECT_ERROR','connect_error');
 
 include_once dirname(__FILE__).'/jplag_option.php';
@@ -145,10 +146,13 @@ class jplag_stub {
             } elseif (strpos($fault->detail->JPlagException->repair,'username')!==FALSE) {
                 return array('code'=>JPLAG_CREDENTIAL_ERROR,
                     'message'=>get_string('jplag_account_error', 'plagiarism_programming'));
+            } else { // defult: get message directly from server
+                return array('code'=>JPLAG_SERVER_UNKNOWN_ERROR,
+                    'message'=>$fault->detail->JPlagException->description.' '.$fault->detail->JPlagException->repair);
             }
         } elseif (strpos($fault->faultcode,'HTTP')!==FALSE) {
             return array('code'=>WS_CONNECT_ERROR,
-                'message'=>get_string('connection_error', 'plagiarism_programming'));
+                'message'=>get_string('jplag_connection_error', 'plagiarism_programming'));
         }
     }
 }

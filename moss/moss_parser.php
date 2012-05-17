@@ -93,10 +93,6 @@ class moss_parser {
 
     private function parse_similar_parts($student_id,$other_student_id,$filename,&$similarity_array,&$file_array) {
         
-        if ($student_id==17 && $other_student_id==34) {
-            echo 'Student';
-        }
-        
         if (!isset($similarity_array[$student_id])) {
             $similarity_array[$student_id] = array();
         }
