@@ -1,0 +1,71 @@
+This user guide describes the installation steps of the Moodle plugin for source code plagiarism detection.
+
+1. Registration to JPlag and MOSS account
+The plugin relies on JPlag and MOSS engine in the background to carry out the scanning for similarity.
+
+Create a JPlag account: Go to https://www.ipd.uni-karlsruhe.de/jplag/ and click on register. Only academics can register for an account. A notification email will be sent to the subscribed person when the account is granted.
+
+Create MOSS account: email to moss@moss.stanford.edu a message containing 2 lines
+  registeruser
+  mail username@domain
+in which username@domain is your email address. You will receive back a reply containing a perl script to use MOSS. Visit http://theory.stanford.edu/~aiken/moss/ for more information.
+
+2. Adding code to server
+Extract the zip file containing the code of the plugin and put it to the directory <moodle_dir>/plagiarism/. Leave the directory name, which is "programming", intact (this is mandatory in order to comply with the naming convention of Moodle). A correct directory structure should look like the following:
+	 <moodle_root>
+	    ...
+	      plagiarism
+	        programming
+	        coursesetting
+	        db
+	        jplag
+	        lang
+		....
+
+3. Server configuration:
+	a) Make sure that the process on which Apache run have sufficient right to read all the files in the new directory (which is <moodle_dir>/plagiarism/programming/*). Depending on the server, Apache process may run under the user www-data or apache.
+	b) Make sure the cron service is configured properly to call the script <moodle_dir>/admin/cron.php periodically (e.g. 15 minutes). A guide to install the cron service could be found on Moodle website http://docs.moodle.org/20/en/Cron_with_UNIX. This cron service is necessary for scheduling the submission of all students’ code to JPlag and MOSS service.
+
+4. Plugin installation
+Login to Moodle as an administrator and visit the notification page (go to Site Administration → Notification or type the url http://<server_url>/admin/index.php), the plugin installation page of Moodle should appear with the programming plagiarism plugin in the list.
+Click upgrade button to install the plugin to Moodle. An installation successful page should appear similar to the following figure. Click continues.
+
+5. Plugin configuration
+Go to Site Administrator → Advanced Features (or url http://<server_url>/admin/settings.php? section=optionalsubsystems). Tick the “Enable Plagiarism plugins” checkbox at the end of the page. Then, click “Save Changes”
+
+Go to Site Administrator → Plugin → Plagiarism Prevention → Programming Assignment to configure the plugin for the whole Moodle installation. The following options are provided:
+	Use source code plagiarism detection checkbox: enable or disable the plugin for all the assignments
+	Enable this plugin for the whole Moodle: every assignment created will see the configuration block for code similarity matching.
+	Enable this plugin at the course level: just assignments of the specified courses will see the configuration block for code similarity matching. Once this option is selected, a dialog box will appear allowing users to select which course to enable.
+	JPlag Username: user name of the JPlag account (registered at the beginning)
+	JPlag Password: password of the JPlag account
+	MOSS Userid: the userid emailed to you when registered for MOSS. If you find it difficult to locate the userid in that email. Just copy the entire email to the textbox below (you need either find the user id or copy the email. You don't need to do both)
+
+After enabling the plugin and configured with a valid JPlag username and password, users could create an assignment with code similarity matching feature.
+
+6. Assignment configuration
+Once the plugin is enabled for the whole Moodle or for the course (see the previous section), users will see the following block when creating or editing an assignment, near the bottom of the assignment configuration page:
+This block offers the following parameters:
+	Programming assignment: enable the plugin for the current assignment if checked.
+	Programming language: select the programming language for this assignment. Currently, just one programming language is supported for each assignment.
+	Submit date: the date when all the submission is scanned for similarity. This date should be after the assignment due date, and also should take into account late submissions.
+	Detection tools: select which detection tool to use. At least one tool must be selected.
+	Publish scanning result to students: if checked, students could see the similarity report comparing their work with others (see part d below).
+	Display notification: if checked, students are notified that this assignment will be checked for plagiarism in the assignment page.
+	Notification text: this box is enabled when display notification is checked, and enables specification of the message to students
+
+7. Viewing the report
+In the assignment page, teachers can click on “Rescan” button to trigger the scanning at anytime after the assignment is created (even before its due date).
+
+After the scanning process finishes, a link to the report page will appears. Click on the link to see the report:
+The report consists of a graph of similarity rate distribution of every pairs, and a table listing similar pairs in descending order. Several options are offered to view the report, including:
+	Similarity filter: display only the pairs having similarities above the specified value
+	Similarity type: choosing between average similarity and maximum similarity. Since the length of each student’s code may vary a lot, the percentage of the similar portions between the two codes differs. Average similarity takes the average rate between the two as the rate of the pair and maximum similarity takes the maximum rate between the two as the rate of the pair. For example, if student A has 50% of code similar to student B and student B has 30% of code similar to student A (because B’s code is longer than A’s code), average similarity rate is 40% and maximum similarity rate is 50%.
+	Detector: choose between MOSS and JPlag (if the scanning is run with both detectors)
+	Display
+		Grouping students: a table with each row containing similarities between students having with one student in the first cell
+		Ordered table: a simple list of pairs in descending similarity rate
+
+	Clicking on the bars of the chart will also show the pairs of which similarity rate belong to that range.
+	Clicking on the percentage value will bring the comparison view.
+Comparison view enables to compare the similarity of a pair of students as well as similar portions of one students with all the others. Lecturers can mark a pair if they think there are too much similarities to each other. 
