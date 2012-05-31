@@ -91,20 +91,19 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             get_string('programming_language', 'plagiarism_programming'), $programming_languages);
 
         $warning_style = array('class' => 'programming_result_warning');
+        $mform->addElement('hidden', 'for_disabled', 1);
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $mform->addElement('html',
-                html_writer::tag('div', get_string('jplag_credential_missing', 'plagiarism_programming'), $warning_style));
-            $missing_credential = html_writer::tag('div', get_string('credential_missing_instruction', 'plagiarism_programming'),
-                $warning_style);
+            $mform->addElement('html', html_writer::tag('div', get_string('jplag_credential_missing', 'plagiarism_programming'),
+                $warning_style));
         }
         if (empty($settings->moss_user_id)) {
             $mform->addElement('html', html_writer::tag('div', get_string('moss_credential_missing', 'plagiarism_programming'),
                 $warning_style));
-            $missing_credential = html_writer::tag('div', get_string('credential_missing_instruction', 'plagiarism_programming'),
-                $warning_style);
+            $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
         }
-        if (isset($missing_credential)) {
-            $mform->addElement('html', $missing_credential);
+        if (empty($settings->jplag_user) || empty($settings->jplag_pass) || empty($settings->moss_user_id)) {
+            $mform->addElement('html', html_writer::tag('div', get_string('credential_missing_instruction',
+                    'plagiarism_programming'), $warning_style));
         }
 
         $selected_tools = array();
