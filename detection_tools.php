@@ -22,6 +22,8 @@
  * @author     thanhtri
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
+
 global $detection_tools;
 $detection_tools['jplag'] = array (
     'name' => 'JPlag',

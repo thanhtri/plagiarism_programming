@@ -1,4 +1,4 @@
-/* 
+/*
     Document   : style.css
     Created on : Mar 27, 2012, 11:21:55 PM
     Author     : thanhtri
@@ -41,21 +41,21 @@ div.programming_result_table {
 .plagiarsm_programming_course_selection_wrapper {
     padding: 0px;
     margin: -10px;
-    background-color: white;
+    height: 350px;
     font-size: larger;
+    overflow: auto;
 }
 
-.plagiarsm_programming_course_selection_wrapper .row {
-    height: 20px;
-    padding: 10px
+.plagiarsm_programming_course_selection_wrapper fieldset.hidden {
+    padding: 0px;
 }
 
-.plagiarsm_programming_course_selection_wrapper .odd {
-    background-color: #F9F9F9;
+.plagiarsm_programming_course_selection_wrapper .mform .fitem .felement {
+    margin-left: 10px;
 }
 
 .plagiarsm_programming_course_selection_wrapper .enabled {
-    background-color: #00EE00;
+    background-color: #89FC63;
     opacity: 0.7;
 }
 
@@ -68,37 +68,44 @@ div.programming_result_table {
 }
 
 a.plagiarism_programming_student_link:link,a.plagiarism_programming_student_link:visited {
-    color: black;
+    color: blue;
+}
+
+a.compare_link:link,a.compare_link:visited {
+    color: #0066CC;
 }
 
 table.plagiarism_programming_result_table .normal, table.plagiarism_programming_result_table .normal .cell {
-    background-color: #99FF66;
+    background-color: #2DC800;
 }
 
 table.plagiarism_programming_result_table .suspicious, table.plagiarism_programming_result_table .suspicious .cell {
-    background-color: #FF00FF;
+    background-color: #FF4848;
 }
 
 .programming_result_comparison_top_left {
-    width:40%;
+    width:50%;
     height: 150px;
     float: left;
-}
-
-.programming_result_comparison_top_right {
-    width:60%;
-    height: 150px;
-    float: right;
-    border: none;
     overflow: auto;
 }
 
-.programming_result_comparison_top_right table {
+.programming_result_comparison_top_left table {
     margin-left: auto;
-    margin-right: 5px;
+    margin-right: auto;
     margin-top: 5px;
-    background-color: #d0d0d0;
     border: 1px solid black;
+}
+
+.programming_result_comparison_top_left table th {
+    background-color: #d0d0d0;
+}
+
+.programming_result_comparison_top_right {
+    width:39%;
+    height: 150px;
+    float: right;
+    border: none;
 }
 
 .programming_result_comparison_bottom_left {
@@ -130,7 +137,7 @@ table.plagiarism_programming_result_table .suspicious, table.plagiarism_programm
     display: none;
     vertical-align: middle;
     margin-left: 20px;
-    width: 40px;ss
+    width: 40px;
     height: 40px;
 }
 
@@ -149,10 +156,14 @@ table.plagiarism_programming_result_table .suspicious, table.plagiarism_programm
 
 .compare_header {
     font-weight: bold;
-    font-size: large;
+    font-size: larger;
     text-align: center;
 }
 
 .colored {
+    font-weight: bold;
+}
+
+.block_selected {
     font-weight: bold;
 }

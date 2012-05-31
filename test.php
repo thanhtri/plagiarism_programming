@@ -3,14 +3,8 @@
  *  Must be dropped in release.
  */
 
-include_once __DIR__.'/../../config.php';
-include_once __DIR__.'/moss/moss_parser.php';
-$parser = new moss_parser(5);
-//$parser->parse();
+require_once(__DIR__.'/../../config.php');
+require_once(__DIR__.'/jplag_tool.php');
+require_once(__DIR__.'/jplag/jplag_parser.php');
+$parser = new jplag_parser(16);
 $parser->get_similar_parts();
-//$returned = $parser->reconstruct_file(11,29);
-//echo $returned['content'];
-//print_r($returned['list']);
-//$file = fopen('/tmp/result.html', 'w');
-//fwrite($file, $content);
-//fclose($file);

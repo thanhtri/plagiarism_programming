@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,11 +24,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('AJAX_SCRIPT', TRUE);
+define('AJAX_SCRIPT', true);
 
-include __DIR__.'/../../config.php';
-include_once __DIR__.'/scan_assignment.php';
-include_once __DIR__.'/detection_tools.php';
+require_once(__DIR__.'/../../config.php');
+require_once(__DIR__.'/scan_assignment.php');
+require_once(__DIR__.'/detection_tools.php');
 global $DB;
 
 // this global is used to store the assignment currently processed
@@ -57,82 +56,105 @@ if ($task=='scan') {
     set_time_limit(0); // uploading may last very long
     register_shutdown_function('handle_shutdown');
     $time = required_param('time', PARAM_INT);
-    $PROCESSING_INFO = array('stage'=>'extract','cmid'=>$cmid);
-    start_scan_assignment($assignment,$time);
-} elseif ($task=='check') {
-    $starttime = required_param('time',PARAM_INT);
-    check_status($assignment,$starttime);
-} elseif ($task=='download') {
+    $PROCESSING_INFO = array('stage'=>'extract', 'cmid'=>$cmid);
+    start_scan_assignment($assignment, $time);
+} else if ($task=='check') {
+    $starttime = optional_param('time', 0, PARAM_INT);
+    check_status($assignment, $starttime);
+} else if ($task=='download') {
     ignore_user_abort();
     set_time_limit(0);
     download_assignment($assignment);
 }
 
-function start_scan_assignment($assignment,$time) {
-    global $DB,$detection_tools;
+/**
+ * Scan an assignment with all the selected tools. This function intend only to serve the ajax
+ * request for scanning an assignment
+ * @param $assignment: the record object of settings for the assignment.
+ * @param $time: the timestamp this request is issued at the client side, to synchronise it with the check status requests
+ */
+function start_scan_assignment($assignment, $time) {
+    global $DB, $detection_tools;
 
-    // update the status of all tools to pending if it is finished or error
-    foreach ($detection_tools as $toolname=>$tool) {
+    // reset the status of all tools to pending and clear the error message if it is finished or error
+    foreach ($detection_tools as $toolname => $tool) {
         if (isset($assignment->$toolname)) {
             $tool_record = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
             if ($tool_record && ($tool_record->status=='finished' || $tool_record->status=='error')) {
                 $tool_record->status = 'pending';
-                $DB->update_record('programming_'.$toolname,$tool_record);
+                $tool_record->message = '';
+                $DB->update_record('programming_'.$toolname, $tool_record);
             }
         }
     }
 
-    // register the last time scan
+    // register the timestamp. This helps the check status requests know that the status obtained is the current status of the
+    // system, in case it comes sooner
     $assignment->starttime = $time;
-    $DB->update_record('programming_plagiarism',$assignment);
+    $DB->update_record('programming_plagiarism', $assignment);
 
     create_temporary_dir();
     scan_assignment($assignment);
 }
 
-function check_status($assignment,$time) {
+/**
+ * Check the scanning status of the selected tools for an assignment.
+ * The function will output a json object {toolname=>{stage:status,progress:percentage}}
+ * @param $assignment: the record object of settings for the assignment
+ * @param $time: a timestamp to make sure the checked status is the status of the scanning triggered
+ */
+function check_status($assignment, $time=0) {
     global $DB, $detection_tools;
-    
+
     $status = array();
-    if ($time!=$assignment->starttime) {
+
+    /* Check whether the timestamp is updated or not. If not, the status in DB is the old status */
+    if ($time>0 && $time!=$assignment->starttime) {
         // this means that the scanning hasn't been started by the request simultaneously initiated with this yet
         // (this request come faster than the other)
-        foreach ($detection_tools as $tool_name=>$tool_info) {
-            if ($assignment->$tool_name)
-            $status[$tool_name] = array('stage'=>'initiating','progress'=>0);
+        foreach ($detection_tools as $tool_name => $tool_info) {
+            if ($assignment->$tool_name) {
+                $status[$tool_name] = array('stage'=>'initiating', 'progress'=>0);
+            }
         }
         echo json_encode($status);
         return;
     }
-    
+
     // the scanning has been initiated
-    foreach ($detection_tools as $tool_name=>$tool_info) {
-        if (!$assignment->$tool_name)
+    foreach ($detection_tools as $tool_name => $tool_info) {
+        if (!$assignment->$tool_name) {
             continue;
+        }
         $scan_info = $DB->get_record('programming_'.$tool_name, array('settingid'=>$assignment->id));
-        assert($scan_info!=NULL);
+        assert($scan_info!=null);
 
         $tool_class_name = $tool_info['class_name'];
         $tool_class = new $tool_class_name();
 
-        $status[$tool_name] = array('stage'=>$scan_info->status,'progress'=>$scan_info->progress);
+        $status[$tool_name] = array('stage'=>$scan_info->status, 'progress'=>$scan_info->progress);
         if ($scan_info->status=='finished') { // send back the link
             $status[$tool_name]['link'] = $tool_class->display_link($assignment);
-        } elseif ($scan_info->status=='error') {
+        } else if ($scan_info->status=='error') {
             $status[$tool_name]['message'] = $scan_info->message;
         }
     }
     echo json_encode($status);
 }
 
+/**
+ * Download the similarity report of the selected tools. This function only delegates to download_result in scan_assignment.php
+ * @param $assignment: the record object of setting for the assignment
+ */
 function download_assignment($assignment) {
     global $DB, $detection_tools;
     $status = array();
-    foreach ($detection_tools as $tool_name=>$tool_info) {
-        if (!$assignment->$tool_name)
+    foreach ($detection_tools as $tool_name => $tool_info) {
+        if (!$assignment->$tool_name) {
             continue;
+        }
         $scan_info = $DB->get_record('programming_'.$tool_name, array('settingid'=>$assignment->id));
-        assert($scan_info!=NULL);
+        assert($scan_info!=null);
 
         if ($scan_info->status=='done') {
             $tool_class_name = $tool_info['class_name'];

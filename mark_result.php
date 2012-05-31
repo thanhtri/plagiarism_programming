@@ -1,6 +1,4 @@
 <?php
-
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,19 +22,21 @@
  * @author     thanhtri
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-include __DIR__.'/../../config.php';
+define('AJAX_SCRIPT', TRUE);
+
+require_once(__DIR__.'/../../config.php');
 global $DB;
 
 $result_id = required_param('id', PARAM_INT);
 $action = required_param('action', PARAM_ALPHA);
 assert($action=='Y' || $action=='N' || $action=='');
 
-$result_record = $DB->get_record('programming_result',array('id'=>$result_id));
-$context = get_context_instance(CONTEXT_MODULE,$result_record->cmid);
+$result_record = $DB->get_record('programming_result', array('id' => $result_id));
+$context = get_context_instance(CONTEXT_MODULE, $result_record->cmid);
 
 if (has_capability('mod/assignment:grade', $context)) { // only teachers can mark the pair
     $result_record->mark = $action;
-    $DB->update_record('programming_result',$result_record);
+    $DB->update_record('programming_result', $result_record);
     echo 'OK';
 } else {
     echo 'KO';

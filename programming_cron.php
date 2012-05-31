@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,9 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Initiate the plagiarism scanning for all assignments of which the
- * scanning date already passed
- * Called by the cron script
+ * Implement the automatic similarity scanning according to the specified dates in {programming_scan_date}.
+ * This script is called periodically, by moodle's cron script
  *
  * @package    plagiarism
  * @subpackage programming
@@ -26,18 +24,59 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-include_once dirname(__FILE__).'/utils.php';
-include_once dirname(__FILE__).'/scan_assignment.php';
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
+
+require_once(__DIR__.'/utils.php');
+require_once(__DIR__.'/scan_assignment.php');
+require_once(__DIR__.'/detection_tools.php');
 
 // select the assignments needed to be scanned
-global $DB, $CFG;
+global $DB, $CFG, $detection_tools;
 
 create_temporary_dir();
 
-$assignments_to_scan = $DB->get_records_select('programming_plagiarism','scandate <='.time()." AND status!='finished'");
+$current_time = time();
+$settngids = $DB->get_fieldset_select('programming_scan_date', 'settingid', "finished=0 AND scan_date<$current_time");
+$settngids = array_unique($settngids);
 
 echo "Start sending submissions to plagiarism tools\n";
-foreach ($assignments_to_scan as $assignment) {
-    batch_scan($assignment);
+foreach ($settngids as $setting_id) {
+    $assignment_config = $DB->get_record('programming_plagiarism', array('id'=>$setting_id));
+
+    // do not wait for result, the next cron script will check the status and download the result
+    scan_assignment($assignment_config, false);
+
+    $all_tools_finished = true;
+
+    // check if the scanning has been done to mark the date as finished
+    foreach ($detection_tools as $toolname=>$toolinfo) {
+        if ($assignment_config->$toolname) {
+            $tool_status = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment_config->id));
+            if ($tool_status->status!='finished' && $tool_status->status!='error') {
+                $all_tools_finished = false;
+                break;
+            }
+        }
+    }
+    if ($all_tools_finished) {
+        $scan_dates = $DB->get_records_select('programming_scan_date',
+            "settingid=$assignment_config->id And finished=0 And scan_date<$current_time", null, 'scan_date ASC');
+        $scan_date = array_shift($scan_dates);
+        $scan_date->finished=1;
+        $DB->update_record('programming_scan_date', $scan_date);
+    }
 }
 echo "Finished sending submissions to plagiarism tools\n";
+
+function scanning_in_progress($assignment_config) {
+    global $DB, $detection_tools;
+    foreach ($detection_tools as $toolname=>$toolinfo) {
+        if ($assignment_config->$toolname) {
+            $tool_status = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment_config->id));
+            if ($tool_status && $tool_status->status!='pending' && $tool_status->status!='finished' && $tool_status->status!='error') {
+                return false;
+            }
+        }
+    }
+    return true;
+}

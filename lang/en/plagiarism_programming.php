@@ -21,6 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
+
 // settings
 $string['pluginname'] = 'Source-code Plagiarism Plugin';
 $string['programming'] = 'Programming Assignment';
@@ -40,37 +42,51 @@ $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the cor
 $string['jplag_account_expired'] = 'Your account has expired!';
 $string['jplag_connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
 $string['moss_connection_error'] =  'Cannot connect to MOSS server on port 7690 - Please check the connection';
+$string['moss_account_error'] = 'MOSS credential is invalid. Please provide a valid MOSS userid in '
+    .'Plugins -> Plagiarism Prevention -> Programming page';
+$string['moss_send_error'] = 'An error occurred while sending the assignment to MOSS. '
+    .'Please check: your userid, server internet connection or whether port 7690 to remote host is blocked';
 $string['save_config_success'] = 'Configuration saved';
 $string['username_missing'] = 'Please provide JPlag username';
 $string['password_missing'] = 'Please provide JPlag password';
 $string['moss_userid_missing'] = 'Please provide MOSS user id or email';
 $string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the background. An account is required to use these engines';
-$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at ';/* + jplag_link*/
+$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at '; // + jplag_link
 $string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
 $string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
+$string['next_page'] = 'Next page';
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';
-$string['programmingYN'] = 'Programming assignment';
-$string['programming_language'] = 'Programming language';
-$string['scan_date'] = 'Submit date';
+$string['programmingYN'] = 'Code similarity checking';
+$string['programming_language'] = 'Language';
+$string['scan_date'] = 'Scan date';
+$string['scan_date_finished'] = 'Scan date (finished)';
+$string['new_scan_date'] = 'New date';
 $string['detection_tools'] = 'Detection tools';
+$string['detection_tool'] = 'Detection tool';
 $string['jplag'] = 'JPlag';
 $string['moss'] = 'MOSS';
-$string['auto_publish'] = 'Publish scanning result to students';
+$string['auto_publish'] = 'Publish similarity report';
 $string['notification'] = 'Display notification';
-$string['notification_text'] = 'Notification';
+$string['notification_text'] = 'Notification text';
+$string['notification_text_default'] = 'This assignment will be scanned for code similarity';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Enable programming plagiarism detection for this assignment';
 $string['programmingLanguage_hlp'] = '';
 $string['programmingLanguage_hlp_help'] = 'The programming language used in this assignment (mandatory)';
 $string['date_selector_hlp'] = '';
-$string['date_selector_hlp_help'] = 'Select the date that the submissions will be scanned';
+$string['date_selector_hlp_help'] = 'Select the date that the submissions will be scanned. You can select multiple dates. '.
+    'To allow draft submission, you can select some dates before the due date so that students can see the report and modify '.
+    'their assignments before it due. Alternatively, you can manually trigger the scanning by pressing the Scan button on '.
+    'the assignment page';
 $string['auto_publish_hlp'] = '';
 $string['auto_publish_hlp_help'] = 'Allowing the students to see the plagiarism report';
 $string['notification_hlp'] = '';
 $string['notification_hlp_help'] = 'Notify the student that their submission will be scanned for plagiarism';
 $string['programming_language_missing'] = 'Programming language is required';
+$string['notification_text_hlp'] = '';
+$string['notification_text_hlp_help'] = 'Set the notification text to be displayed';
 
 $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
 $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
@@ -80,10 +96,19 @@ $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
 $string['no_tool_selected'] = 'No detector was selected. Please select at least one among MOSS and JPlag';
 $string['not_enough_submission'] = 'Not enough submissions to scan!';
+$string['scheduled_scanning'] = 'The next scanning is scheduled on';
+$string['no_scheduled_scanning'] = 'There is no scanning scheduled!';
+$string['latestscan'] = 'Latest scanning occurred at ';
+$string['manual_scheduling_help'] = 'If you want to trigger the scanning immediately (in case of late submissions, extension...), '
+    .'please click the button below! (note that it doesn\'t affect the scheduled scanning)';
 $string['credential_not_provided'] = 'Credential not provided. Please provide this information in '
     .'Administrator -> Plugin -> Plagiarism -> Programming assignment';
-$string['unexpected_error'] = 'An unexpected error occurred! This may be due to an interruption of connection or corrupted data...'
-    .' Please try again';
+$string['unexpected_error_extract'] = 'An unexpected error occurred while extracting the assignments! This may be due to corrupted data or unsupported format...';
+$string['unexpected_error_upload'] = 'An unexpected error occurred while sending the assignments! This may be due to broken connection or remote server downtime'
+    .' Please try again latter!';
+$string['unexpected_error_download'] = 'An unexpected error occurred while downloading and parsing the result! This may be due to connection broken or corrupted data...'
+    .' Please try again latter!';
+$string['general_user_error'] = 'Errors occured due to corrupted report data';
 
 // options for displaying results
 $string['option_header'] = 'Options';
@@ -94,6 +119,20 @@ $string['display_mode'] = 'Display';
 $string['submit'] = 'Filter';
 $string['showHideLabel'] = 'Show plagiarism options';
 
+$string['lower_threshold_hlp'] = '';
+$string['lower_threshold_hlp_help'] = 'Display only the pairs having similarity rate above this value';
+
+$string['rate_type_hlp'] ='';
+$string['rate_type_hlp_help'] = 'Since two assignments can have substantially different lengths, the ratio of the similar parts '
+    .'over each one is different. "Average similarity" takes the average rate of the two as the similarity rate of the pair, '
+    .'while "Maximum similarity" takes the maximum one';
+
+$string['tool_hlp'] = '';
+$string['tool_hlp_help'] = 'Select the tool to show the result';
+$string['display_mode_hlp'] = '';
+$string['display_mode_hlp_help'] = 'Select the display mode. "Grouping students" mode shows all the students similar with one '
+    .'student in one row. "Ordered table" shows a list of pairs with descending similarity rate';
+$string['pair'] = 'pairs';
 // in the report
 $string['yours'] = 'Yours';
 $string['another'] = "Someone's";
@@ -103,10 +142,13 @@ $string['comparison_title'] = 'Similarities';
 $string['comparison'] = 'Comparison';
 
 $string['plagiarism_action'] = 'Action';
-$string['mark_suspicious'] = 'Mark this pair as suspicious';
-$string['mark_nonsuspicious'] = 'Mark this pair as normal';
+$string['mark_select_title'] = 'Mark this pair as';
+$string['mark_suspicious'] =  'suspicious';
+$string['mark_nonsuspicious'] = 'normal';
 
 // notification
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';
 $string['report'] = 'Report';
+$string['max_similarity'] = 'max similarity';
 $string['suspicious'] = 'suspicious';
+$string['no_similarity'] = 'No similarity';

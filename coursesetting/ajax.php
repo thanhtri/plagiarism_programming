@@ -20,43 +20,45 @@
  * @package    plagiarism programming
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+global $PAGE;
 
-include_once dirname(__FILE__).'/../../../config.php';
+require_once(__DIR__.'/../../../config.php');
+require_once(__DIR__.'/course_selection_form.php');
+
+require_login();
+$context = get_context_instance(CONTEXT_SYSTEM);
+$PAGE->set_context($context);
+require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
 
 $task = optional_param('task', 'getcourse', PARAM_TEXT);
 
 if ($task=='getcourse') {
-    $page = optional_param('page', 0, PARAM_INT);
-    get_all_courses($page);
-} elseif ($task=='setenabledlevel') {
+    $page = optional_param('page', 1, PARAM_INT);
+    $category = optional_param('category', 0, PARAM_INT);
+    $name = optional_param('name', '', PARAM_TEXT);
+    search_courses($page, $category, $name);
+} else if ($task=='setenabledlevel') {
     $level = optional_param('level', 'global', PARAM_TEXT);
     enable_level($level);
-} elseif ($task=='enablecourse') {
+} else if ($task=='enablecourse') {
     $id = required_param('id', PARAM_INT);
     enable_code_plagiarism_checking_for_course($id);
-} elseif ($task=='disablecourse') {
+} else if ($task=='disablecourse') {
     $id = required_param('id', PARAM_INT);
     disable_code_plagiarism_seting_for_course($id);
+} else if ($task=='getcategory') {
+    $category_tree = get_course_categories();
+    $content = '';
+    create_course_category_select($category_tree, $content, 0);
+    echo "<select><option value=''>All</option>$content</select>";
 }
 
-
-function get_all_courses($page) {
-    global $DB;
-    $sql = 'Select course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled '.
-        'From {course} course LEFT JOIN {programming_course_enabled} enabled_course On course.id=enabled_course.course '.
-        'Where course.category=1';
-    $courses = $DB->get_records_sql($sql);
-    $result = array();
-    foreach ($courses as $course) {
-        $result[] = array(
-            'id'=>$course->id,
-            'name'=>$course->fullname,
-            'shortname'=>$course->shortname,
-            'code'=>$course->idnumber,
-            'enabled' => $course->is_enabled? 1:0
-        );
-    }
-    echo json_encode($result);
+function search_courses($page, $category=0, $name='') {
+    ob_start();
+    $form = new course_selection_form($page, $category, $name);
+    $form->display();
+    $html = ob_get_clean();
+    echo $html;
 }
 
 function enable_level($level) {
@@ -68,17 +70,45 @@ function enable_level($level) {
 
 function enable_code_plagiarism_checking_for_course($id) {
     global $DB;
-    $course = $DB->get_record('programming_course_enabled',array('course'=>$id));
+    $course = $DB->get_record('programming_course_enabled', array('course'=>$id));
     if (!$course) {
         $course_enabled = new stdClass();
         $course_enabled->course = $id;
-        $DB->insert_record('programming_course_enabled',$course_enabled);
+        $DB->insert_record('programming_course_enabled', $course_enabled);
         echo json_encode(array('status'=>'OK'));
     }
 }
 
 function disable_code_plagiarism_seting_for_course($id) {
     global $DB;
-    $DB->delete_records('programming_course_enabled',array('course'=>$id));
+    $DB->delete_records('programming_course_enabled', array('course'=>$id));
     echo json_encode(array('status'=>'OK'));
+}
+
+function get_course_categories() {
+    global $DB;
+    $category_objs = $DB->get_records('course_categories', null, 'id ASC');
+
+    $category_tree = array();
+    $category_array = array();
+    foreach ($category_objs as $category) {
+        $cat_obj = new stdClass();
+        $cat_obj->name = $category->name;
+        $cat_obj->subcat = array();
+        $category_array[$category->id] = $cat_obj;
+        if ($category->parent) {
+            $category_array[$category->parent]->subcat[$category->id]=$cat_obj;
+        } else {
+            $category_tree[$category->id] = $cat_obj;
+        }
+    }
+    return $category_tree;
+}
+
+function create_course_category_select($category_tree, &$content, $level) {
+    $prefix = str_repeat('&nbsp;', $level*4);
+    foreach ($category_tree as $cat_id=>$cat_obj) {
+        $content .= "<option value='$cat_id'>$prefix$cat_obj->name</option>";
+        create_course_category_select($cat_obj->subcat, $content, $level+1);
+    }
 }

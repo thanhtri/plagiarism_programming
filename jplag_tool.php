@@ -24,14 +24,22 @@
  * @author     thanhtri
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-include_once dirname(__FILE__).'/plagiarism_tool.php';
-include_once dirname(__FILE__).'/jplag/jplag_stub.php';
-include_once dirname(__FILE__).'/jplag/jplag_parser.php';
+require_once(__DIR__.'/plagiarism_tool.php');
+require_once(__DIR__.'/jplag/jplag_stub.php');
+require_once(__DIR__.'/jplag/jplag_parser.php');
 
 class jplag_tool implements plagiarism_tool {
 
     private $jplag_stub=null;
+    private static $supported_languages = array(
+        'java' => 'java15',
+        'c' => 'c/c++',
+        'c#' => 'c#-1.2',
+        'scheme' => 'scheme',
+        'text' => 'text'
+    );
 
     private function stub_init($jplag_info=null) {
         // the stub is initiated lazily at most one time (per request) when it is required
@@ -39,30 +47,38 @@ class jplag_tool implements plagiarism_tool {
             // get the username and password
             $settings = (array) get_config('plagiarism_programming');
             if (!empty($settings['jplag_user']) && !empty($settings['jplag_pass'])) {
-                $this->jplag_stub = new jplag_stub($settings['jplag_user'],$settings['jplag_pass']);
-            } elseif ($jplag_info!=null) {
+                $this->jplag_stub = new jplag_stub($settings['jplag_user'], $settings['jplag_pass']);
+            } else if ($jplag_info!=null) {
                 $jplag_info->status = 'error';
-                $jplag_info->message = get_string('credential_not_provided','plagiarism_programming');
-                return FALSE;
+                $jplag_info->message = get_string('credential_not_provided', 'plagiarism_programming');
+                return false;
             }
         }
         return $this->jplag_stub;
     }
-    
+
+    /**
+     * Submit assignment to the JPlag server. It will compress the codes in zip format before sending it
+     * @param string $inputdir the directory of all submission of the assignment, in which each student's submission is in a
+     * subdirectory named by their student id and the code associated with it
+     * @param stdClass $assignment the record object of assignment config
+     * @param stdClass $scan_info the record object of the status of jplag
+     * @return the same updated record object of jplag status
+     */
     public function submit_assignment($inputdir, $assignment, $scan_info) {
         if (!$this->stub_init($scan_info)) {
             return $scan_info;
         }
-        
+
         $zip_full_path = PLAGIARISM_TEMP_DIR.'zip_jplag_'.$assignment->id.'_'.time().'.zip'; //prevent collision
         $submit_zip_file = new ZipArchive();
-        $submit_zip_file->open($zip_full_path,ZipArchive::CREATE);
+        $submit_zip_file->open($zip_full_path, ZipArchive::CREATE);
         $this->jplag_zip_directory(strlen(dirname($inputdir))+1, $inputdir, $submit_zip_file);
         $submit_zip_file->close();
-        return $this->jplag_send_to_server($zip_full_path,$assignment, $scan_info);
+        return $this->jplag_send_to_server($zip_full_path, $assignment, $scan_info);
     }
 
-    private function jplag_send_to_server($zip_file_path,$assignment_param,$scan_info) {
+    private function jplag_send_to_server($zip_file_path, $assignment_param, $scan_info) {
         if (!$this->stub_init($scan_info)) {
             return $scan_info;
         }
@@ -72,14 +88,14 @@ class jplag_tool implements plagiarism_tool {
         $option->title = 'Test';
 
         // initialise progress handler
-        $handler = new progress_handler('jplag',$scan_info);
+        $handler = new progress_handler('jplag', $scan_info);
 
         try {
-            $submissionID = $this->jplag_stub->send_file($zip_file_path, $option, $handler);
+            $submission_id = $this->jplag_stub->send_file($zip_file_path, $option, $handler);
             unlink($zip_file_path);
             // upload finished, pass to the scanning phase
             $scan_info->status = 'scanning';
-            $scan_info->submissionid = $submissionID;
+            $scan_info->submissionid = $submission_id;
         } catch (SoapFault $ex) {
             $error = jplag_stub::interpret_soap_fault($ex);
             $scan_info->status = 'error';
@@ -100,8 +116,8 @@ class jplag_tool implements plagiarism_tool {
         $state = $status->state;
         if ($state >= SUBMISSION_STATUS_ERROR) {
             $jplag_param->status = 'error';
-            $jplag_param->directory = $status->report;
-        } elseif ($state == SUBMISSION_STATUS_DONE) {
+            $jplag_param->message = $status->report;
+        } else if ($state == SUBMISSION_STATUS_DONE) {
             $jplag_param->status = 'done';
             $jplag_param->progress = 100;
         } else { //not done yet
@@ -115,7 +131,7 @@ class jplag_tool implements plagiarism_tool {
     /** Download the result from jplag server.
      *  Note that the scanning status must be "done"
      */
-    public function download_result($assignment_param,$jplag_param) {
+    public function download_result($assignment_param, $jplag_param) {
         if (!$this->stub_init($jplag_param)) {
             return $scan_info;
         }
@@ -131,15 +147,15 @@ class jplag_tool implements plagiarism_tool {
         }
         mkdir($assignment_report_path);
         $result_file = $assignment_report_path.'/download.zip';
-        $fileHandle = fopen($result_file, 'w');
+        $file_handle = fopen($result_file, 'w');
         echo "Downloading result...\n";
 
         // initialise the handler
         $progress_handler = new progress_handler('jplag', $jplag_param);
 
         try {
-            $this->jplag_stub->download_result($jplag_param->submissionid, $fileHandle,$progress_handler);
-            fclose($fileHandle);
+            $this->jplag_stub->download_result($jplag_param->submissionid, $file_handle, $progress_handler);
+            fclose($file_handle);
             $this->extract_zip($result_file);
             unlink($result_file);  // delete the file after extracting
             echo "Finished downloading. Everything OK\n";
@@ -151,7 +167,7 @@ class jplag_tool implements plagiarism_tool {
             $error = jplag_stub::interpret_soap_fault($fault);
             $jplag_param->status='error';
             $jplag_param->message=$error['message'];
-            fclose($fileHandle);
+            fclose($file_handle);
         }
 
         return $jplag_param;
@@ -171,27 +187,44 @@ class jplag_tool implements plagiarism_tool {
             return $CFG->dataroot."/plagiarism_report/report$cmid";
         }
     }
+    
+    public static function get_supported_language() {
+        return jplag_tool::$supported_languages;
+    }
 
-    private function jplag_zip_directory($baselength,$dir,$submit_zip_file) {
+    /**
+     * Compress all the students submission into one zip file
+     * @param int $baselength the length of the base directory
+     * @param string $dir the directory to compress
+     * @param ZipArchive $submit_zip_file the ZipArchive to add files in
+     * @return void
+     */
+    private function jplag_zip_directory($baselength, $dir, $submit_zip_file) {
         if (is_dir($dir)) {
-            $archive_dir_name = substr($dir, $baselength,-1);
+            $archive_dir_name = substr($dir, $baselength, -1);
             $submit_zip_file->addEmptyDir($archive_dir_name);
             $all_files = scandir($dir);
             foreach ($all_files as $file) {
-                if ($file=='.' || $file=='..')
+                if ($file=='.' || $file=='..') {
                     continue;
+                }
                 $path = $dir.$file;
                 if (is_dir($path)) {
-                    $this->jplag_zip_directory($baselength,$path.'/', $submit_zip_file);
+                    $this->jplag_zip_directory($baselength, $path.'/', $submit_zip_file);
                 } else {
                     $archive_file_name = substr($path, $baselength);
                     $file_content = file_get_contents($path);
-                    $submit_zip_file->addFromString($archive_file_name,$file_content);
+                    $submit_zip_file->addFromString($archive_file_name, $file_content);
                 }
             }
         }
     }
 
+    /**
+     * Extract the report zip files
+     * @param string $zip_file the full path of the file to extract
+     * @return void
+     */
     private function extract_zip($zip_file) {
         assert(is_file($zip_file));
         $handle = zip_open($zip_file);
@@ -212,13 +245,22 @@ class jplag_tool implements plagiarism_tool {
         }
     }
 
-    public function parse_result($assignment,$jplag_info) {
+    /**
+     * Parse the report
+     * @param stdClass $assignment the assignment config record object (of programming_plagiarism table)
+     * @param stdClass $jplag_info the jplag status record object (of programming_jplag table)
+     * @return stdClass the same $jplag_info record, with status updated
+     */
+    public function parse_result($assignment, $jplag_info) {
         $parser = new jplag_parser($assignment->courseid);
         $parser->parse();
         $jplag_info->status = 'finished';
         return $jplag_info;
     }
 
+    /**
+     * Get the toolname
+     */
     public function get_name() {
         return 'jplag';
     }

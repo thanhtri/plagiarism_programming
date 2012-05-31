@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,12 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_qtype_myqtype_upgrade($oldversion = 0) {
+function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
     global $DB;
     $dbman = $DB->get_manager();
 
     /// Add a new column newcol to the mdl_myqtype_options
-    if ($oldversion < 2012050103) {
+    if ($oldversion < 2012053001) {
 
         // Define field token to be added to programming_jplag
         $table = new xmldb_table('programming_jplag');
@@ -48,10 +47,74 @@ function xmldb_qtype_myqtype_upgrade($oldversion = 0) {
             $dbman->add_field($table, $field);
         }
 
+        // Changing type of field message on table programming_jplag to text
+        $table = new xmldb_table('programming_jplag');
+        $field = new xmldb_field('message', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'directory');
+
+        // Launch change of type for field message
+        $dbman->change_field_type($table, $field);
+
+        $table = new xmldb_table('programming_jplag');
+        $field = new xmldb_field('error_detail', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'token');
+
+        // Conditionally launch add field error_detail
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field error_detail to be added to programming_moss
+        $table = new xmldb_table('programming_moss');
+        $field = new xmldb_field('error_detail', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'token');
+
+        // Conditionally launch add field error_detail
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('programming_plagiarism');
+        $field = new xmldb_field('scandate');
+
+        // Conditionally launch drop field scandate
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        $table = new xmldb_table('programming_plagiarism');
+        $field = new xmldb_field('latestscan', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'starttime');
+
+        // Conditionally launch add field latestscan
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('programming_plagiarism');
+        $field = new xmldb_field('notification_text', XMLDB_TYPE_TEXT, 'medium', null, null, null, null, 'latestscan');
+
+        // Conditionally launch add field notification_text
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('programming_scan_date');
+
+        // Adding fields to table programming_scan_date
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('scan_date', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('finished', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('settingid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table programming_scan_date
+        $table->add_key('date_primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for programming_scan_date
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012050103, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012053001, 'plagiarism', 'programming');
 
     }
 
-    return TRUE;
+    return true;
 }

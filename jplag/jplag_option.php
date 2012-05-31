@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,12 +23,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('INVALID_LANGUAGE_EXCEPTION',2);
+define('INVALID_LANGUAGE_EXCEPTION', 2);
 
-include_once dirname(__FILE__).'/../utils.php';
+require_once(dirname(__FILE__).'/../utils.php');
 
 class jplag_option {
-    
+
     public $language;   //programming language
     public $comparisonMode = self::NORMAL_PAIRWISE_COMPARISON;
     public $minimumMatchLength = 8;         //number of similar contiguos tokens to be considered a match
@@ -42,11 +41,11 @@ class jplag_option {
     public $countryLang = 'en';             // language used
     public $title = '';                     // title of the assignment
     public $originalDir = '';               // original directory
-    
+
     const JAVA = 'java';
-    const C_Cplus ='c';
+    const C_CPLUS ='c';
     const TEXT = 'text';
-    const CSharp = 'c#';
+    const CSHARP = 'c#';
 
     const NORMAL_PAIRWISE_COMPARISON = 0;     //comparison mode value
     const REVISION_ADJACENT_COMPARISON = 1;   //comparison mode value
@@ -55,17 +54,14 @@ class jplag_option {
     const CLUSTER_MIN  = 'min';    // cluster type
     const CLUSTER_MAX = 'max';    // cluster type
     const CLUSTER_AVG = 'avg';     // cluster type
-    
+
     public function set_language($language) {
-        if ($language==self::JAVA) {
-            $this->language = 'java15';
-        } elseif ($language==self::C_Cplus) {
-            $this->language = 'c/c++';
-        } elseif ($language==self::CSharp) {
-            $this->language = 'c#-1.2';
+        $supported_languages = jplag_tool::get_supported_language();
+        if (isset($supported_languages[$language])) {
+            $this->language = $supported_languages[$language];
+            $this->suffixes = get_file_extension_by_language($language);
         } else {
-            throw new Exception('Invalid language',INVALID_LANGUAGE_EXCEPTION);
+            throw new Exception('Invalid language', INVALID_LANGUAGE_EXCEPTION);
         }
-        $this->suffixes = get_file_extension_by_language($language);
     }
 }

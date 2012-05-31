@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,10 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once dirname(__FILE__).'/../../config.php';
-require_once $CFG->libdir.'/adminlib.php';
-require_once $CFG->libdir.'/plagiarismlib.php';
-require_once $CFG->dirroot.'/plagiarism/programming/plagiarism_form.php';
+require_once(__DIR__.'/../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/plagiarismlib.php');
+require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
 
 global $PAGE;
 
@@ -44,18 +43,18 @@ $mform = new plagiarism_setup_form();
 $notification = '';
 if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot);
-} elseif (($data = $mform->get_data()) && confirm_sesskey()) {
+} else if (($data = $mform->get_data()) && confirm_sesskey()) {
     // update programming_use variable
     $programming_use = (isset($data->programming_use))?$data->programming_use:0;
     set_config('programming_use', $programming_use, 'plagiarism');
-    
-    $variables = array('level_enabled','moss_user_id');
-    
+
+    $variables = array('level_enabled', 'moss_user_id');
+
     $is_error = false;
-    include_once dirname(__FILE__).'/jplag/jplag_stub.php';
+    include_once(__DIR__.'/jplag/jplag_stub.php');
     $jplag_stub = new jplag_stub();
     $check_result = $jplag_stub->check_credential($data->jplag_user, $data->jplag_pass);
-    if ($check_result === TRUE) {
+    if ($check_result === true) {
         $variables[] = 'jplag_user';
         $variables[] = 'jplag_pass';
     } else {
@@ -84,7 +83,6 @@ if ($mform->is_cancelled()) {
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
 $plagiarismsettings = (array) get_config('plagiarism');
 $plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
-$plagiarism_programming_setting['level_enabled'] = !isset ($plagiarismsettings['level_enabled'])?'global':$plagiarismsettings['level_enabled'];
 
 $mform->set_data($plagiarism_programming_setting);
 
@@ -99,9 +97,9 @@ $PAGE->requires->yui2_lib('json');
 
 $jsmodule = array(
     'name' => 'plagiarism_programming',
-    'fullpath' => '/plagiarism/programming/course_selection.js'
+    'fullpath' => '/plagiarism/programming/coursesetting/course_selection.js'
 );
-$PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init',null,true,$jsmodule);
+$PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init', null, true, $jsmodule);
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
 echo $notification;

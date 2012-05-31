@@ -21,10 +21,10 @@ M.plagiarism_programming = {
 
         if (checkprogress.jplag || checkprogress.moss) {
             M.plagiarism_programming.enable_scanning(false); //disable the scanning button
-            M.plagiarism_programming.monitor_scanning(cmid,lasttime); //show the process of unfinished scanning
+            M.plagiarism_programming.monitor_scanning(cmid,null); //show the process of unfinished scanning
         }
     },
-    
+
     display_progress : function(progress,tool) {
         if (!M.plagiarism_programming['progressbar_'+tool]) {
             // if not yet created, create the progress bar
@@ -39,7 +39,7 @@ M.plagiarism_programming = {
             M.plagiarism_programming['progressbar_'+tool].set('value',progress);
         }
     },
-    
+
     remove_progress : function(tool) {
         if (M.plagiarism_programming['progressbar_'+tool]) {
             M.plagiarism_programming['progressbar_'+tool].destroy()
@@ -65,7 +65,7 @@ M.plagiarism_programming = {
         YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php',
             callback, 'cmid='+cmid+'&task=scan&time='+time);
     },
-    
+
     monitor_scanning : function(cmid,time) {
         var callback = {
             success: M.plagiarism_programming.display_monitor_info,
@@ -76,7 +76,7 @@ M.plagiarism_programming = {
         YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php',
             callback,'cmid='+cmid+'&task=check&time='+time);
     },
-    
+
     display_monitor_info : function(o) {
         var status = YAHOO.lang.JSON.parse(o.responseText);
         var finished = true;
@@ -84,8 +84,6 @@ M.plagiarism_programming = {
             var stage = YAHOO.util.Dom.get(tool+'_status');
             stage.innerHTML = M.plagiarism_programming.convert_status_message(status[tool].stage);
             M.plagiarism_programming.display_progress(1*status[tool].progress,tool);
-            if (status[tool].stage=='done')
-                M.plagiarism_programming.download_result(o.argument[0]);
 
             if (status[tool].stage!='finished' && status[tool].stage!='error') {
                 finished = false;
@@ -104,7 +102,7 @@ M.plagiarism_programming = {
             M.plagiarism_programming.enable_scanning(true);
         }
     },
-    
+
     convert_status_message : function(status) {
         if (status=='pending') {
             return 'Preparing to send the assignment';
@@ -119,14 +117,14 @@ M.plagiarism_programming = {
         }
     },
 
-    download_result : function(cmid) {
-        var callback = {
-            success: function(o) {},
-            argument: cmid
-        }
-        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php', callback,
-            'task=download&cmid='+cmid);
-    },
+//    download_result : function(cmid) {
+//        var callback = {
+//            success: function(o) {},
+//            argument: cmid
+//        }
+//        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php', callback,
+//            'task=download&cmid='+cmid);
+//    },
 
     enable_scanning : function(is_on) {
         var button = YAHOO.util.Dom.get('plagiarism_programming_scan');
