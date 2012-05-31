@@ -133,7 +133,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $jplag_support = jplag_tool::get_supported_language();
         $moss_support = moss_tool::get_supported_laguage();
-        foreach ($programming_languages as $code=>$name) {
+        foreach ($programming_languages as $code => $name) {
             if (!isset($jplag_support[$code])) {
                 $mform->disabledIf('detection_tools[jplag]', 'programming_language', 'eq', $code);
             }
@@ -141,12 +141,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $mform->disabledIf('detection_tools[moss]', 'programming_language', 'eq', $code);
             }
         }
-        
+
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
         $mform->addHelpButton('auto_publish', 'auto_publish_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification', 'notification_hlp', 'plagiarism_programming');
-        $mform->addHelpButton('notification_text','notification_text_hlp','plagiarism_programming');
+        $mform->addHelpButton('notification_text', 'notification_text_hlp', 'plagiarism_programming');
 
         if ($plagiarism_config) { // update mode, populate the form with current values
             $mform->setDefault('programmingYN', 1);
@@ -158,7 +158,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->setDefault('notification_text', $plagiarism_config->notification_text);
         }
         if (!$plagiarism_config || empty($plagiarism_config->notification_text)) {
-            $mform->setDefault('programming_language','java');
+            $mform->setDefault('programming_language', 'java');
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
@@ -211,7 +211,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
             $date_num = $data->submit_date_num;
-            $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id,'finished'=>0));
+            $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id, 'finished'=>0));
 
             for ($i=0; $i<$date_num; $i++) {
                 $element_name = "scan_date[$i]";
@@ -221,10 +221,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     $scan_date_obj->finished = 0;
                     $scan_date_obj->settingid = $setting->id;
 
-                    $DB->insert_record('programming_scan_date',$scan_date_obj);
+                    $DB->insert_record('programming_scan_date', $scan_date_obj);
                 }
             }
-            foreach ($detection_tools as $toolname=>$info) {
+            foreach ($detection_tools as $toolname => $info) {
                 if ($setting->$toolname && !$DB->get_record('programming_'.$toolname, array('settingid'=>$setting->id))) {
                     $jplag_rec = new stdClass();
                     $jplag_rec->settingid = $setting->id;
@@ -292,9 +292,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $output = '';
         if ($can_show) {
             if (isset($students[$student_id])) {
-                $link = get_report_link($cmid, $student_id, $students[$student_id]['detector'],0);
+                $link = get_report_link($cmid, $student_id, $students[$student_id]['detector'], 0);
                 $max_rate = $students[$student_id]['max'];
-                $output = get_string('max_similarity','plagiarism_programming').': '.html_writer::link($link, "$max_rate%");
+                $output = get_string('max_similarity', 'plagiarism_programming').': '.html_writer::link($link, "$max_rate%");
                 if ($students[$student_id]['mark']=='Y') {
                     $output .= ' '.html_writer::tag('span', get_string('suspicious', 'plagiarism_programming'),
                         array('class' => 'programming_result_warning'));
@@ -370,18 +370,17 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             if ($setting->latestscan) {
                 $content .= get_string('latestscan', 'plagiarism_programming').' '.  date('h.i A D j M', $setting->latestscan);
             }
-            $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$setting->id,'finished'=>0),
+            $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$setting->id, 'finished'=>0),
                     'scan_date ASC');
             if (count($scan_dates)>0) {
                 // get the first scan date
                 $scan_date = array_shift($scan_dates);
                 $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
-                    date('D j M',$scan_date->scan_date));
+                    date('D j M', $scan_date->scan_date));
             } else {
                 $content .= html_writer::tag('div', get_string('no_scheduled_scanning', 'plagiarism_programming'));
             }
 
-            
             $button_disabled = false;
             // check at least one detector is selected
             if (!$setting->moss && !$setting->jplag) {
@@ -435,7 +434,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     // get the first scan date
                     $scan_date = array_shift($scan_dates);
                     $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
-                        date('D j M',$scan_date->scan_date));
+                        date('D j M', $scan_date->scan_date));
                 }
             }
             if ($setting->auto_publish && count(get_suspicious_works($USER->id, $cmid))>0) {
@@ -481,12 +480,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     /**
      * This function will setup multiple scan date of the form
      */
-    private function setup_multiple_scandate($mform,$plagiarism_config) {
+    private function setup_multiple_scandate($mform, $plagiarism_config) {
         global $DB;
 
         $scan_dates = array();
         if ($plagiarism_config) {
-            $scan_dates = $DB->get_records('programming_scan_date',array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
+            $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
         }
         $db_scandate = count($scan_dates);
 

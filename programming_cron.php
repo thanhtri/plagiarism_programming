@@ -49,7 +49,7 @@ foreach ($settngids as $setting_id) {
     $all_tools_finished = true;
 
     // check if the scanning has been done to mark the date as finished
-    foreach ($detection_tools as $toolname=>$toolinfo) {
+    foreach ($detection_tools as $toolname => $toolinfo) {
         if ($assignment_config->$toolname) {
             $tool_status = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment_config->id));
             if ($tool_status->status!='finished' && $tool_status->status!='error') {
@@ -70,10 +70,10 @@ echo "Finished sending submissions to plagiarism tools\n";
 
 function scanning_in_progress($assignment_config) {
     global $DB, $detection_tools;
-    foreach ($detection_tools as $toolname=>$toolinfo) {
+    foreach ($detection_tools as $toolname => $toolinfo) {
         if ($assignment_config->$toolname) {
             $tool_status = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment_config->id));
-            if ($tool_status && $tool_status->status!='pending' && $tool_status->status!='finished' && $tool_status->status!='error') {
+            if ($tool_status->status!='pending' && $tool_status->status!='finished' && $tool_status->status!='error') {
                 return false;
             }
         }

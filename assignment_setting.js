@@ -1,9 +1,9 @@
 M.plagiarism_programming = M.plagiarism_programming || {};
 
 M.plagiarism_programming.assignment_setting = {
-    
+
     submit_date_num : 0,
-    
+
     init : function(Y) {
         this.init_mandatory_field();
     },
@@ -22,7 +22,7 @@ M.plagiarism_programming.assignment_setting = {
         div = check.parentNode.parentNode.previousSibling;
         div.setAttribute('class', div.getAttribute('class')+' required');
         div.childNodes.item(0).appendChild(required_img.cloneNode(true));
-        
+
         var form = document.forms[0];
         YAHOO.util.Event.addListener(form, 'submit', M.plagiarism_programming.assignment_setting.check_mandatory_form_field);
     },

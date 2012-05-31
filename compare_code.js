@@ -129,7 +129,7 @@ M.plagiarism_programming.compare_code = {
         portion.setAttribute('class', portion.getAttribute('class')+' block_selected');
         div.scrollTop = portion.offsetTop;
     },
-    
+
     unselect_blocks: function(div_class) {
         var previous_portion = YAHOO.util.Selector.query('div.'+div_class+' font.block_selected');
         for (var i=0; i<previous_portion.length; i++) {

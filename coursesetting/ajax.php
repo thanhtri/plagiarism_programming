@@ -107,7 +107,7 @@ function get_course_categories() {
 
 function create_course_category_select($category_tree, &$content, $level) {
     $prefix = str_repeat('&nbsp;', $level*4);
-    foreach ($category_tree as $cat_id=>$cat_obj) {
+    foreach ($category_tree as $cat_id => $cat_obj) {
         $content .= "<option value='$cat_id'>$prefix$cat_obj->name</option>";
         create_course_category_select($cat_obj->subcat, $content, $level+1);
     }

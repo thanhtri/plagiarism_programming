@@ -64,7 +64,7 @@ class programming_plag_result_form extends moodleform {
 
         // help button
         $mform->addHelpButton('lower_threshold', 'lower_threshold_hlp', 'plagiarism_programming');
-        $mform->addHelpButton('rate_type', 'rate_type_hlp','plagiarism_programming');
+        $mform->addHelpButton('rate_type', 'rate_type_hlp', 'plagiarism_programming');
         $mform->addHelpButton('tool', 'tool_hlp', 'plagiarism_programming');
         $mform->addHelpButton('display_mode', 'display_mode_hlp', 'plagiarism_programming');
     }

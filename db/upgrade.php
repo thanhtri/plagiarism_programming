@@ -27,7 +27,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
     $dbman = $DB->get_manager();
 
     /// Add a new column newcol to the mdl_myqtype_options
-    if ($oldversion < 2012053001) {
+    if ($oldversion < 2012050103) {
 
         // Define field token to be added to programming_jplag
         $table = new xmldb_table('programming_jplag');
@@ -112,7 +112,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         }
 
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012053001, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012050103, 'plagiarism', 'programming');
 
     }
 

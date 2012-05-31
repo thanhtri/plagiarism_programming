@@ -55,13 +55,13 @@ function get_file_extension_by_language($language) {
             $extensions = array('pl', 'PL');
             break;
         case 'python':
-            $extensions = array('py','PY');
+            $extensions = array('py', 'PY');
             break;
         case 'vb':
-            $extensions = array('vb','VB','Vb');
+            $extensions = array('vb', 'VB', 'Vb');
             break;
         case 'javascript':
-            $extensions = array('js','JS','Js');
+            $extensions = array('js', 'JS', 'Js');
             break;
     }
     return $extensions;

@@ -118,7 +118,7 @@ if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the se
         'Y'=>get_string('mark_suspicious', 'plagiarism_programming'),
         'N'=>get_string('mark_nonsuspicious', 'plagiarism_programming')
     );
-    $content .= html_writer::label(get_string('mark_select_title','plagiarism_programming'), 'mark').' ';
+    $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'mark').' ';
     $content .= html_writer::select($actions, 'mark', $result_record->mark, 'Action...', array('id'=>'action_menu'));
 }
 $content .= html_writer::empty_tag('img', array('src'=>'', 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));

@@ -33,7 +33,7 @@ require_once(__DIR__.'/moss/moss_parser.php');
 class moss_tool implements plagiarism_tool {
 
     private $moss_stub;
-    
+
     private static $supported_languages = array(
         'java' => 'java',
         'c' => 'cc',
@@ -178,9 +178,9 @@ class moss_tool implements plagiarism_tool {
             return $CFG->dataroot."/plagiarism_report/moss$cmid";
         }
     }
-    
+
     public static function get_supported_laguage() {
-        return moss_tool::$supported_languages;
+        return self::$supported_languages;
     }
 
     public function get_name() {

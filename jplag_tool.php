@@ -187,9 +187,9 @@ class jplag_tool implements plagiarism_tool {
             return $CFG->dataroot."/plagiarism_report/report$cmid";
         }
     }
-    
+
     public static function get_supported_language() {
-        return jplag_tool::$supported_languages;
+        return self::$supported_languages;
     }
 
     /**

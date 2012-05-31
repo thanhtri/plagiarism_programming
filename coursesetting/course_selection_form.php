@@ -90,7 +90,7 @@ class course_selection_form extends moodleform {
             $id_list = implode(',', $category_ids);
             $where .= " And category IN ($id_list)";
         }
-        
+
         if (!empty($this->name)) {
             $where .= " And (fullname Like '%$this->name%' Or idnumber Like '%$this->name%')";
         }

@@ -188,10 +188,11 @@ function create_chart($cmid, $tool, $similarity_type) {
     }
     $pos_y = (10*(BAR_WIDTH+5)-5).'px';
     $width = CHART_WITH.'px';
-    $div .= html_writer::tag('div', '', array('class'=>'bar','style'=>"top:$pos_y;width:$width;height:1px"));
+    $div .= html_writer::tag('div', '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width;height:1px"));
     $pos_y = (CHART_HEIGHT-10).'px';
     $left = (CHART_WITH+20).'px';
-    $div .= html_writer::tag('div', get_string('pair','plagiarism_programming'), array('class'=>'legend', 'style'=>"top:$pos_y;width:40px;left:$left"));
+    $div .= html_writer::tag('div', get_string('pair', 'plagiarism_programming'),
+            array('class'=>'legend', 'style'=>"top:$pos_y;width:40px;left:$left"));
     return $div;
 }
 
@@ -253,7 +254,7 @@ function get_students_similarity_info($cmid, $student_id=null) {
     return $students;
 }
 
-function get_report_link($cmid, $student_id=null,$detector=null,$threshold=null) {
+function get_report_link($cmid, $student_id=null, $detector=null, $threshold=null) {
     global $CFG;
     $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$cmid";
     if ($student_id) {
