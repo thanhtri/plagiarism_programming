@@ -70,12 +70,14 @@ M.plagiarism_programming.compare_code = {
         div.appendChild(document.createElement('br'));
         var checkbox1 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_left');
         div.appendChild(checkbox1);
-        div.appendChild(document.createTextNode(' Show similarity of '+this.name_table[this.student1]+' with other students'));
+        var label = M.str.plagiarism_programming.show_similarity_to_others.replace('{student}',this.name_table[this.student1]);
+        div.appendChild(document.createTextNode(' '+label));
 
         div.appendChild(document.createElement('br'));
         var checkbox2 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_right');
         div.appendChild(checkbox2);
-        div.appendChild(document.createTextNode(' Show similarity of '+this.name_table[this.student2]+' with other students'));
+        label = M.str.plagiarism_programming.show_similarity_to_others.replace('{student}',this.name_table[this.student2]);
+        div.appendChild(document.createTextNode(' '+label));
     },
 
     init_action: function(mark) {

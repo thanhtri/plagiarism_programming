@@ -165,7 +165,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $js_module = array(
             'name' => 'plagiarism_programming',
             'fullpath' => '/plagiarism/programming/assignment_setting.js',
-            'strings' => array()
+            'strings' => array(
+                array('no_tool_selected_error', 'plagiarism_programming')
+            )
         );
         $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', null, true, $js_module);
     }
@@ -341,7 +343,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $info = $scanning_info->status;
                 switch ($scanning_info->status) {
                     case null: case 'pending':
-                        $info='not started';
+                        $info = get_string('pending', 'plagiarism_programming');
                         break;
                     case 'finished':
                         include_once($tool_info['code_file']);
@@ -415,7 +417,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $jsmodule = array(
                 'name' => 'plagiarism_programming',
                 'fullpath' => '/plagiarism/programming/scanning.js',
-                'strings' => array()
+                'strings' => array(
+                    array('pending_start', 'plagiarism_programming'),
+                    array('uploading', 'plagiarism_programming'),
+                    array('scanning', 'plagiarism_programming'),
+                    array('downloading', 'plagiarism_programming')
+                )
             );
 
             $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',

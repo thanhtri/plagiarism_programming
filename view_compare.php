@@ -156,7 +156,9 @@ $PAGE->requires->yui2_lib('menu');
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',
-    'strings' => array()
+    'strings' => array(
+        array('show_similarity_to_others', 'plagiarism_programming')
+     )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',
     array($result_info, $all_names, $result_id_table, $anchor), true, $jsmodule);

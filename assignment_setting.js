@@ -35,7 +35,7 @@ M.plagiarism_programming.assignment_setting = {
             if (!jplag_select.checked && !moss_select.checked) {
                 var error_msg = document.createElement('span');
                 error_msg.setAttribute('class', 'error');
-                error_msg.textContent = 'You must select at least one tool!';
+                error_msg.textContent = M.str.plagiarism_programming.no_tool_selected_error;
                 jplag_select.parentNode.parentNode.insertBefore(error_msg, jplag_select.parentNode);
                 jplag_select.parentNode.parentNode.insertBefore(document.createElement('br'), jplag_select.parentNode);
                 YAHOO.util.Event.preventDefault(evt);

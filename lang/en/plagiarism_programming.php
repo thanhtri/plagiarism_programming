@@ -54,7 +54,7 @@ $string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the b
 $string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at '; // + jplag_link
 $string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
 $string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
-$string['next_page'] = 'Next page';
+
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';
 $string['programmingYN'] = 'Code similarity checking';
@@ -91,6 +91,12 @@ $string['notification_text_hlp_help'] = 'Set the notification text to be display
 $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
 $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
 $string['credential_missing_instruction'] = 'Please enter the required credential in Administrator -> Plugin -> Plagiarism -> Programming assignment';
+$string['no_tool_selected_error'] = 'You must select at least one tool!';
+$string['pending'] = 'not started';
+$string['pending_start'] = 'Preparing to send the assignment';
+$string['uploading'] = 'Sending the assignment';
+$string['scanning'] = 'Checking for similarities';
+$string['downloading'] = 'Downloading similarities result';
 
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
@@ -133,6 +139,7 @@ $string['display_mode_hlp'] = '';
 $string['display_mode_hlp_help'] = 'Select the display mode. "Grouping students" mode shows all the students similar with one '
     .'student in one row. "Ordered table" shows a list of pairs with descending similarity rate';
 $string['pair'] = 'pairs';
+
 // in the report
 $string['yours'] = 'Yours';
 $string['another'] = "Someone's";
@@ -145,6 +152,7 @@ $string['plagiarism_action'] = 'Action';
 $string['mark_select_title'] = 'Mark this pair as';
 $string['mark_suspicious'] =  'suspicious';
 $string['mark_nonsuspicious'] = 'normal';
+$string['show_similarity_to_others'] = 'Show similarity of {student} with other students';
 
 // notification
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';

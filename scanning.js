@@ -105,13 +105,13 @@ M.plagiarism_programming = {
 
     convert_status_message : function(status) {
         if (status=='pending') {
-            return 'Preparing to send the assignment';
+            return M.str.plagiarism_programming.pending_start;
         } else if (status=='uploading') {
-            return 'Sending the assignment';
+            return M.str.plagiarism_programming.uploading;
         } else if (status=='scanning') {
-            return 'Checking for similarities';
+            return M.str.plagiarism_programming.scanning;
         } else if (status=='downloading') {
-            return 'Downloading similarities result';
+            return M.str.plagiarism_programming.downloading;
         } else {
             return status;
         }
