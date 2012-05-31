@@ -24,6 +24,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
+
 require_once($CFG->dirroot.'/lib/formslib.php');
 define('PAGE_SIZE', 12);
 

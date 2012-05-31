@@ -22,6 +22,7 @@
  * @author     thanhtri
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 define('JPLAG_WSDL_URL',  dirname(__FILE__).'/jplag.wsdl');
 define('JPLAG_TYPE_NAMESPACE', 'http://www.ipd.uni-karlsruhe.de/jplag/types');

@@ -22,6 +22,7 @@
  * @author     thanhtri
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once(__DIR__.'/../utils.php');
 

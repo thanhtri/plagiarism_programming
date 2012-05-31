@@ -58,8 +58,10 @@ M.plagiarism_programming.compare_code = {
             if (links[i].getAttribute('href')!=null) {
                 YAHOO.util.Event.addListener(links[i],'click',function(e) {
                     YAHOO.util.Event.preventDefault(e);
-                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left',this.getAttribute('href'));
-                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right',this.getAttribute('href'));
+                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left',
+                        this.getAttribute('href'));
+                    M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right',
+                        this.getAttribute('href'));
                 },true);
             }
         }
@@ -188,7 +190,6 @@ M.plagiarism_programming.compare_code = {
         var prev_node = this.previous_node(end_span);
         while (!this.is_end_node(prev_node,sid)) {
             if (prev_node.nodeType==3) {
-                console.log('Color text');
                 var font = document.createElement('font');
                 font.setAttribute('class','colored');
                 font.setAttribute('color', color);
@@ -220,14 +221,8 @@ M.plagiarism_programming.compare_code = {
             prev_node = node.previousSibling;
         }
         while (prev_node.nodeType==1 && prev_node.tagName=='FONT') {
-            console.log('Last child: '+prev_node.lastChild.nodeValue);
             prev_node = prev_node.lastChild;
         }
-//        if (prev_node.nodeType==1) {
-//            console.log(prev_node.tagName);
-//        } else {
-//            console.log('Text');
-//        }
         return prev_node;
     },
 
@@ -236,7 +231,6 @@ M.plagiarism_programming.compare_code = {
     },
 
     show_menu: function(span) {
-        console.log('Show menu');
         var menu = M.plagiarism_programming.compare_code.menu;
         menu.clearContent();
         var sids = span.getAttribute('sid').split(',');

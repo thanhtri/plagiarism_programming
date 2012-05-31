@@ -140,7 +140,6 @@ M.plagiarism_programming.select_course = {
     },
 
     get_categories: function(o) {
-        console.log('Get categories');
         var footer = M.plagiarism_programming.select_course.panel.footer;
         var category_holder = footer.getElementsByClassName('course_category_holder')[0];
         category_holder.innerHTML = o.responseText;

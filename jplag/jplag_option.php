@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
+
 define('INVALID_LANGUAGE_EXCEPTION', 2);
 
 require_once(dirname(__FILE__).'/../utils.php');
