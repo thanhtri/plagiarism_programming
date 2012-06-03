@@ -76,11 +76,11 @@ a.compare_link:link,a.compare_link:visited {
 }
 
 table.plagiarism_programming_result_table .normal, table.plagiarism_programming_result_table .normal .cell {
-    background-color: #2DC800;
+    background-color: #cafeb8;
 }
 
 table.plagiarism_programming_result_table .suspicious, table.plagiarism_programming_result_table .suspicious .cell {
-    background-color: #FF4848;
+    background-color: #f9d6b8;
 }
 
 .programming_result_comparison_top_left {
@@ -91,10 +91,16 @@ table.plagiarism_programming_result_table .suspicious, table.plagiarism_programm
 }
 
 .programming_result_comparison_top_left table {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5px;
+    width: 100%;
     border: 1px solid black;
+    margin: 0px;
+}
+
+.programming_result_comparison_top_left .simiarity_table_holder {
+    height: 120px;
+    width: 95%;
+    margin: auto;
+    overflow: auto;
 }
 
 .programming_result_comparison_top_left table th {
@@ -103,9 +109,10 @@ table.plagiarism_programming_result_table .suspicious, table.plagiarism_programm
 
 .programming_result_comparison_top_right {
     width:39%;
-    height: 150px;
-    float: right;
+    float: left;
     border: none;
+    margin-left: 20px;
+    margin-top: 20px;
 }
 
 .programming_result_comparison_bottom_left {

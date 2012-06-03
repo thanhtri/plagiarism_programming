@@ -74,7 +74,11 @@ $string['notification_text_default'] = 'This assignment will be scanned for code
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Enable programming plagiarism detection for this assignment';
 $string['programmingLanguage_hlp'] = '';
-$string['programmingLanguage_hlp_help'] = 'The programming language used in this assignment (mandatory)';
+$string['programmingLanguage_hlp_help'] = 'The programming language used in this assignment (mandatory). '
+    .'Not every language is supported by both detection tools';
+$string['detection_tools_hlp'] = '';
+$string['detection_tools_hlp_help'] = 'Select the detection tool(s) to use. Each tool uses a different matching algorithm. '
+    .'You can select both. However, a tool may not support some languages (in this case it will be grayed out)';
 $string['date_selector_hlp'] = '';
 $string['date_selector_hlp_help'] = 'Select the date that the submissions will be scanned. You can select multiple dates. '.
     'To allow draft submission, you can select some dates before the due date so that students can see the report and modify '.
@@ -97,6 +101,14 @@ $string['pending_start'] = 'Preparing to send the assignment';
 $string['uploading'] = 'Sending the assignment';
 $string['scanning'] = 'Checking for similarities';
 $string['downloading'] = 'Downloading similarities result';
+$string['scanning_done'] = 'Scanning finished on server';
+$string['inqueue_on_server'] = 'Waiting in server queue';
+$string['parsing_on_server'] = 'Parsing the submissions on server';
+$string['generating_report_on_server'] = 'Generating the report on server';
+$string['error_bad_language'] = 'Bad language error';
+$string['error_not_enough_submission'] = 'Not enough submission to scan. This is probably too many submissions cannot be parsed. '.
+        'Please check your language configuration';
+$string['jplag_cancel_error'] = 'Cannot cancel submission';
 
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';

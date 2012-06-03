@@ -72,11 +72,34 @@ class plagiarism_setup_form extends moodleform {
 
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (!empty($data['jplag_user']) && empty($data['jplag_pass'])) {
+        $empty_user = empty($data['jplag_user']);
+        $empty_pass = empty($data['jplag_pass']);
+        if (!$empty_user && $empty_pass) { //missing username
             $errors['jplag_pass'] = get_string('password_missing', 'plagiarism_programming');
-        }
-        if (!empty($data['jplag_pass']) && empty($data['jplag_user'])) {
+        } else if (!$empty_pass && $empty_user) { // missing password
             $errors['jplag_user'] = get_string('username_missing', 'plagiarism_programming');
+        } else if (!$empty_user && !$empty_pass) {
+            // check if the user changed his username and password
+            $pass = $data['jplag_pass'];
+            $user = $data['jplag_user'];
+            $old_setting = get_config('plagiarism_programming');
+            if ($user != $old_setting->jplag_user || $pass!=$old_setting->jplag_pass) {
+                // change credential, check username and passworkd
+                include_once(__DIR__.'/jplag/jplag_stub.php');
+                $jplag_stub = new jplag_stub();
+                $check_result = $jplag_stub->check_credential($data['jplag_user'], $data['jplag_pass']);
+                if ($check_result !==true) {
+                    $errors['jplag_user'] = $check_result['message'];
+                }
+            }
+        }
+
+        if (!empty($data['moss_email'])) {
+            $pattern = '/\$userid=([0-9]+);/';
+            preg_match($pattern, $email, $match);
+            if (!$match) {
+                $errors['moss_email'] = get_string('moss_userid_notfound', 'plagiarism_programming');
+            }
         }
         return $errors;
     }

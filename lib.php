@@ -93,17 +93,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $warning_style = array('class' => 'programming_result_warning');
         $mform->addElement('hidden', 'for_disabled', 1);
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $mform->addElement('html', html_writer::tag('div', get_string('jplag_credential_missing', 'plagiarism_programming'),
-                $warning_style));
-        }
-        if (empty($settings->moss_user_id)) {
-            $mform->addElement('html', html_writer::tag('div', get_string('moss_credential_missing', 'plagiarism_programming'),
-                $warning_style));
             $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
         }
-        if (empty($settings->jplag_user) || empty($settings->jplag_pass) || empty($settings->moss_user_id)) {
-            $mform->addElement('html', html_writer::tag('div', get_string('credential_missing_instruction',
-                    'plagiarism_programming'), $warning_style));
+        if (empty($settings->moss_user_id)) {
+            $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
         }
 
         $selected_tools = array();
@@ -143,6 +136,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
+        $mform->addHelpButton('detection_tools', 'detection_tools_hlp', 'plagiarism_programming');
         $mform->addHelpButton('auto_publish', 'auto_publish_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification', 'notification_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification_text', 'notification_text_hlp', 'plagiarism_programming');
@@ -234,7 +228,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 }
             }
 
-        } else { // plugin not enabled, delete the records if there are
+        } else { // plugin not enabled, delete the records if there are (in case user disable the plugin)
             $settings = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
             $DB->delete_records('programming_scan_date', array('settingid'=>$settings->id));
             $DB->delete_records('programming_jplag', array('settingid'=>$settings->id));
@@ -330,6 +324,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $already_scanned = false;
         $is_teacher = has_capability('mod/assignment:grade', $context, $USER->id);
         if ($is_teacher) {
+
+            $button_disabled = false;
+            // check at least one detector is selected
+            if (!$setting->moss && !$setting->jplag) {
+                $content .= $OUTPUT->notification(get_string('no_tool_selected', 'plagiarism_programming'), 'notifyproblem');
+                $button_disabled = true;
+            }
+
             $check = array();
             foreach ($detection_tools as $tool => $tool_info) {
                 // if the tool is selected
@@ -382,13 +384,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $content .= html_writer::tag('div', get_string('no_scheduled_scanning', 'plagiarism_programming'));
             }
 
-            $button_disabled = false;
-            // check at least one detector is selected
-            if (!$setting->moss && !$setting->jplag) {
-                $content .= html_writer::tag('div', get_string('no_tool_selected', 'plagiarism_programming'),
-                    array('class' => 'programming_result_warning'));
-                $button_disabled = true;
-            }
             $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
                 array('style'=>'margin-top:5px'));
             // check at least two assignments submitted

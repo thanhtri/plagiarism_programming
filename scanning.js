@@ -72,9 +72,11 @@ M.plagiarism_programming = {
             argument:[cmid,time]
         };
         time = (time)?time:0;
+        var timestamp = new Date().getTime();
         // M.plagiarism_programming.scan_finished = false;
-        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php',
-            callback,'cmid='+cmid+'&task=check&time='+time);
+        // the timestamp is just a dummy variable to prevent browser catching!
+        YAHOO.util.Connect.asyncRequest('GET', '../../plagiarism/programming/start_scanning.php?'+
+            'cmid='+cmid+'&task=check&time='+time+'&timestamp='+timestamp, callback);
     },
 
     display_monitor_info : function(o) {

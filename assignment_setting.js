@@ -21,7 +21,8 @@ M.plagiarism_programming.assignment_setting = {
         var check = document.getElementsByName('detection_tools[jplag]')[0];
         div = check.parentNode.parentNode.previousSibling;
         div.setAttribute('class', div.getAttribute('class')+' required');
-        div.childNodes.item(0).appendChild(required_img.cloneNode(true));
+        label = div.firstChild.firstChild;
+        label.insertBefore(required_img.cloneNode(true),label.childNodes.item(1));
 
         var form = document.forms[0];
         YAHOO.util.Event.addListener(form, 'submit', M.plagiarism_programming.assignment_setting.check_mandatory_form_field);

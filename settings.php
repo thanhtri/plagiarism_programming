@@ -51,33 +51,16 @@ if ($mform->is_cancelled()) {
     $variables = array('level_enabled', 'moss_user_id');
 
     $is_error = false;
-    include_once(__DIR__.'/jplag/jplag_stub.php');
-    $jplag_stub = new jplag_stub();
-    $check_result = $jplag_stub->check_credential($data->jplag_user, $data->jplag_pass);
-    if ($check_result === true) {
-        $variables[] = 'jplag_user';
-        $variables[] = 'jplag_pass';
-    } else {
-        $is_error = true;
-        $notification = $OUTPUT->notification($check_result['message'], 'notifyproblem');
-    }
     $email = $data->moss_email;
-    if (!empty($email)) { // check and extract userid from email
+    if ($email) {
         $pattern = '/\$userid=([0-9]+);/';
         preg_match($pattern, $email, $match);
-        if ($match) {
-            $data->moss_user_id = $match[1];
-        } else {
-            $is_error = true;
-            $notification = $OUTPUT->notification(get_string('moss_userid_notfound', 'plagiarism_programming'), 'notifyproblem');
-        }
+        $data->moss_user_id = $match[1];
     }
-    if (!$is_error) {
-        foreach ($variables as $field) {
-            set_config($field, $data->$field, 'plagiarism_programming');
-        }
-        $notification = $OUTPUT->notification(get_string('save_config_success', 'plagiarism_programming'), 'notifysuccess');
+    foreach ($variables as $field) {
+        set_config($field, $data->$field, 'plagiarism_programming');
     }
+    $notification = $OUTPUT->notification(get_string('save_config_success', 'plagiarism_programming'), 'notifysuccess');
 }
 
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');

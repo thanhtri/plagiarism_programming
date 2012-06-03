@@ -109,8 +109,9 @@ $result1 = reconstruct_file($result_record->student1_id, $result_record->student
 $result2 = reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
 $table = construct_similarity_summary_table($result1['list'], $student1, $result_record->similarity1,
                                             $result2['list'], $student2, $result_record->similarity2);
-echo html_writer::tag('div', $content.$table, array('name'=>'link', 'frameborder'=>'0', 'width'=>'40%',
-    'class'=>'programming_result_comparison_top_left'));
+echo html_writer::tag('div', $content."<div class='simiarity_table_holder'>$table</div>",
+        array('name'=>'link', 'frameborder'=>'0', 'width'=>'40%',
+        'class'=>'programming_result_comparison_top_left'));
 
 $content='';
 if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the select box
@@ -122,8 +123,9 @@ if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the se
     $content .= html_writer::select($actions, 'mark', $result_record->mark, 'Action...', array('id'=>'action_menu'));
 }
 $content .= html_writer::empty_tag('img', array('src'=>'', 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));
-echo html_writer::tag('div', $content, array('class'=>'programming_result_comparison_top_right'));
+echo html_writer::tag('div', "<div>$content</div>", array('class'=>'programming_result_comparison_top_right'));
 
+// separator
 echo html_writer::tag('div', '', array('class'=>'programming_result_comparison_separator'));
 // left panel
 echo html_writer::tag('div', $result1['content'], array('class'=>'programming_result_comparison_bottom_left'));
@@ -167,7 +169,8 @@ echo $OUTPUT->footer();
 function construct_similarity_summary_table($list1, $student1, $rate1, $list2, $student2, $rate2) {
     // header
     $rows = '<table>';
-    $rows .="<tr><th></th><th>$student1 ($rate1%)</th><th>$student2 ($rate2%)</th></tr>";
+    $rows .="<thead><tr><th></th><th>$student1 ($rate1%)</th><th>$student2 ($rate2%)</th></tr></thead>";
+    $rows .= '<tbody>';
     foreach ($list1 as $anchor => $portion) {
         $line1 = $portion['line'];
         $file1 = $portion['file'];
@@ -179,7 +182,7 @@ function construct_similarity_summary_table($list1, $student1, $rate1, $list2, $
             ."$file1 ($line1)</a></td><td><a style='color:#$color' class='similarity_link' "
             ."href='sim_$anchor'>$file2 ($line2)</a></td></tr>";
     }
-    $rows .= '</table>';
+    $rows .= '</tbody></table>';
     return $rows;
 }
 

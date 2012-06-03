@@ -36,6 +36,9 @@ define('SUBMISSION_STATUS_COMPARING', 200);
 define('SUBMISSION_STATUS_RESULT', 230);
 define('SUBMISSION_STATUS_DONE', 300);
 define('SUBMISSION_STATUS_ERROR', 400);
+define('SUBMISSION_STATUS_ERROR_BAD_LANGUAGE', 401);
+define('SUBMISSION_STATUS_ERROR_NOT_ENOUGH_SUBMISSION', 402);
+define('SUBMISSION_STATUS_ERROR_ABORTED', 403);
 
 define('JPLAG_CREDENTIAL_ERROR', 'server_error');
 define('JPLAG_CREDENTIAL_EXPIRED', 'credential_expired');
@@ -164,6 +167,14 @@ class jplag_stub {
     }
 
     /**
+     * Cancel the submission in case the server inform an error or the result is not needed anymore
+     * @param string $submission_id the id returned when calling send_file
+     * @return void
+     */
+    public function cancel_submission($submission_id) {
+        $this->client->cancelSubmission($submission_id);
+    }
+    /**
      * update_progress hanlder
      */
     private function update_progress($handler, $stage, $percentage) {
@@ -193,6 +204,29 @@ class jplag_stub {
         } else if (strpos($fault->faultcode, 'HTTP')!==false) {
             return array('code'=>WS_CONNECT_ERROR,
                 'message'=>get_string('jplag_connection_error', 'plagiarism_programming'));
+        }
+    }
+    
+    public static function translate_scanning_status($status) {
+        switch ($status->state) {
+            case SUBMISSION_STATUS_UPLOADING:
+                return get_string('uploading', 'plagiarism_programming');
+            case SUBMISSION_STATUS_COMPARING:
+                return get_string('scanning', 'plagiarism_programming');
+            case SUBMISSION_STATUS_DONE:
+                return get_string('scanning_done', 'plagiarism_programming');
+            case SUBMISSION_STATUS_INQUEUE:
+                return get_string('inqueue_on_server', 'plagiarism_programming');
+            case SUBMISSION_STATUS_PARSING:
+                return get_string('parsing_on_server', 'plagiarism_programming');
+            case SUBMISSION_STATUS_RESULT:
+                return get_string('generating_report_on_server', 'plagiarism_programming');
+            case SUBMISSION_STATUS_ERROR_BAD_LANGUAGE:
+                return get_string('error_bad_language', 'plagiarism_programming');
+            case SUBMISSION_STATUS_ERROR_NOT_ENOUGH_SUBMISSION:
+                return get_string('error_not_enough_submission', 'plagiarism_programming');
+            case SUBMISSION_STATUS_ERROR:
+                return $status->report;
         }
     }
 }

@@ -116,7 +116,10 @@ class jplag_tool implements plagiarism_tool {
         $state = $status->state;
         if ($state >= SUBMISSION_STATUS_ERROR) {
             $jplag_param->status = 'error';
-            $jplag_param->message = $status->report;
+            $jplag_param->message = jplag_stub::translate_scanning_status($status);
+            $jplag_param->error_detail = $status->report;
+
+            $this->cancel_submission($jplag_param);
         } else if ($state == SUBMISSION_STATUS_DONE) {
             $jplag_param->status = 'done';
             $jplag_param->progress = 100;
@@ -163,7 +166,7 @@ class jplag_tool implements plagiarism_tool {
             $jplag_param->directory=$assignment_report_path;
             $jplag_param->message = 'success';
         } catch (SoapFault $fault) {
-            echo 'Error occurs while downloading: '.$fault->detail->JPlagException->description."\n";
+            debug('Error occurs while downloading: '.$fault->detail->JPlagException->description."\n");
             $error = jplag_stub::interpret_soap_fault($fault);
             $jplag_param->status='error';
             $jplag_param->message=$error['message'];
@@ -171,6 +174,15 @@ class jplag_tool implements plagiarism_tool {
         }
 
         return $jplag_param;
+    }
+    
+    protected function cancel_submission($jplag_param) {
+        try {
+            $this->jplag_stub->cancel_submission($jplag_param->submissionid);
+        } catch (SoapFault $ex) {
+            $fault = jplag_stub::interpret_soap_fault($ex);
+            $jplag_param->message .= get_string('jplag_cancel_error', 'plagiarism_programming').' '.$fault['message'];
+        }
     }
 
     public function display_link($param) {
