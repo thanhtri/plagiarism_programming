@@ -229,7 +229,7 @@ function get_suspicious_works($student_id, $cmid) {
     global $DB;
     // get the latest report version
     $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid));
-    $ids = $DB->get_fieldset_select('programming_report', 'id', "version=$version");
+    $ids = $DB->get_fieldset_select('programming_report', 'id', "cmid=$cmid And version=$version");
 
     if (count($ids)>0) {
         $ids = implode(',', $ids);
@@ -299,7 +299,7 @@ function get_latest_report($cmid, $detector) {
     global $DB;
     $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid, 'detector'=>$detector));
     if ($version!==false) {
-        $report = $DB->get_record('programming_report', array('version'=>$version, 'detector'=>$detector));
+        $report = $DB->get_record('programming_report', array('cmid'=>$cmid, 'version'=>$version, 'detector'=>$detector));
         return $report;
     } else {
         return null;

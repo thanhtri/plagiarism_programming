@@ -90,15 +90,16 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('select', 'programming_language',
             get_string('programming_language', 'plagiarism_programming'), $programming_languages);
 
-        $warning_style = array('class' => 'programming_result_warning');
+        // Disable the tools when no credentials provided
         $mform->addElement('hidden', 'for_disabled', 1);
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
+            $mform->disabledIf('detection_tools[jplag]', 'for_disabled', 'eq', 1);
         }
         if (empty($settings->moss_user_id)) {
             $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
         }
 
+        // Check box for selecting the tools
         $selected_tools = array();
         $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'));
         $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'));
@@ -123,6 +124,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
 
+        // Enable or disable the tools according to the choice of programming languages
         $jplag_support = jplag_tool::get_supported_language();
         $moss_support = moss_tool::get_supported_laguage();
         foreach ($programming_languages as $code => $name) {
@@ -150,8 +152,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->setDefault('notification', $plagiarism_config->notification);
             $mform->setDefault('notification_text', $plagiarism_config->notification_text);
         }
-        if (!$plagiarism_config || empty($plagiarism_config->notification_text)) {
-            $mform->setDefault('programming_language', 'java');
+        if (empty($plagiarism_config->notification_text)) {
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
@@ -229,11 +230,13 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
         } else { // plugin not enabled, delete the records if there are (in case user disable the plugin)
-            $settings = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
-            $DB->delete_records('programming_scan_date', array('settingid'=>$settings->id));
-            $DB->delete_records('programming_jplag', array('settingid'=>$settings->id));
-            $DB->delete_records('programming_moss', array('settingid'=>$settings->id));
-            $DB->delete_records('programming_plagiarism', array('id'=>$settings->id));
+            $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+            if ($setting) {
+                $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id));
+                $DB->delete_records('programming_jplag', array('settingid'=>$setting->id));
+                $DB->delete_records('programming_moss', array('settingid'=>$setting->id));
+                $DB->delete_records('programming_plagiarism', array('id'=>$setting->id));
+            }
         }
     }
 
@@ -461,24 +464,28 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     /** If the plugin is enabled or not (at Moodle level or at course level)
      * @param $cmid: the course module id (can provide the course id instead)
      * @param $course_id: the course id
-     * @return true: if the plugin is enabled
-     *         false:if the plugin is not enabled
+     * @return true: if the plugin is enabled in this course context
+     *         false:if the plugin is not enabled in this course context
      */
     public function is_plugin_enabled($cmid, $course_id=null) {
         global $DB;
 
         $settings = (array) get_config('plagiarism');
-        if (!$settings['programming_use']) {
+        if (!$settings['programming_use']) { // globaly disabled
             return false;
         }
+
+        $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
+        if ($plagiarism_programming_setting['level_enabled']=='global') { // globally enabled
+            return true;
+        }
+
+        // specifically enabled for some courses
         if (!$course_id) {
             $course_module = get_coursemodule_from_id('assignment', $cmid);
             $course_id = ($course_module)?$course_module->course:0;
         }
-        $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
-        $enabled = $plagiarism_programming_setting['level_enabled']=='global' ||
-            ($DB->get_record('programming_course_enabled', array('course' => $course_id))!=false);
-        return $enabled;
+        return $DB->get_record('programming_course_enabled', array('course' => $course_id))!=false;
     }
 
     /**
@@ -497,6 +504,11 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $is_add_date = optional_param('add_new_date', '', PARAM_TEXT);
         if (!empty($is_add_date)) {
             $date_num++;
+            $mform->addElement('hidden', 'is_add_date', 1);
+            $mform->setConstants(array('is_add_date'=>1));
+        } else {
+            $mform->addElement('hidden', 'is_add_date', 0);
+            $mform->setConstants(array('is_add_date'=>0));
         }
 
         $i = 0;

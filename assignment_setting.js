@@ -26,6 +26,15 @@ M.plagiarism_programming.assignment_setting = {
 
         var form = document.forms[0];
         YAHOO.util.Event.addListener(form, 'submit', M.plagiarism_programming.assignment_setting.check_mandatory_form_field);
+
+        var new_date_button = document.getElementsByName('add_new_date')[0];
+        YAHOO.util.Event.addListener(new_date_button, 'click', function(e) {
+            skipClientValidation = true;
+        });
+
+        if (document.getElementsByName('is_add_date')[0].value==1) {
+            window.scrollTo(0, new_date_button.offsetTop);
+        }
     },
 
     check_mandatory_form_field: function(evt) {
