@@ -13,7 +13,8 @@ M.plagiarism_programming = {
      */
     initialise : function(Y,cmid,checkprogress) {
         var button = YAHOO.util.Dom.get('plagiarism_programming_scan');
-        YAHOO.util.Event.addListener(button, 'click', function() {
+        YAHOO.util.Event.addListener(button, 'click', function(e) {
+            YAHOO.util.Event.preventDefault(e);
             var time = new Date().getTime() % 100000000;
             M.plagiarism_programming.initiate_scanning(cmid,time);
             M.plagiarism_programming.monitor_scanning(cmid,time);
@@ -119,23 +120,17 @@ M.plagiarism_programming = {
         }
     },
 
-//    download_result : function(cmid) {
-//        var callback = {
-//            success: function(o) {},
-//            argument: cmid
-//        }
-//        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php', callback,
-//            'task=download&cmid='+cmid);
-//    },
-
     enable_scanning : function(is_on) {
-        var button = YAHOO.util.Dom.get('plagiarism_programming_scan');
-
+        var button = document.getElementById('plagiarism_programming_scan');
+        var message = document.getElementById('scan_message');
         if (is_on) {   // turn scanning on
             button.disabled = false;
             button.value = 'Rescan';
+            message.style.display = 'none';
+            
         } else {
             button.disabled = true;
+            message.style.display = 'inline';
         }
     },
 

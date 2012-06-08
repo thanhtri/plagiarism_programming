@@ -32,18 +32,14 @@ global $OUTPUT, $PAGE, $DB, $USER, $CFG;
 $result_id = required_param('id', PARAM_INT); //id in the programming_result table
 $anchor = optional_param('anchor', -1, PARAM_INT);
 $result_record = $DB->get_record('programming_result', array('id'=>$result_id));
-$cmid = $result_record->cmid;
+$report_rec = $DB->get_record('programming_report', array('id'=>$result_record->reportid));
 
 // get the report directory
-$detector = $result_record->detector;
-if ($detector=='jplag') {
-    require_once(__DIR__.'/jplag_tool.php');
-    $tool = new jplag_tool();
-} else {
-    require_once(__DIR__.'/moss_tool.php');
-    $tool = new moss_tool();
-}
-$directory = $tool->get_report_path($cmid);
+$cmid = $report_rec->cmid;
+$detector = $report_rec->detector;
+require_once(__DIR__.'/'.$detector.'_tool.php');
+$tool_class_name = $detector.'_tool';
+$directory = $tool_class_name::get_report_path($report_rec);
 //-------------------------------------end parameter processing--------------------------------------------------//
 
 // create page context
@@ -119,10 +115,28 @@ if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the se
         'Y'=>get_string('mark_suspicious', 'plagiarism_programming'),
         'N'=>get_string('mark_nonsuspicious', 'plagiarism_programming')
     );
-    $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'mark').' ';
+    $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'action_menu').' ';
     $content .= html_writer::select($actions, 'mark', $result_record->mark, 'Action...', array('id'=>'action_menu'));
 }
-$content .= html_writer::empty_tag('img', array('src'=>'', 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));
+$img_src = '';
+if ($result_record->mark=='Y') {
+    $img_src = 'pix/suspicious.png';
+} else if ($result_record->mark=='N') {
+    $img_src = 'pix/normal.png';
+}
+$content .= html_writer::empty_tag('img', array('src'=>$img_src, 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));
+
+// select the report history
+$similarity_history = get_student_similarity_history($result_record->student1_id, $result_record->student2_id, $cmid, $detector);
+if (count($similarity_history)>1) {
+    $report_select = array();
+    foreach ($similarity_history as $pair) {
+        $report_select[$pair->id] = date('d M h.i A', $pair->time_created);
+    }
+    $content .= '<br/><br/>';
+    $content .= html_writer::label(get_string('version'), 'report_version').' ';
+    $content .= html_writer::select($report_select, 'report_version', $result_record->id, null, array('id'=>'report_version'));
+}
 echo html_writer::tag('div', "<div>$content</div>", array('class'=>'programming_result_comparison_top_right'));
 
 // separator
@@ -134,7 +148,7 @@ echo html_writer::tag('div', $result1['content'], array('class'=>'programming_re
 echo html_writer::tag('div', $result2['content'], array('class'=>'programming_result_comparison_bottom_right'));
 
 //----- name lookup table for javascript--------
-$result_select = "cmid=$cmid AND detector='$detector' ".
+$result_select = "reportid=$report_rec->id ".
     "AND (student1_id=$result_record->student1_id OR student1_id=$result_record->student2_id ".
     "OR student2_id=$result_record->student1_id OR student2_id=$result_record->student2_id)";
 $result = $DB->get_records_select('programming_result', $result_select);
@@ -155,6 +169,8 @@ $PAGE->requires->yui2_lib('event');
 $PAGE->requires->yui2_lib('container');
 $PAGE->requires->yui2_lib('yahoo-dom-event');
 $PAGE->requires->yui2_lib('menu');
+$PAGE->requires->yui2_lib('json');
+$PAGE->requires->yui2_lib('animation');
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',

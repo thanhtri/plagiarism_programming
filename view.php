@@ -29,31 +29,16 @@ require_once(__DIR__.'/reportlib.php');
 
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
 
-$cmid = optional_param('cmid', null, PARAM_INT);
+$cmid = required_param('cmid', PARAM_INT);
 $student_id = optional_param('student', -1, PARAM_INT);
 $lower_threshold = optional_param('lower_threshold', 20, PARAM_FLOAT); // rate will be above this similarity
 $upper_threshold = optional_param('upper_threshold', 100, PARAM_FLOAT);
-$tool = optional_param('tool', 'jplag', PARAM_TEXT);
+$tool = optional_param('tool', '', PARAM_TEXT);
+$report_version = optional_param('version', -1, PARAM_INT);
 $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);
 
 // display_mode is either table (similar to JPlag style)  or group (similar to MOSS style)
 $display_mode = optional_param('display_mode', 'group', PARAM_TEXT);
-
-// if the user is a student (does not have grade capability), he can only see the report on his assignment if allowed
-$context = get_context_instance(CONTEXT_MODULE, $cmid);
-$is_teacher = has_capability('mod/assignment:grade', $context);
-if (!$is_teacher) {
-    // check if he is allowed to see the assignment
-    if (!has_capability('mod/assignment:submit', $context) ||
-            !$DB->get_field('programming_plagiarism', 'auto_publish', array('courseid'=>$cmid))) {
-        redirect($CFG->wwwroot, "You don't have permission to see this page");
-    }
-    $student_id = $USER->id;
-}
-
-if ($student_id > 0) {
-    $display_mode = 'table';
-}
 
 if (!$course_module = get_coursemodule_from_id('assignment', $cmid)) {
     redirect($CFG->wwwroot, 'Invalid course module id');
@@ -64,9 +49,42 @@ if (!$course) {
 }
 require_login($course, true, $course_module);
 
-$PAGE->set_url(new moodle_url('/plagiarism/programming/view.php', array('cmid'=>$cmid)));
-assert($cmid!=null);
+// if the user is a student (does not have grade capability), he can only see the report on his assignment if allowed
+$context = get_context_instance(CONTEXT_MODULE, $cmid);
+$is_teacher = has_capability('mod/assignment:grade', $context);
+if (!$is_teacher) {
+    // check if he is allowed to see the assignment
+    if (!has_capability('mod/assignment:submit', $context) ||
+            !$DB->get_field('programming_plagiarism', 'auto_publish', array('courseid'=>$cmid))) {
+        redirect($CFG->wwwroot, get_string('permission_denied', 'plagiarism_programming'));
+    }
+    $student_id = $USER->id;
+}
 
+if ($student_id > 0) {
+    $display_mode = 'table';
+}
+
+$PAGE->set_url(new moodle_url('/plagiarism/programming/view.php', array('cmid'=>$cmid)));
+
+// verify the version
+if (!empty($tool) && $report_version>0) {
+    $report = $DB->get_record('programming_report', array('cmid'=>$cmid, 'detector'=>$tool, 'version'=>$report_version));
+} else if (empty($tool)) { //if tool empty, assume report version empty
+    $report = get_latest_report($cmid, 'jplag');
+    if ($report) {
+        $tool = 'jplag';
+    } else {
+        $report = get_latest_report($cmid, 'moss');
+        $tool = 'moss';
+    }
+} else if ($report_version<=0) {
+    $report = get_latest_report($cmid, $tool);
+}
+
+if (!$report) { // at this point, we don't have any report available
+    redirect("$CFG->wwwroot/mod/assignment/view.php?id=".$cmid, get_string('report_not_available', 'plagiarism_programming'));
+}
 // construct the query based on filtering criteria
 if ($rate_type=='max') {
     $similarity = 'greatest(similarity1,similarity2)';
@@ -74,7 +92,7 @@ if ($rate_type=='max') {
     $similarity = '(similarity1+similarity2)/2';
 }
 $select = "Select *, $similarity similarity From {programming_result}".
-    " Where cmid=$cmid AND detector='$tool' AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
+    " Where reportid=$report->id AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
 if ($student_id>0) {
     $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
 }
@@ -95,7 +113,7 @@ $PAGE->set_heading($header);
 $PAGE->navbar->add($header);
 echo $OUTPUT->header();
 
-$filter_forms = new programming_plag_result_form();
+$filter_forms = new programming_plag_result_form($cmid, $tool);
 $filter_forms->set_data(array('cmid'=>$cmid,
     'student'=>$student_id,
     'lower_threshold'=>$lower_threshold,
@@ -105,6 +123,19 @@ $filter_forms->set_data(array('cmid'=>$cmid,
 $filter_forms->display();
 
 echo html_writer::tag('div', get_string('chart_legend', 'plagiarism_programming'));
-echo html_writer::tag('div', create_chart($cmid, $tool, $rate_type), array('class'=>'programming_result_chart'));
+echo html_writer::tag('div', create_chart($report->id, $rate_type), array('class'=>'programming_result_chart'));
 echo html_writer::tag('div', html_writer::table($table), array('class'=>'programming_result_table'));
+
+$PAGE->requires->yui2_lib('container');
+$PAGE->requires->yui2_lib('yahoo-dom-event');
+$PAGE->requires->yui2_lib('json');
+$PAGE->requires->yui2_lib('animation');
+$jsmodule = array(
+    'name' => 'plagiarism_programming',
+    'fullpath' => '/plagiarism/programming/view_report.js',
+    'strings' => array()
+);
+$PAGE->requires->js_init_call('M.plagiarism_programming.view_report.init',
+    array($cmid), true, $jsmodule);
+
 echo $OUTPUT->footer();

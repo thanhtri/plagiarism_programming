@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define('AJAX_SCRIPT', true);
+define('NO_OUTPUT_BUFFERING', true);
 
 require_once(__DIR__.'/../../config.php');
 require_once(__DIR__.'/scan_assignment.php');
@@ -55,8 +55,9 @@ if ($task=='scan') {
     ignore_user_abort();
     set_time_limit(0); // uploading may last very long
     register_shutdown_function('handle_shutdown');
-    $time = required_param('time', PARAM_INT);
+    $time = optional_param('time', 0, PARAM_INT);
     $PROCESSING_INFO = array('stage'=>'extract', 'cmid'=>$cmid);
+    ob_implicit_flush(true);
     start_scan_assignment($assignment, $time);
 } else if ($task=='check') {
     $starttime = optional_param('time', 0, PARAM_INT);
@@ -76,6 +77,7 @@ if ($task=='scan') {
 function start_scan_assignment($assignment, $time) {
     global $DB, $detection_tools;
 
+    echo get_string('scanning_in_progress', 'plagiarism_programming')."\n";
     // reset the status of all tools to pending and clear the error message if it is finished or error
     foreach ($detection_tools as $toolname => $tool) {
         if (isset($assignment->$toolname)) {

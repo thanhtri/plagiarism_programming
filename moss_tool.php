@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 require_once(__DIR__.'/plagiarism_tool.php');
 require_once(__DIR__.'/moss/moss_stub.php');
 require_once(__DIR__.'/moss/moss_parser.php');
+require_once(__DIR__.'/reportlib.php');
 
 class moss_tool implements plagiarism_tool {
 
@@ -146,7 +147,8 @@ class moss_tool implements plagiarism_tool {
             return $moss_param;
         }
         // Create the directory
-        $report_path = $this->get_report_path($assignment->courseid);
+        $report = create_next_report($assignment->courseid, 'moss');
+        $report_path = self::get_report_path($report);
         if (is_dir($report_path)) {
             rrmdir($report_path);
         }
@@ -170,12 +172,18 @@ class moss_tool implements plagiarism_tool {
         return $moss_info;
     }
 
-    public function get_report_path($cmid=null) {
+    /**
+     * Return the path of the directory containing the report
+     * @param number $cmid the course module id of the assignment. If null, it will return the root directory of all the report
+     * @param number $version the version of report. If null, it will return the directory of the latest report of this assignment
+     * (if cmid not null)
+     */
+    public static function get_report_path($report=null) {
         global $CFG;
-        if (!$cmid) {
-            return $CFG->dataroot.'/plagiarism_report/';
+        if (!$report) {
+            return "$CFG->dataroot/plagiarism_report/";
         } else {
-            return $CFG->dataroot."/plagiarism_report/moss$cmid";
+            return "$CFG->dataroot/plagiarism_report/moss$report->cmid"."_v$report->version";
         }
     }
 

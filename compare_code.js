@@ -34,6 +34,9 @@ M.plagiarism_programming.compare_code = {
     result_table: null,
     student1: null,
     student2: null,
+    history_overlay: null,
+    chart_width: 350,
+    chart_height: 200,
 
     init : function(Y,info,name_table,result_table,anchor) {
         this.id = info.id;
@@ -43,13 +46,15 @@ M.plagiarism_programming.compare_code = {
         this.result_table = result_table;
 
         this.init_links();
-        this.init_action(info.mark);
+        this.init_action();
+        this.init_select_version();
         this.init_similarity_menu();
         this.init_compare_code();
         if (anchor>=0) {
             this.move_frame('programming_result_comparison_bottom_left', 'sim_'+anchor);
             this.move_frame('programming_result_comparison_bottom_right','sim_'+anchor);
         }
+        this.init_history_chart();
     },
 
     init_links: function() {
@@ -57,7 +62,7 @@ M.plagiarism_programming.compare_code = {
         for (var i=0; i<links.length; i++) {
             if (links[i].getAttribute('href')!=null) {
                 YAHOO.util.Event.addListener(links[i],'click',function(e) {
-                    YAHOO.util.Event.preventDefault(e);
+                    YAHOO.util.Event.preventDefault(e)
                     M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left',
                         this.getAttribute('href'));
                     M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right',
@@ -78,14 +83,13 @@ M.plagiarism_programming.compare_code = {
         div.appendChild(document.createElement('br'));
         var checkbox2 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_right');
         div.appendChild(checkbox2);
-        label = M.str.plagiarism_programming.show_similarity_to_others.replace('{student}',this.name_table[this.student2]);
+        label = M.str.plagiarism_programming.show_similarity_to_others.replace('{student}', this.name_table[this.student2]);
         div.appendChild(document.createTextNode(' '+label));
     },
 
-    init_action: function(mark) {
+    init_action: function() {
         var action_select = document.getElementById('action_menu');
-        this.change_image(mark);
-        YAHOO.util.Event.addListener(action_select,'change',this.action_menu_onchange,true);
+        YAHOO.util.Event.addListener(action_select, 'change', this.action_menu_onchange, true);
     },
 
     init_similarity_menu: function() {
@@ -95,6 +99,40 @@ M.plagiarism_programming.compare_code = {
 
         var menu = new YAHOO.widget.Menu('basicMenu',{});
         M.plagiarism_programming.compare_code.menu = menu;
+    },
+
+    init_select_version: function() {
+        var version_select = document.getElementById('report_version');
+        YAHOO.util.Event.addListener(version_select, 'change', function(ev) {
+            var id = this.options[this.selectedIndex].value;
+            window.location = 'view_compare.php?id='+id;
+        }, true);
+    },
+
+    init_history_chart: function() {
+        var select_history = document.getElementById('report_version');
+        var link = document.createElement('a');
+        link.innerHTML = 'View histogram';
+        link.href = '#';
+        link.id = 'show_history_link';
+        select_history.parentNode.appendChild(link);
+        this.create_chart();
+        YAHOO.util.Event.addListener(link, 'click', function(e) {
+            YAHOO.util.Event.preventDefault(e);
+            YAHOO.util.Event.stopPropagation(e);
+            M.plagiarism_programming.compare_code.history_overlay.show();
+        });
+        
+        YAHOO.util.Event.addListener(document, 'click', function(e) {
+            var node = e.target;
+            var overlay = document.getElementById('history_chart');
+            while (node!=overlay && node!=null) {
+                node = node.parentNode;
+            }
+            if (node==null) {
+                M.plagiarism_programming.compare_code.history_overlay.hide();
+            }
+        });
     },
 
     action_menu_onchange: function(e) {
@@ -107,7 +145,7 @@ M.plagiarism_programming.compare_code = {
             }
         }
         YAHOO.util.Connect.asyncRequest('POST','mark_result.php',callback,
-            'id='+M.plagiarism_programming.compare_code.id+'&action='+action);
+            'task=mark&id='+M.plagiarism_programming.compare_code.id+'&action='+action);
     },
 
     change_image: function(action) {
@@ -251,7 +289,7 @@ M.plagiarism_programming.compare_code = {
             var std2 = Math.min(this_student, sids[i]);
             menu.addItem({text:name,url:'view_compare.php?id='+this.result_table[std1][std2]+'&anchor='+anchors[i]});
         }
-        menu.cfg.setProperty('context',[span.firstChild,'tl','bl']);
+        menu.cfg.setProperty('context',[span.firstChild, 'tl', 'bl']);
         menu.render('similarity_menu_div');
         menu.show();
     },
@@ -267,5 +305,61 @@ M.plagiarism_programming.compare_code = {
             }
         },true);
         return checkbox;
+    },
+
+    create_chart: function() {
+        this.history_overlay = new YAHOO.widget.Overlay('history_chart', {
+            context : ['show_history_link','tl','bl', ['beforeShow', 'windowResize']],
+            visible: false,
+            effect:{effect:YAHOO.widget.ContainerEffect.FADE,duration:0.25}
+        });
+
+        var callback = {
+            success: M.plagiarism_programming.compare_code.load_overlay
+        };
+        YAHOO.util.Connect.asyncRequest('GET','mark_result.php?task=get_history&id='+M.plagiarism_programming.compare_code.id,
+            callback);
+    },
+
+    load_overlay: function(o) {
+        var history = YAHOO.lang.JSON.parse(o.responseText);
+        var width = M.plagiarism_programming.compare_code.chart_width-25;
+        var height = M.plagiarism_programming.compare_code.chart_height-50;
+
+        var overlay = document.createElement('div');
+        overlay.setAttribute('class', 'programming_result_chart_overlay');
+        overlay.style.width = M.plagiarism_programming.compare_code.chart_width+'px';
+        overlay.style.height= M.plagiarism_programming.compare_code.chart_height+'px';
+
+        var canvas = document.createElement('div');
+        canvas.setAttribute('class', 'programming_result_popup_chart');
+        canvas.style.width = width+'px';
+        canvas.style.height= height+'px';
+        var left = 20;
+        for (var i in history) {
+            var bar = document.createElement('a');
+            bar.setAttribute('class', 'bar');
+            bar.href = 'view_compare.php?id='+i;
+            bar.style.height = (history[i].similarity/100*height)+'px';
+            bar.style.left = left+'px';
+            bar.style.bottom = '0px';
+            canvas.appendChild(bar);
+
+            var label = document.createElement('label');
+            label.innerHTML = history[i].similarity+'%';
+            label.style.left = left+'px';
+            label.style.bottom = (history[i].similarity/100*height+5)+'px';
+            canvas.appendChild(label);
+
+            label = document.createElement('label');
+            label.innerHTML = history[i].time_text;
+            label.style.left = left+'px';
+            label.style.bottom = '-35px';
+            canvas.appendChild(label);
+            left += 50;
+        }
+        overlay.appendChild(canvas);
+        M.plagiarism_programming.compare_code.history_overlay.setBody(overlay);
+        M.plagiarism_programming.compare_code.history_overlay.render(document.body)
     }
 }

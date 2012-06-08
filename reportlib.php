@@ -81,6 +81,8 @@ function create_table_grouping_mode(&$list, &$student_names, $cmid) {
             $cell->text = create_student_link($student_names[$s2_id], $s2_id).'<br/>'.$compare_link;
             $mark = $similarity['mark'];
             $cell->attributes['class'] = ($mark=='Y')?'suspicious':(($mark=='N')?'normal':'');
+            $cell->attributes['class'] .= ' similar_pair';
+            $cell->attributes['pair'] = $similarity['id'];
             $row->cells[] = $cell;
         }
         $table->data[] = $row;
@@ -119,7 +121,7 @@ function create_table_list_mode(&$list, &$student_names, $cmid) {
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = html_writer::link("view_compare.php?id=$pair->id", "$pair->similarity%");
+        $cell->text = html_writer::link("view_compare.php?id=$pair->id", "$pair->similarity%", array('class'=>'compare_link'));
         $row->cells[] = $cell;
 
         $mark = $pair->mark;
@@ -137,10 +139,10 @@ function create_table_list_mode(&$list, &$student_names, $cmid) {
  * @param $similarity_type: either average (avg) or maximum (max)
  * @return the html code for the graph
  */
-function create_chart($cmid, $tool, $similarity_type) {
+function create_chart($reportid, $similarity_type) {
     global $DB;
 
-    $select = "cmid=$cmid AND detector='$tool'";
+    $select = "reportid=$reportid";
     // similarity depends on similarity type, "greatest" is supported in all Moodle except SQLServer
     $result = ($similarity_type=='avg')?'(similarity1+similarity2)/2':'greatest(similarity1,similarity2)';
     $similarities = $DB->get_fieldset_select('programming_result', $result, $select);
@@ -183,16 +185,16 @@ function create_chart($cmid, $tool, $similarity_type) {
         if ($val>0) {
             $left = ($width+50).'px';
             $div .= html_writer::tag('div', $val,
-                    array('class'=>'legend', 'style'=>"top:$pos_y;width:40px;left:$left"));
+                    array('class'=>'legend', 'style'=>"top:$pos_y;left:$left"));
         }
     }
     $pos_y = (10*(BAR_WIDTH+5)-5).'px';
     $width = CHART_WITH.'px';
     $div .= html_writer::tag('div', '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width;height:1px"));
-    $pos_y = (CHART_HEIGHT-10).'px';
-    $left = (CHART_WITH+20).'px';
+    $pos_y = (CHART_HEIGHT+10).'px';
+    $left = '45px';
     $div .= html_writer::tag('div', get_string('pair', 'plagiarism_programming'),
-            array('class'=>'legend', 'style'=>"top:$pos_y;width:40px;left:$left"));
+            array('class'=>'legend', 'style'=>"top:$pos_y;left:$left"));
     return $div;
 }
 
@@ -225,14 +227,31 @@ function create_student_link($student_name, $student_id) {
 
 function get_suspicious_works($student_id, $cmid) {
     global $DB;
-    $select = "(student1_id=$student_id OR student2_id=$student_id) AND cmid=$cmid AND mark='Y'";
-    return $DB->get_records_select('programming_result', $select);
+    // get the latest report version
+    $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid));
+    $ids = $DB->get_fieldset_select('programming_report', 'id', "version=$version");
+
+    if (count($ids)>0) {
+        $ids = implode(',', $ids);
+        $select = "(student1_id=$student_id OR student2_id=$student_id) AND reportid IN ($ids) AND mark='Y'";
+        return $DB->get_records_select('programming_result', $select);
+    } else {
+        return array();
+    }
 }
 
 function get_students_similarity_info($cmid, $student_id=null) {
     global $DB;
-    $sql = 'Select id,student1_id,student2_id,(similarity1+similarity2)/2 as similarity,mark,detector '.
-        "FROM {programming_result} Where cmid=$cmid";
+    // get the latest report version
+    $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid));
+    $reports = $DB->get_records('programming_report', array('cmid'=>$cmid, 'version'=>$version));
+
+    if (count($reports)==0) {
+        return array();
+    }
+    $ids = implode(',', array_keys($reports));
+    $sql = 'Select id,student1_id,student2_id,(similarity1+similarity2)/2 as similarity,mark,reportid '.
+        "FROM {programming_result} Where reportid IN ($ids)";
     if ($student_id!==null) {
         $sql .= " And (student1_id=$student_id OR student2_id=$student_id)";
     }
@@ -244,10 +263,11 @@ function get_students_similarity_info($cmid, $student_id=null) {
             if (isset($students[$rec->$student_id])) {
                 $max = max($students[$rec->$student_id]['max'], $rec->similarity);
                 $mark = ($rec->mark=='Y')?'Y':$students[$rec->$student_id]['mark'];
-                $detector = ($rec->similarity==$max)?$rec->detector:$students[$rec->$student_id]['detector'];
+                $detector = ($rec->similarity==$max)?$reports[$rec->reportid]->detector:$students[$rec->$student_id]['detector'];
                 $students[$rec->$student_id] = array('max'=>$max, 'mark'=>$mark, 'detector'=>$detector);
             } else {
-                $students[$rec->$student_id] = array('max'=>$rec->similarity, 'mark'=>$rec->mark, 'detector'=>$rec->detector);
+                $students[$rec->$student_id] = array('max'=>$rec->similarity, 'mark'=>$rec->mark,
+                    'detector'=>$reports[$rec->reportid]->detector);
             }
         }
     }
@@ -267,4 +287,55 @@ function get_report_link($cmid, $student_id=null, $detector=null, $threshold=nul
         $link .= "&lower_threshold=$threshold";
     }
     return $link;
+}
+
+/**
+ * Get the next version of the report for the specified assignment with the detector
+ * @param number $cmid the course module id of the assignment. If null, it will return the root directory of all the report
+ * @param number $detector the version of report. If null, it will return the directory of the latest report of this assignment
+ * @return the report record having the latest version
+ */
+function get_latest_report($cmid, $detector) {
+    global $DB;
+    $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid, 'detector'=>$detector));
+    if ($version!==false) {
+        $report = $DB->get_record('programming_report', array('version'=>$version, 'detector'=>$detector));
+        return $report;
+    } else {
+        return null;
+    }
+}
+
+/**
+ * Create the next version of the report
+ * @param number $cmid the course module id of the assignment. If null, it will return the root directory of all the report
+ * @param number $detector the version of report. If null, it will return the directory of the latest report of this assignment
+ * @return the report record created
+ */
+function create_next_report($cmid, $detector) {
+    global $DB;
+    // create a new version of the report
+    $latest_report = get_latest_report($cmid, $detector);
+    if ($latest_report) {
+        $version = $latest_report->version+1;
+    } else {
+        $version = 1;
+    }
+    $report = new stdClass();
+    $report->cmid = $cmid;
+    $report->time_created = time();
+    $report->version = $version;
+    $report->detector = $detector;
+    $report->id = $DB->insert_record('programming_report', $report);
+    return $report;
+}
+
+function get_student_similarity_history($student1_id, $student2_id, $cmid, $detector, $time_sort='desc') {
+    global $DB;
+    $sql = "Select result.*, time_created From {programming_report} report, {programming_result} result ".
+        " Where report.cmid=$cmid And report.detector='$detector' And report.id = result.reportid And ".
+        " ((student1_id=$student1_id And student2_id=$student2_id) Or".
+        " (student1_id=$student2_id And student2_id=$student1_id)) Order By time_created ".$time_sort;
+    $pairs = $DB->get_records_sql($sql);
+    return $pairs;
 }

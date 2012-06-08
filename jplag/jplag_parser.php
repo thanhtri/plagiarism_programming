@@ -29,19 +29,18 @@ require_once(__DIR__.'/../utils.php');
 class jplag_parser {
     private $filename;
     private $cmid;
+    private $report;
 
     public function __construct($cmid) {
         $this->cmid = $cmid;
-        $tool = new jplag_tool();
-        $this->filename = $tool->get_report_path($cmid).'/index.html';
+        $this->report = get_latest_report($cmid, 'jplag');
+        $this->filename = jplag_tool::get_report_path($this->report).'/index.html';
     }
 
     public function parse() {
         global $DB;
 
         $directory = dirname($this->filename);
-        // delete the result already exist
-        $DB->delete_records('programming_result', array('cmid'=> $this->cmid, 'detector'=>'jplag'));
 
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = false;
@@ -56,8 +55,7 @@ class jplag_parser {
         $rownum = $rows->length;
 
         $res = new stdClass();
-        $res->detector = 'jplag';
-        $res->cmid = $this->cmid;
+        $res->reportid = $this->report->id;
         for ($i=0; $i<$rownum; $i++) {
             $row = $rows->item($i);
             $cells = $row->getElementsByTagName('td');
@@ -90,7 +88,7 @@ class jplag_parser {
 
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('programming_result', array('cmid'=>$this->cmid, 'detector'=>'jplag'));
+        $pairs = $DB->get_records('programming_result', array('reportid'=>$this->report->id));
         $path = dirname($this->filename);
 
         $similarity_array = array();
@@ -106,9 +104,11 @@ class jplag_parser {
             $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file_1, $similarity_array, $file_array);
 
             // TODO: uncomment to delete these files after debugging
-            // unlink($file);
-            // unlink($file_0);
-            // unlink($file_1);
+            if (!debugging()) {
+                unlink($file);
+                unlink($file_0);
+                unlink($file_1);
+            }
         }
         $this->save_code($file_array, $similarity_array, $path);
     }

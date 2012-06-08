@@ -97,6 +97,7 @@ $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provi
 $string['credential_missing_instruction'] = 'Please enter the required credential in Administrator -> Plugin -> Plagiarism -> Programming assignment';
 $string['no_tool_selected_error'] = 'You must select at least one tool!';
 $string['pending'] = 'not started';
+$string['extract'] = 'Extracting the assignment';
 $string['pending_start'] = 'Preparing to send the assignment';
 $string['uploading'] = 'Sending the assignment';
 $string['scanning'] = 'Checking for similarities';
@@ -127,6 +128,8 @@ $string['unexpected_error_upload'] = 'An unexpected error occurred while sending
 $string['unexpected_error_download'] = 'An unexpected error occurred while downloading and parsing the result! This may be due to connection broken or corrupted data...'
     .' Please try again latter!';
 $string['general_user_error'] = 'Errors occured due to corrupted report data';
+$string['scanning_in_progress'] = 'Scanning may take a longtime depending on server load! Please feel free to navigate away from this page';
+$string['unexpected_error'] = 'An unexpected error has occurred! Please contact administrator!';
 
 // options for displaying results
 $string['option_header'] = 'Options';
@@ -134,8 +137,12 @@ $string['threshold'] = 'Similarity filter (%)';
 $string['similarity_type'] = 'Similarity type';
 $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
+$string['version'] = 'History';
 $string['submit'] = 'Filter';
 $string['showHideLabel'] = 'Show plagiarism options';
+
+$string['permission_denied'] = "You don't have permission to see this page";
+$string['report_not_available'] = 'No reports available';
 
 $string['lower_threshold_hlp'] = '';
 $string['lower_threshold_hlp_help'] = 'Display only the pairs having similarity rate above this value';
@@ -150,7 +157,9 @@ $string['tool_hlp_help'] = 'Select the tool to show the result';
 $string['display_mode_hlp'] = '';
 $string['display_mode_hlp_help'] = 'Select the display mode. "Grouping students" mode shows all the students similar with one '
     .'student in one row. "Ordered table" shows a list of pairs with descending similarity rate';
-$string['pair'] = 'pairs';
+$string['version_hlp'] = '';
+$string['version_hlp_help'] = 'See the report of previous scans';
+$string['pair'] = 'number of pairs';
 
 // in the report
 $string['yours'] = 'Yours';

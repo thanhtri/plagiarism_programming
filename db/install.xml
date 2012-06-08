@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/programming/db" VERSION="20120528" COMMENT="XMLDB file for Moodle plagiarism/programming"
+<XMLDB PATH="plagiarism/programming/db" VERSION="20120607" COMMENT="XMLDB file for Moodle plagiarism/programming"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="programming_plagiarism" COMMENT="This table saves settings for source code plagiarism detection in programming assignments" NEXT="programming_jplag">
+    <TABLE NAME="programming_plagiarism" COMMENT="This table saves settings for source code plagiarism detection in programming assignments" NEXT="programming_report">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The id of the course" PREVIOUS="id" NEXT="scandate"/>
@@ -22,7 +22,22 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="programming_jplag" COMMENT="programming_jplag table retrofitted from MySQL" PREVIOUS="programming_plagiarism" NEXT="programming_moss">
+    <TABLE NAME="programming_report" COMMENT="programming_report table retrofitted from MySQL" PREVIOUS="programming_plagiarism" NEXT="programming_jplag">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="time_created"/>
+        <FIELD NAME="time_created" TYPE="int" LENGTH="15" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="cmid" NEXT="version"/>
+        <FIELD NAME="version" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="time_created" NEXT="detector"/>
+        <FIELD NAME="detector" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="version"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="report_primary" TYPE="primary" FIELDS="id" COMMENT="Primary key of the table"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid_index" UNIQUE="false" FIELDS="cmid" COMMENT="Index for cmid for fast searching"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="programming_jplag" COMMENT="programming_jplag table retrofitted from MySQL" PREVIOUS="programming_report" NEXT="programming_moss">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="submissionid"/>
         <FIELD NAME="submissionid" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" PREVIOUS="id" NEXT="status"/>
@@ -60,19 +75,14 @@
         <FIELD NAME="student2_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="student1_id" NEXT="similarity1"/>
         <FIELD NAME="similarity1" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="student2_id" NEXT="similarity2"/>
         <FIELD NAME="similarity2" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity1" NEXT="comparison"/>
-        <FIELD NAME="comparison" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity2" NEXT="marked"/>
-        <FIELD NAME="marked" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comparison" NEXT="comments"/>
-        <FIELD NAME="comments" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false" PREVIOUS="marked" NEXT="cmid"/>
-        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="comments" NEXT="detector"/>
-        <FIELD NAME="detector" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="cmid" NEXT="mark"/>
-        <FIELD NAME="mark" TYPE="char" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="used to mark a pair of assignment as having unusually high similarities" PREVIOUS="detector"/>
+        <FIELD NAME="comparison" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity2" NEXT="comments"/>
+        <FIELD NAME="comments" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false" PREVIOUS="comparison" NEXT="reportid"/>
+        <FIELD NAME="reportid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" COMMENT="foreign key to table programming_report" PREVIOUS="comments" NEXT="mark"/>
+        <FIELD NAME="mark" TYPE="char" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="used to mark a pair of assignment as having unusually high similarities" PREVIOUS="reportid"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="pk_programming_result_id" TYPE="primary" FIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="cmid_idx" UNIQUE="false" FIELDS="cmid"/>
-      </INDEXES>
     </TABLE>
     <TABLE NAME="programming_course_enabled" COMMENT="programming_course_enabled table retrofitted from MySQL" PREVIOUS="programming_result" NEXT="programming_scan_date">
       <FIELDS>

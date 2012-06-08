@@ -30,7 +30,7 @@ define ('MOSS_PORT', 7690);
 class moss_stub {
     private $userid;
 
-    const TIMEOUT = 10; // maximum time to open socket or download result
+    const TIMEOUT = 3; // maximum time to open socket or download result
 
     public function __construct($userid) {
         $this->userid = $userid;
@@ -46,6 +46,7 @@ class moss_stub {
         $error_no = 0;
         $message = '';
         $socket = @fsockopen(MOSS_HOST, MOSS_PORT, $error_no, $message, self::TIMEOUT);
+        stream_set_timeout($socket, self::TIMEOUT);
         if (!$socket) {
             return array('status' => 'KO', 'error' => get_string('moss_connection_error', 'plagiarism_programming'));
         }

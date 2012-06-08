@@ -28,12 +28,16 @@ require_once(dirname(__FILE__).'/detection_tools.php');
 
 class programming_plag_result_form extends moodleform {
 
-    public function __construct() {
+    private $cmid;
+    private $detector;
+    public function __construct($cmid, $detector) {
+        $this->cmid = $cmid;
+        $this->detector = $detector;
         parent::__construct(null, null, 'get');
     }
 
     protected function definition() {
-        global $detection_tools;
+        global $DB, $detection_tools;
 
         $mform = $this->_form;
 
@@ -54,7 +58,15 @@ class programming_plag_result_form extends moodleform {
 
         // select the mode of display
         $display_modes = array('group'=>'Grouping students', 'table'=>'Ordered table');
-        $mform->addElement('select', 'display_mode',  get_string('display_mode', 'plagiarism_programming'), $display_modes);
+        $mform->addElement('select', 'display_mode', get_string('display_mode', 'plagiarism_programming'), $display_modes);
+
+        // select the version history
+        $reports = $DB->get_records('programming_report', array('cmid'=>$this->cmid, 'detector'=>$this->detector), 'time_created DESC');
+        $report_select = array();
+        foreach ($reports as $report) {
+            $report_select[$report->version] = date('d M h.i A', $report->time_created);
+        }
+        $mform->addElement('select', 'version', get_string('version', 'plagiarism_programming'), $report_select);
 
         // other elements
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);
@@ -67,6 +79,7 @@ class programming_plag_result_form extends moodleform {
         $mform->addHelpButton('rate_type', 'rate_type_hlp', 'plagiarism_programming');
         $mform->addHelpButton('tool', 'tool_hlp', 'plagiarism_programming');
         $mform->addHelpButton('display_mode', 'display_mode_hlp', 'plagiarism_programming');
+        $mform->addHelpButton('version', 'version_hlp', 'plagiarism_programming');
     }
 
 }

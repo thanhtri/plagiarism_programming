@@ -397,32 +397,20 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $button_label = ($already_scanned)?
                     get_string('rescanning', 'plagiarism_programming'):
                     get_string('start_scanning', 'plagiarism_programming');
-            $button_attr = array('type' => 'button',
+            $button_attr = array('type' => 'submit',
                   'id' => 'plagiarism_programming_scan',
                   'value' => $button_label);
             if ($button_disabled) {
                 $button_attr['disabled'] = 'disabled';
             }
-            $content .= html_writer::empty_tag('input', $button_attr);
+            $scan_button = html_writer::empty_tag('input', $button_attr);
+            $content .= html_writer::tag('form', $scan_button, array('method'=>'post',
+                'action'=>"$CFG->wwwroot/plagiarism/programming/start_scanning.php?task=scan&cmid=$cmid"));
+            $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
+                array('style'=>'display:none', 'id'=>'scan_message'));
 
             $PAGE->requires->yui2_lib('progressbar');
             $PAGE->requires->yui2_lib('json');
-
-            // include the javascript
-            $jsmodule = array(
-                'name' => 'plagiarism_programming',
-                'fullpath' => '/plagiarism/programming/scanning.js',
-                'strings' => array(
-                    array('pending_start', 'plagiarism_programming'),
-                    array('uploading', 'plagiarism_programming'),
-                    array('scanning', 'plagiarism_programming'),
-                    array('downloading', 'plagiarism_programming')
-                )
-            );
-
-            $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',
-                    array('cmid' => $setting->courseid, 'checkprogress' => $check), true, $jsmodule);
-
         }
 
         // if this is a student
@@ -440,7 +428,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
             if ($setting->auto_publish && count(get_suspicious_works($USER->id, $cmid))>0) {
                 $warning = get_string('high_similarity_warning', 'plagiarism_programming');
-                $content .= html_writer::tag('span', $warning, array('class' => 'programming_result_warning'));
+                $content .= html_writer::tag('span', $warning, array('class'=>'programming_result_warning'));
             }
         }
 
@@ -448,6 +436,21 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             echo $OUTPUT->box_start('generalbox boxaligncenter', 'plagiarism_info');
             echo $content;
             echo $OUTPUT->box_end();
+            if ($is_teacher) {
+            // include the javascript
+                $jsmodule = array(
+                    'name' => 'plagiarism_programming',
+                    'fullpath' => '/plagiarism/programming/scanning.js',
+                    'strings' => array(
+                        array('pending_start', 'plagiarism_programming'),
+                        array('uploading', 'plagiarism_programming'),
+                        array('scanning', 'plagiarism_programming'),
+                        array('downloading', 'plagiarism_programming')
+                    )
+                );
+                $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',
+                        array('cmid' => $setting->courseid, 'checkprogress' => $check), false, $jsmodule);
+            }
         }
     }
 

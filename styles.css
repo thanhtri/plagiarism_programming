@@ -10,7 +10,7 @@
     position: relative;
     width: 800px;
     height:250px;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
 }
 
 .programming_result_chart .bar {
@@ -31,6 +31,39 @@
     position: absolute;
     height: 20px;
     left: 0px;
+}
+
+.programming_result_chart_overlay {
+    background-color: white;
+    padding-left: 25px;
+    padding-top: 25px;
+}
+
+.programming_result_popup_chart {
+    position: relative;
+    background-color: white;
+    border-left: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.programming_result_popup_chart .bar {
+    position: absolute;
+    background-color: #a6a6ff;
+    width: 30px;
+}
+
+.programming_result_popup_chart .bar:hover {
+    background-color: #a6ffff;
+}
+
+.programming_result_popup_chart label {
+    position: absolute;
+    width: 30px;
+    text-align: center;
+}
+
+.similar_pair .show_history {
+    cursor: pointer;
 }
 
 div.programming_result_table {

@@ -37,6 +37,8 @@ global $DB, $CFG;
 // It is an array containing stage (which is extract,moss,jplag) and cmid
 global $PROCESSING_INFO;
 ignore_user_abort();
+set_time_limit(0);
+ob_start();
 $tool = required_param('tool', PARAM_TEXT);
 $cmid = required_param('cmid', PARAM_INT);
 $token = required_param('token', PARAM_TEXT);
@@ -54,7 +56,6 @@ session_write_close();
 
 // this is for error handling
 $PROCESSING_INFO = array('stage'=>$tool, 'cmid'=>$cmid);
-ob_start();
 set_error_handler('tool_scanning_error_handler');
 register_shutdown_function('handle_shutdown');
 scan_after_extract_assignment($assignment, $tool, $wait_to_finish);

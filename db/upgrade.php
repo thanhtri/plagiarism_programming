@@ -27,7 +27,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
     $dbman = $DB->get_manager();
 
     /// Add a new column newcol to the mdl_myqtype_options
-    if ($oldversion < 2012053001) {
+    if ($oldversion < 2012060701) {
 
         // Define field token to be added to programming_jplag
         $table = new xmldb_table('programming_jplag');
@@ -111,8 +111,63 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->create_table($table);
         }
 
+        // Define index cmid_idx (not unique) to be dropped form programming_result
+        $table = new xmldb_table('programming_result');
+        $index = new xmldb_index('cmid_idx', XMLDB_INDEX_NOTUNIQUE, array('cmid'));
+
+        // Conditionally launch drop index cmid_idx
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Define field marked to be dropped from programming_result
+        $table = new xmldb_table('programming_result');
+        $field = new xmldb_field('marked');
+
+        // Conditionally launch drop field marked
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Define field detector to be dropped from programming_result
+        $table = new xmldb_table('programming_result');
+        $field = new xmldb_field('detector');
+
+        // Conditionally launch drop field detector
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Rename field cmid on table programming_result to NEWNAMEGOESHERE
+        $table = new xmldb_table('programming_result');
+        $field = new xmldb_field('cmid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'comments');
+
+        // Launch rename field cmid
+        $dbman->rename_field($table, $field, 'reportid');
+
+         // Define table programming_report to be created
+        $table = new xmldb_table('programming_report');
+
+        // Adding fields to table programming_report
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('cmid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('time_created', XMLDB_TYPE_INTEGER, '15', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('version', XMLDB_TYPE_INTEGER, '11', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('detector', XMLDB_TYPE_TEXT, 'small', null, null, null, null);
+
+        // Adding keys to table programming_report
+        $table->add_key('report_primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Adding indexes to table programming_report
+        $table->add_index('cmid_index', XMLDB_INDEX_NOTUNIQUE, array('cmid'));
+
+        // Conditionally launch create table for programming_report
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012053001, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012060701, 'plagiarism', 'programming');
 
     }
 

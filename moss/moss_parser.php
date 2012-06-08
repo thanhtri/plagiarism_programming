@@ -28,6 +28,7 @@ class moss_parser {
 
     private $cmid;
     private $filename;
+    private $report;
 
     /**
      * Create a moss_parser object correspond to an assignment
@@ -35,8 +36,8 @@ class moss_parser {
      */
     public function __construct($cmid) {
         $this->cmid = $cmid;
-        $tool = new moss_tool();
-        $this->filename = $tool->get_report_path($cmid).'/index.html';
+        $this->report = get_latest_report($cmid, 'moss');
+        $this->filename = moss_tool::get_report_path($this->report).'/index.html';
         assert(is_file($this->filename));
     }
 
@@ -46,10 +47,6 @@ class moss_parser {
     public function parse() {
         global $DB;
 
-        // delete the old records (in case this tool is run several times on one assignment)
-        $DB->delete_records('programming_result', array('cmid' => $this->cmid, 'detector' => 'moss'));
-
-        assert(is_file($this->filename));
         $content = file_get_contents($this->filename);
         // this pattern extract the link
         $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([0-9]*)\/\s\(([0-9]*)%\)<\/A>/';
@@ -60,8 +57,7 @@ class moss_parser {
         $num = count($filenames);
 
         $record = new stdClass();
-        $record->detector = 'moss';
-        $record->cmid = $this->cmid;
+        $record->reportid = $this->report->id;
         for ($i=0; $i<$num; $i+=2) {
             $record->student1_id = $studentids[$i];
             $record->student2_id = $studentids[$i+1];
@@ -86,7 +82,7 @@ class moss_parser {
      */
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('programming_result', array('cmid' => $this->cmid, 'detector' => 'moss'));
+        $pairs = $DB->get_records('programming_result', array('reportid'=>$this->report->id));
         $path = dirname($this->filename);
 
         $similarity_array = array();
@@ -101,9 +97,10 @@ class moss_parser {
             $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file_1, $similarity_array);
 
             // TODO: uncomment to delete these files after debugging
-            unlink($file);
-            unlink($file_0);
-            unlink($file_1);
+            if (!debugging()) {
+                unlink($file_0);
+                unlink($file_1);
+            }
         }
         $this->save_similarity($similarity_array);
     }

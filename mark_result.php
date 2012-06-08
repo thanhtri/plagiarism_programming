@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Respond to ajax call when marking an assignment
+ * Respond to ajax call related to the plagiarism report. Parameters are
  *
  * @package    plagiarism
  * @subpackage programming
@@ -25,19 +25,38 @@
 define('AJAX_SCRIPT', true);
 
 require_once(__DIR__.'/../../config.php');
+require_once(__DIR__.'/reportlib.php');
 global $DB;
 
 $result_id = required_param('id', PARAM_INT);
-$action = required_param('action', PARAM_ALPHA);
-assert($action=='Y' || $action=='N' || $action=='');
+$task = required_param('task', PARAM_TEXT);
+$result_record = $DB->get_record('programming_result', array('id'=>$result_id));
+$report_record = $DB->get_record('programming_report', array('id'=>$result_record->reportid));
+$context = get_context_instance(CONTEXT_MODULE, $report_record->cmid);
 
-$result_record = $DB->get_record('programming_result', array('id' => $result_id));
-$context = get_context_instance(CONTEXT_MODULE, $result_record->cmid);
+// only teachers can mark the pairs
+has_capability('mod/assignment:grade', $context) || die('KO');
 
-if (has_capability('mod/assignment:grade', $context)) { // only teachers can mark the pair
+if ($task=='mark') {
+    $action = required_param('action', PARAM_ALPHA);
+    assert($action=='Y' || $action=='N' || $action=='');
     $result_record->mark = $action;
     $DB->update_record('programming_result', $result_record);
     echo 'OK';
-} else {
-    echo 'KO';
+} else if ($task=='get_history') {
+    $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);
+    $similarity_history = get_student_similarity_history($result_record->student1_id, $result_record->student2_id,
+        $report_record->cmid, $report_record->detector, 'asc');
+    $history = array();
+    if ($rate_type=='avg') {
+        foreach ($similarity_history as $pair) {
+            $history[$pair->id] = array('time'=>$pair->time_created,'similarity'=>($pair->similarity1+$pair->similarity2)/2,
+                'time_text'=>date('d M', $pair->time_created));
+        }
+    } else {
+        foreach ($similarity_history as $pair) {
+            $history[$pair->id] = array('time'=>$pair->time_created,'similarity'=>max($pair->similarity1, $pair->similarity2));
+        }
+    }
+    echo json_encode($history);
 }

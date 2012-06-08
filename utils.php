@@ -112,6 +112,7 @@ function rrmdir($dir) {
  *  will be stored in that directory, if an array, each link will be saved in the corresponding directory entry
  * (must be the same size with the links array)
  * (each directory entry should contain the full path, including the filename)
+ * @param int $timeout the maximum time (in number of second) to wait
  */
 function curl_download($links, $directory=null, $timeout=0) {
     $curl_handle_array = array();
@@ -122,9 +123,7 @@ function curl_download($links, $directory=null, $timeout=0) {
         foreach ($links as $key => $link) {
             $curl_handle_array[$key] = curl_init($link);
             curl_setopt($curl_handle_array[$key], CURLOPT_RETURNTRANSFER, true);
-            if ($timeout>0) {
-                curl_setopt($curl_handle_array[$key], CURLOPT_TIMEOUT, $timeout);
-            }
+            curl_setopt($curl_handle_array[$key], CURLOPT_TIMEOUT, $timeout);
             curl_multi_add_handle($multi_handler, $curl_handle_array[$key]);
         }
     } else {

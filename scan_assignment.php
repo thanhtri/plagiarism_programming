@@ -158,7 +158,9 @@ function extract_zip($zip_file, $extensions, $location, stored_file $file) {
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
  */
 function extract_assignment($assignment) {
-    debugging("Extracting files\n");
+    global $OUTPUT;
+
+    echo get_string('extract', 'plagiarism_programming');
     // make a subdir for this assignment in the plugin subdir
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);
 
@@ -322,7 +324,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
 
     // send the data
     $links = array();
-    $dirs = array();
+    $logfiles = array();
 
     $wait = ($wait_for_result)?1:0;
     // generating the token
@@ -338,15 +340,20 @@ function scan_assignment($assignment, $wait_for_result=true) {
             ."cmid=$assignment->courseid&tool=$toolname&token=$token&wait=$wait";
 
         $tool_class_name = $tool['class_name'];
-        $tool_class = new $tool_class_name();
-        $dirs[] = $tool_class->get_report_path($assignment->courseid).'/script_log.txt';
+        $logfiles[] = $tool_class_name::get_report_path()."/script_log_$assignment->id-$toolname.html";
     }
-    curl_download($links, $dirs);
 
     // register the start scanning time
     $assignment = $DB->get_record('programming_plagiarism', array('id'=>$assignment->id));
     $assignment->latestscan = time();
     $DB->update_record('programming_plagiarism', $assignment);
+
+    curl_download($links, $logfiles);
+
+    foreach ($logfiles as $logfile) {
+        echo file_get_contents($logfile);
+        echo "\n";
+    }
 }
 
 /**
@@ -442,6 +449,7 @@ function handle_shutdown() {
             $DB->update_record('programming_'.$tool, $scan_info);
         }
     }
+    $file = "$CFG->dataroot/plagiarism_report/".$PROCESSING_INFO['stage'].'.txt';
     $content = ob_get_contents();
-    file_put_contents($CFG->dataroot.'/'.$PROCESSING_INFO['stage'], $content);
+    file_put_contents($file, $content);
 }

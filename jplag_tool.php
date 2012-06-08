@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 require_once(__DIR__.'/plagiarism_tool.php');
 require_once(__DIR__.'/jplag/jplag_stub.php');
 require_once(__DIR__.'/jplag/jplag_parser.php');
+require_once(__DIR__.'/reportlib.php');
 
 class jplag_tool implements plagiarism_tool {
 
@@ -140,11 +141,12 @@ class jplag_tool implements plagiarism_tool {
         }
 
         // create a directory
-        $report_path = $this->get_report_path();
+        $report_path = self::get_report_path();
         if (!is_dir($report_path)) {
             mkdir($report_path);
         }
-        $assignment_report_path = $this->get_report_path($assignment_param->courseid);
+        $report = create_next_report($assignment_param->courseid, 'jplag');
+        $assignment_report_path = self::get_report_path($report);
         if (is_dir($assignment_report_path)) {
             rrmdir($assignment_report_path);
         }
@@ -191,12 +193,12 @@ class jplag_tool implements plagiarism_tool {
         return "<a target='_blank' href='$report_path'>JPlag report</a>";
     }
 
-    public function get_report_path($cmid=null) {
+    public static function get_report_path($report=null) {
         global $CFG;
-        if (!$cmid) {
-            return $CFG->dataroot.'/plagiarism_report/';
+        if (!$report) {
+            return "$CFG->dataroot/plagiarism_report/";
         } else {
-            return $CFG->dataroot."/plagiarism_report/report$cmid";
+            return "$CFG->dataroot/plagiarism_report/report$report->cmid"."_v$report->version";
         }
     }
 
