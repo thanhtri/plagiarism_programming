@@ -3,62 +3,69 @@ M.plagiarism_programming = M.plagiarism_programming || {};
 M.plagiarism_programming.assignment_setting = {
 
     submit_date_num : 0,
+    Y : null,
 
     init : function(Y) {
-        this.init_mandatory_field();
+        this.Y = Y;
+        this.init_mandatory_field(Y);
     },
 
-    init_mandatory_field: function() {
-        var required_img = document.getElementsByClassName('req')[0];
+    init_mandatory_field: function(Y) {
+        var required_img = Y.one('.req');
 
         // put the required class for the select and checkboxes
-        var select = document.getElementById('id_programming_language');
-        var div = select.parentNode.parentNode;
-        div.setAttribute('class', div.getAttribute('class')+' required');
-        var label = div.firstChild.firstChild;
-        label.insertBefore(required_img.cloneNode(true),label.childNodes.item(1));
+        var config_block = Y.one('#programming_header');
+        var items = config_block.all('.fitem');
+        var div = items.item(1);
+        div.addClass('required');
+        var label = div.one('span.helplink');
+        label.insert(required_img.cloneNode(true), 'before');
 
-        var check = document.getElementsByName('detection_tools[jplag]')[0];
-        div = check.parentNode.parentNode.previousSibling;
-        div.setAttribute('class', div.getAttribute('class')+' required');
-        label = div.firstChild.firstChild;
-        label.insertBefore(required_img.cloneNode(true),label.childNodes.item(1));
+        div = items.item(2);
+        div.addClass('required');
+        label = div.one('span.helplink');
+        label.insert(required_img.cloneNode(true), 'before');
 
-        var form = document.forms[0];
-        YAHOO.util.Event.addListener(form, 'submit', M.plagiarism_programming.assignment_setting.check_mandatory_form_field);
+        Y.one(document.forms[0]).on('submit', function(e) {
+            var is_valid = M.plagiarism_programming.assignment_setting.check_mandatory_form_field(Y);
+            if (!is_valid) {
+                e.preventDefault();
+            }
+        });
 
-        var new_date_button = document.getElementsByName('add_new_date')[0];
-        YAHOO.util.Event.addListener(new_date_button, 'click', function(e) {
+        var new_date_button = config_block.one('input[name=add_new_date]');
+        new_date_button.on('click', function(e) {
             skipClientValidation = true;
         });
 
-        if (document.getElementsByName('is_add_date')[0].value==1) {
-            window.scrollTo(0, new_date_button.offsetTop);
+        var add_date = Y.one('input[name=is_add_date]');
+        if (add_date && add_date.getAttribute('value')==1) {
+            window.scrollTo(0, new_date_button.getY()-150);
         }
     },
 
-    check_mandatory_form_field: function(evt) {
-        var check = document.getElementsByName('programmingYN')[0];
-        if ((check.value==1 && check.checked) || (check.value==0 && !check.checked) && !skipClientValidation) {
-            var jplag_select = document.getElementsByName('detection_tools[jplag]')[0];
-            var moss_select = document.getElementsByName('detection_tools[moss]')[0];
-            if (!jplag_select.checked && !moss_select.checked) {
+    check_mandatory_form_field: function(Y) {
+        var config_block = Y.one('#programming_header');
+        var checked = config_block.one('input[name=programmingYN]:checked').get('value');
+        if (!skipClientValidation && checked=="1") {
+            var selected_tool = config_block.one('input[name*=detection_tools]:checked');
+            if (selected_tool==null) {
                 // whether exist an error message or not?
-                var parent = jplag_select.parentNode.parentNode;
-                var error_msgs = parent.getElementsByClassName('error');
+                var tool_checkbox = config_block.one('input[name*=detection_tools]');
+                var parent = tool_checkbox.get('parentNode').get('parentNode');
+                var error_msgs = parent.all('.error');
                 var error_msg = null;
-                if (error_msgs.length == 0) { // insert the error message
-                    error_msg = document.createElement('span');
-                    error_msg.setAttribute('class', 'error');
-                    error_msg.textContent = M.str.plagiarism_programming.no_tool_selected_error;
-                    parent.insertBefore(error_msg, jplag_select.parentNode);
-                    parent.insertBefore(document.createElement('br'), jplag_select.parentNode);
+                if (error_msgs.isEmpty()) { // insert the error message
+                    error_msg = Y.Node.create('<span class="error">'+M.str.plagiarism_programming.no_tool_selected_error+
+                        '<br></span>');
+                    tool_checkbox.get('parentNode').insert(error_msg, 'before');
                 } else {
-                    error_msg = error_msgs[0];
+                    error_msg = error_msgs.item(0);
                 }
-                window.scrollTo(0, error_msg.offsetTop);
-                YAHOO.util.Event.preventDefault(evt);
+                window.scrollTo(0, error_msg.getY()-40);
+                return false;
             }
         }
+        return true;
     }
 }

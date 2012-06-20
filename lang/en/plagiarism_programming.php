@@ -174,6 +174,7 @@ $string['mark_select_title'] = 'Mark this pair as';
 $string['mark_suspicious'] =  'suspicious';
 $string['mark_nonsuspicious'] = 'normal';
 $string['show_similarity_to_others'] = 'Show similarity of {student} with other students';
+$string['history_char'] = 'Show similarity history';
 
 // notification
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';

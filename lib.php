@@ -229,12 +229,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 }
             }
 
-        } else { // plugin not enabled, delete the records if there are (in case user disable the plugin)
+        } else { // plugin not enabled, delete the records if there are
             $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
             if ($setting) {
                 $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id));
                 $DB->delete_records('programming_jplag', array('settingid'=>$setting->id));
                 $DB->delete_records('programming_moss', array('settingid'=>$setting->id));
+                $DB->delete_records('programming_report', array('settingid'=>$setting->courseid));
+                $DB->delete_records('programming_result', array('reportid'=>$setting->reportid));
                 $DB->delete_records('programming_plagiarism', array('id'=>$setting->id));
             }
         }

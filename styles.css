@@ -56,6 +56,11 @@
     background-color: #a6ffff;
 }
 
+.yui3-overlay-content {
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+    border: 1px solid #9EA8C6;
+}
+
 .programming_result_popup_chart label {
     position: absolute;
     width: 30px;
@@ -184,6 +189,35 @@ table.plagiarism_programming_result_table .suspicious, table.plagiarism_programm
 .programming_result_warning {
     color: red;
     font-weight: bold;
+    line-height: 1.5;
+}
+
+.programming_student_similarity_menu {
+    background-color: white;
+    margin: 0px;
+    padding: 3px 0px;
+}
+
+.programming_student_similarity_menu li {
+    list-style-type: none;
+}
+
+.programming_student_similarity_menu li:hover {
+    background-color: #B3D4FF;
+}
+
+.programming_student_similarity_menu a:link {
+    margin: 0px 20px;
+    color: black;
+}
+
+.programming_student_similarity_menu a:visited {
+    color: black;
+}
+
+.programming_student_similarity_menu a:hover {
+    text-decoration: none;
+    color: black;
 }
 
 .enable_course_footer_panel {

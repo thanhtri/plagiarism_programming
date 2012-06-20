@@ -126,16 +126,11 @@ echo html_writer::tag('div', get_string('chart_legend', 'plagiarism_programming'
 echo html_writer::tag('div', create_chart($report->id, $rate_type), array('class'=>'programming_result_chart'));
 echo html_writer::tag('div', html_writer::table($table), array('class'=>'programming_result_table'));
 
-$PAGE->requires->yui2_lib('container');
-$PAGE->requires->yui2_lib('yahoo-dom-event');
-$PAGE->requires->yui2_lib('json');
-$PAGE->requires->yui2_lib('animation');
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/view_report.js',
-    'strings' => array()
+    'requires' => array('base', 'overlay', 'node', 'json', 'io-base')
 );
-$PAGE->requires->js_init_call('M.plagiarism_programming.view_report.init',
-    array($cmid), true, $jsmodule);
+$PAGE->requires->js_init_call('M.plagiarism_programming.view_report.init', array(), false, $jsmodule);
 
 echo $OUTPUT->footer();

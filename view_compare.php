@@ -128,15 +128,14 @@ $content .= html_writer::empty_tag('img', array('src'=>$img_src, 'id'=>'mark_ima
 
 // select the report history
 $similarity_history = get_student_similarity_history($result_record->student1_id, $result_record->student2_id, $cmid, $detector);
-if (count($similarity_history)>1) {
-    $report_select = array();
-    foreach ($similarity_history as $pair) {
-        $report_select[$pair->id] = date('d M h.i A', $pair->time_created);
-    }
-    $content .= '<br/><br/>';
-    $content .= html_writer::label(get_string('version'), 'report_version').' ';
-    $content .= html_writer::select($report_select, 'report_version', $result_record->id, null, array('id'=>'report_version'));
+$report_select = array();
+foreach ($similarity_history as $pair) {
+    $report_select[$pair->id] = date('d M h.i A', $pair->time_created);
 }
+$content .= '<br/><br/>';
+$content .= html_writer::label(get_string('version'), 'report_version').' ';
+$content .= html_writer::select($report_select, 'report_version', $result_record->id, null, array('id'=>'report_version'));
+
 echo html_writer::tag('div', "<div>$content</div>", array('class'=>'programming_result_comparison_top_right'));
 
 // separator
@@ -164,18 +163,14 @@ foreach ($result as $pair) {
 }
 $result_info = array('id'=>$result_id, 'mark'=>$result_record->mark, 'student1'=>$result_record->student1_id,
     'student2'=>$result_record->student2_id);
-$PAGE->requires->yui2_lib('selector');
-$PAGE->requires->yui2_lib('event');
-$PAGE->requires->yui2_lib('container');
-$PAGE->requires->yui2_lib('yahoo-dom-event');
-$PAGE->requires->yui2_lib('menu');
-$PAGE->requires->yui2_lib('json');
-$PAGE->requires->yui2_lib('animation');
+
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',
+    'requires' => array('base', 'overlay', 'node', 'json', 'io-base'),
     'strings' => array(
-        array('show_similarity_to_others', 'plagiarism_programming')
+        array('show_similarity_to_others', 'plagiarism_programming'),
+        array('history_char', 'plagiarism_programming')
      )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',

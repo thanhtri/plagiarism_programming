@@ -31,95 +31,95 @@ M.plagiarism_programming.view_report = {
     chart_width: 350,
     chart_height: 200,
 
-    init: function(Y, cmid) {
-        this.init_report();
+    init: function(Y) {
+        this.init_report(Y);
     },
 
-    init_report: function() {
-        var cells = document.getElementsByClassName('similar_pair');
-        for (var i=0; i<cells.length; i++) {
-            var img = document.createElement('img');
-            img.setAttribute('class', 'show_history');
-            img.src = 'pix/show_history.png';
-            img.alt = 'see history';
-            img.setAttribute('align', 'right');
-            cells[i].appendChild(img);
-            YAHOO.util.Event.addListener(img, 'click', function(e) {
-                YAHOO.util.Event.stopPropagation(e);
-                M.plagiarism_programming.view_report.show_chart(this);
+    init_report: function(Y) {
+        Y.all('.similar_pair').each(function(cell) {
+            var img = Y.Node.create('<img src="pix/show_history.png" class="show_history" alt="history" align="right" />');
+            img.on('click', function(e) {
+                e.stopPropagation();
+                M.plagiarism_programming.view_report.show_chart(this,Y);
             });
-        }
-        YAHOO.util.Event.addListener(document, 'click', function(e) {
+            cell.append(img);
+        });
+        Y.one(document).on('click', function(e) {
             var node = e.target;
-            var overlay = document.getElementById('history_chart');
-            while (node!=overlay && node!=null) {
-                node = node.parentNode;
+            while (node!=null && !node.hasClass('programming_result_chart_overlay')) {
+                node = node.get('parentNode');
             }
-            if (node==null) {
+            if (node==null && M.plagiarism_programming.view_report.history_overlay!=null) {
                 M.plagiarism_programming.view_report.history_overlay.hide();
             }
         });
-        this.create_chart();
+        this.create_chart(Y);
     },
 
-    create_chart: function() {
-        this.history_overlay = new YAHOO.widget.Overlay('history_chart', {
-            visible: false,
-            effect:{effect:YAHOO.widget.ContainerEffect.FADE,duration:0.25}
+    create_chart: function(Y) {
+        this.history_overlay = new Y.Overlay({});
+    },
+
+    show_chart: function(img,Y) {
+        var pair_id = Y.one(img).get('parentNode').getAttribute('pair');
+        Y.io('mark_result.php?task=get_history&id='+pair_id, {
+            on: {
+                success: function(id, response) {
+                    var div = M.plagiarism_programming.view_report.load_overlay(response, Y)
+                    var history_overlay = M.plagiarism_programming.view_report.history_overlay;
+                    history_overlay.align(img, [Y.WidgetPositionAlign.TL, Y.WidgetPositionAlign.TR])
+                    history_overlay.set('bodyContent', div);
+                    history_overlay.render(document.body)
+                    history_overlay.show();
+                }
+            }
         });
     },
 
-    show_chart: function(img) {
-        var callback = {
-            success: M.plagiarism_programming.view_report.load_overlay,
-            argument: img
-        };
-        var pair_id = img.parentNode.getAttribute('pair');
-        YAHOO.util.Connect.asyncRequest('GET', 'mark_result.php?task=get_history&id='+pair_id,
-            callback);
-    },
+    load_overlay: function(response, Y) {
+        var history = Y.JSON.parse(response.responseText);
+        var width = M.plagiarism_programming.view_report.chart_width;
+        var height = M.plagiarism_programming.view_report.chart_height;
 
-    load_overlay: function(o) {
-        var history = YAHOO.lang.JSON.parse(o.responseText);
-        var width = M.plagiarism_programming.view_report.chart_width-25;
-        var height = M.plagiarism_programming.view_report.chart_height-50;
+        var overlay = Y.Node.create('<div class="programming_result_chart_overlay"></div>');
+        overlay.setStyles({
+            width:  width + 'px',
+            height: height+ 'px'
+        });
 
-        var overlay = document.createElement('div');
-        overlay.setAttribute('class', 'programming_result_chart_overlay');
-        overlay.style.width = M.plagiarism_programming.view_report.chart_width+'px';
-        overlay.style.height= M.plagiarism_programming.view_report.chart_height+'px';
-
-        var canvas = document.createElement('div');
-        canvas.setAttribute('class', 'programming_result_popup_chart');
-        canvas.style.width = width+'px';
-        canvas.style.height= height+'px';
+        var canvas = Y.Node.create('<div class="programming_result_popup_chart"></div>');
+        var canvas_height = height-50;
+        canvas.setStyles({
+            width: (width-25) + 'px',
+            height: canvas_height+ 'px'
+        });
         var left = 20;
         for (var i in history) {
-            var bar = document.createElement('a');
-            bar.setAttribute('class', 'bar');
-            bar.href = 'view_compare.php?id='+i;
-            bar.style.height = (history[i].similarity/100*height)+'px';
-            bar.style.left = left+'px';
-            bar.style.bottom = '0px';
-            canvas.appendChild(bar);
+            var bar = Y.Node.create('<a class="bar"/>');
+            bar.set('href', 'view_compare.php?id='+i);
+            bar.setStyles({
+                height: (history[i].similarity/100*canvas_height) + 'px',
+                left: left + 'px',
+                bottom: '0px'
+            });
+            canvas.append(bar);
 
-            var label = document.createElement('label');
-            label.innerHTML = history[i].similarity+'%';
-            label.style.left = left+'px';
-            label.style.bottom = (history[i].similarity/100*height+5)+'px';
-            canvas.appendChild(label);
+            var label = Y.Node.create('<label>'+history[i].similarity+'%</label>');
+            label.setStyles({
+                left: left+'px',
+                bottom: (history[i].similarity/100*canvas_height+5)+'px'
+            });
+            canvas.append(label);
 
-            label = document.createElement('label');
-            label.innerHTML = history[i].time_text;
-            label.style.left = left+'px';
-            label.style.bottom = '-35px';
-            canvas.appendChild(label);
+            label = Y.Node.create('<label>'+history[i].time_text+'</label>');
+            label.setStyles({
+                left: left+'px',
+                bottom: '-35px'
+            })
+            canvas.append(label);
             left += 50;
         }
-        overlay.appendChild(canvas);
-        M.plagiarism_programming.view_report.history_overlay.cfg.setProperty('context', [o.argument, 'tl', 'bl'])
-        M.plagiarism_programming.view_report.history_overlay.setBody(overlay);
-        M.plagiarism_programming.view_report.history_overlay.render(document.body)
-        M.plagiarism_programming.view_report.history_overlay.show();
+        overlay.append(canvas);
+        return overlay;
     }
 }

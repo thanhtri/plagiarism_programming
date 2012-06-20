@@ -11,13 +11,12 @@ M.plagiarism_programming = {
      *               However, the scanning will continue. If users return to the page again,
      *               they will see the bar displayed if the scanning still proceed.
      */
-    initialise : function(Y,cmid,checkprogress) {
-        var button = YAHOO.util.Dom.get('plagiarism_programming_scan');
-        YAHOO.util.Event.addListener(button, 'click', function(e) {
-            YAHOO.util.Event.preventDefault(e);
+    initialise : function(Y, cmid, checkprogress) {
+        Y.one('#plagiarism_programming_scan').on('click', function(e) {
+            e.preventDefault();
             var time = new Date().getTime() % 100000000;
-            M.plagiarism_programming.initiate_scanning(cmid,time);
-            M.plagiarism_programming.monitor_scanning(cmid,time);
+            M.plagiarism_programming.initiate_scanning(cmid, time);
+            M.plagiarism_programming.monitor_scanning(cmid, time);
         });
 
         if (checkprogress.jplag || checkprogress.moss) {
@@ -26,7 +25,12 @@ M.plagiarism_programming = {
         }
     },
 
-    display_progress : function(progress,tool) {
+    /**
+     * Display the progressbar at a progress for the tool
+     * @param progress a number between 0 and 100, indicating the percentage of the progress
+     * @param tool either 'jplag' or 'moss' 
+     **/
+    display_progress : function(progress, tool) {
         if (!M.plagiarism_programming['progressbar_'+tool]) {
             // if not yet created, create the progress bar
             M.plagiarism_programming['progressbar_'+tool] = new YAHOO.widget.ProgressBar({
@@ -41,6 +45,9 @@ M.plagiarism_programming = {
         }
     },
 
+    /**
+     * Removing the progress bar
+     **/
     remove_progress : function(tool) {
         if (M.plagiarism_programming['progressbar_'+tool]) {
             M.plagiarism_programming['progressbar_'+tool].destroy()
@@ -53,7 +60,7 @@ M.plagiarism_programming = {
      * If the scanning is in progress, set up the timer and the progress bar
      * to monitor upload, scanning, download, finish
      */
-    initiate_scanning : function(cmid,time) {
+    initiate_scanning : function(cmid, time) {
         var callback = {
             success : function(o) {},
             failure : function(o) {}
@@ -67,7 +74,12 @@ M.plagiarism_programming = {
             callback, 'cmid='+cmid+'&task=scan&time='+time);
     },
 
-    monitor_scanning : function(cmid,time) {
+    /**
+     * Check the status of the scanning on server and display the progress in the progress bar
+     * @param cmid: the course module id
+     * @param time: the time initiating the scanning (optional) - this parameter is just to synchronise the time
+     **/
+    monitor_scanning : function(cmid, time) {
         var callback = {
             success: M.plagiarism_programming.display_monitor_info,
             argument:[cmid,time]
@@ -80,6 +92,10 @@ M.plagiarism_programming = {
             'cmid='+cmid+'&task=check&time='+time+'&timestamp='+timestamp, callback);
     },
 
+    /**
+     * Display the progress information. This is the callback function of monitor_progress
+     * @param o: the response
+     **/
     display_monitor_info : function(o) {
         var status = YAHOO.lang.JSON.parse(o.responseText);
         var finished = true;
@@ -106,6 +122,9 @@ M.plagiarism_programming = {
         }
     },
 
+    /**
+     * Convert status to an informative message. The message are passed from the code
+     **/
     convert_status_message : function(status) {
         if (status=='pending') {
             return M.str.plagiarism_programming.pending_start;
@@ -120,6 +139,10 @@ M.plagiarism_programming = {
         }
     },
 
+    /**
+     * Enable/disable the scanning button. The button should be disabled when scanning is in progress
+     * or cannot be performed
+     **/
     enable_scanning : function(is_on) {
         var button = document.getElementById('plagiarism_programming_scan');
         var message = document.getElementById('scan_message');
@@ -131,23 +154,6 @@ M.plagiarism_programming = {
         } else {
             button.disabled = true;
             message.style.display = 'inline';
-        }
-    },
-
-    show_hide_item : function() {
-        var checkbox = document.forms[0].elements['programmingYN'];
-        YAHOO.util.Event.addListener(checkbox, 'click', function() {
-            M.plagiarism_programming.toogle_checkbox(this);
-        }, true);
-        M.plagiarism_programming.toogle_checkbox(checkbox);
-    },
-
-    toogle_checkbox : function(checkbox) {
-        var header = new YAHOO.util.Element('programming_header');
-        var divs = header.getElementsByClassName('fitem','div');
-        var display_val = (checkbox.checked)?'block':'none';
-        for (var i=1; i<divs.length; i++) {
-            divs[i].style.display = display_val;
         }
     }
 }
