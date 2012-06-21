@@ -39,9 +39,9 @@ $cmid = $report_rec->cmid;
 $detector = $report_rec->detector;
 require_once(__DIR__.'/'.$detector.'_tool.php');
 if ($detector=='jplag') {
-    $directory = jplag_tool::get_report_path();
+    $directory = jplag_tool::get_report_path($report_rec);
 } else {
-    $directory = moss_tool::get_report_path();
+    $directory = moss_tool::get_report_path($report_rec);
 }
 //-------------------------------------end parameter processing--------------------------------------------------//
 

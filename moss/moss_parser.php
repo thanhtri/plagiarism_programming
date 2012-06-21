@@ -50,6 +50,7 @@ class moss_parser {
         $content = file_get_contents($this->filename);
         // this pattern extract the link
         $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([0-9]*)\/\s\(([0-9]*)%\)<\/A>/';
+        $matches = null;
         preg_match_all($pattern, $content, $matches);
         $filenames = $matches[1];
         $studentids = $matches[2];
@@ -142,9 +143,6 @@ class moss_parser {
         do {
             $line = fgets($comparison_file);
         } while ($line!=='' && substr(trim($line), -5)!='<PRE>');
-
-        // file to save the code (only the code inside pre tag)
-        $code_file_name = dirname($filename).'/'.$student_id;
 
         if (feof($comparison_file)) {
             trigger_error("File $filename corrupted", E_USER_ERROR);
@@ -247,6 +245,7 @@ class moss_parser {
      */
     private function is_start_block($line) {
         static $pattern = '/<A NAME=\"([0-9]+)\"><\/A><FONT color = #([0-9A-F]+)>/';
+        $match = null;
         $match_num = preg_match($pattern, $line, $match);
         if ($match_num>0) {
             return array($match[1], $match[2]);
@@ -288,8 +287,6 @@ class moss_parser {
      * @param $similarities: the array of blocks of just one student
      */
     private function merge_and_sort_blocks(&$similarities) {
-        $num = count($similarities);
-
         $merged_array = array(); // this is used as a hash table: (begin_line.end_line)=>similarity info
         foreach ($similarities as $block) {
             $key = $block['begin_line'].'.'.$block['end_line'];
