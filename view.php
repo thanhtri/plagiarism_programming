@@ -55,7 +55,7 @@ $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment
     if (!has_capability('mod/assignment:submit', $context) ||
-            !$DB->get_field('programming_plagiarism', 'auto_publish', array('courseid'=>$cmid))) {
+            !$DB->get_field('programming_plagiarism', 'auto_publish', array('cmid'=>$cmid))) {
         redirect($CFG->wwwroot, get_string('permission_denied', 'plagiarism_programming'));
     }
     $student_id = $USER->id;
@@ -129,7 +129,10 @@ echo html_writer::tag('div', html_writer::table($table), array('class'=>'program
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/view_report.js',
-    'requires' => array('base', 'overlay', 'node', 'json', 'io-base')
+    'requires' => array('base', 'overlay', 'node', 'json', 'io-base'),
+    'strings' => array(
+        array('date', 'moodle')
+     )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.view_report.init', array(), false, $jsmodule);
 

@@ -15,7 +15,8 @@
 
 /**
  * This is the javascript code of the compare code page (to compare the similarity of 2 students' code)
- * It include ajax calls to mark a student as suspicious and cross similarity of one student with another
+ * It include ajax calls to mark a student as suspicious and cross similarity of one student with another,
+ * as well as showing the similarity history chart
  *
  * @package    plagiarism
  * @subpackage programming
@@ -36,8 +37,8 @@ M.plagiarism_programming.compare_code = {
     student1: null,
     student2: null,
     history_overlay: null,
-    chart_width: 350,
-    chart_height: 200,
+    chart_width: 325,
+    chart_height: 150,
 
     init : function(Y, info, name_table, result_table, anchor) {
         this.Y = Y;
@@ -318,29 +319,22 @@ M.plagiarism_programming.compare_code = {
     load_overlay: function(id, o) {
         var Y = M.plagiarism_programming.compare_code.Y;
         var history = M.plagiarism_programming.compare_code.Y.JSON.parse(o.responseText);
-        var width = M.plagiarism_programming.compare_code.chart_width-25;
-        var height = M.plagiarism_programming.compare_code.chart_height-25;
 
         var overlay = Y.Node.create('<div class="programming_result_chart_overlay"></div>');
-        overlay.setStyles({
-            width:  width + 'px',
-            height: height+ 'px'
-        });
-
         var canvas = Y.Node.create('<div class="programming_result_popup_chart"></div>');
-        var canvas_height = height-50;
-        canvas.setStyles({
-            width: (width-25) + 'px',
-            height: canvas_height+ 'px'
-        });
+        var h_label = Y.Node.create('<label class="h_label">'+M.str.moodle.date+'</label>');
+        var v_label = Y.Node.create('<label class="v_label">%</label>')
+
+        canvas.append(h_label);
+        canvas.append(v_label);
+        var canvas_height = M.plagiarism_programming.compare_code.chart_height-50;
         var left = 20;
         for (var i in history) {
             var bar = Y.Node.create('<a class="bar"/>');
             bar.set('href', 'view_compare.php?id='+i);
             bar.setStyles({
                 height: (history[i].similarity/100*canvas_height) + 'px',
-                left: left + 'px',
-                bottom: '0px'
+                left: left + 'px'
             });
             canvas.append(bar);
 

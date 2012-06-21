@@ -111,7 +111,7 @@ class moss_tool implements plagiarism_tool {
 
     public function display_link($setting) {
         global $CFG;
-        $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$setting->courseid&tool=moss";
+        $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$setting->cmid&tool=moss";
         return "<a target='_blank' href='$link'>MOSS report</a>";
     }
 
@@ -147,7 +147,7 @@ class moss_tool implements plagiarism_tool {
             return $moss_param;
         }
         // Create the directory
-        $report = create_next_report($assignment->courseid, 'moss');
+        $report = create_next_report($assignment->cmid, 'moss');
         $report_path = self::get_report_path($report);
         if (is_dir($report_path)) {
             rrmdir($report_path);
@@ -163,7 +163,7 @@ class moss_tool implements plagiarism_tool {
 
     public function parse_result($assignment, $moss_info) {
 
-        $parser = new moss_parser($assignment->courseid);
+        $parser = new moss_parser($assignment->cmid);
         $parser->parse();
 
         $moss_info->status = 'finished';

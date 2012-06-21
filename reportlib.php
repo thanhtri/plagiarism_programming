@@ -174,28 +174,27 @@ function create_chart($reportid, $similarity_type) {
         $lower = $key*10;
         $range = $lower.'-'.$upper;
         $pos_y = (9-$key)*(BAR_WIDTH+5).'px'; // 2 is the space between bars
-        $width = max($val*$length_ratio, 1).'px';
+        $width = ($val*$length_ratio).'px';
         // legend of the bar
         $div .= html_writer::tag('div', $range, array('class'=>'legend', 'style'=>"top:$pos_y;width:40px"));
         // the bar itself
         $report_url->remove_params(array('upper_threshold', 'lower_threshold'));
         $report_url->params(array('upper_threshold'=>$upper, 'lower_threshold'=>$lower));
-        $div .= html_writer::link($report_url->out(false), '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width"));
         // number of pairs
         if ($val>0) {
-            $left = ($width+50).'px';
+            $div .= html_writer::link($report_url->out(false), '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width"));
+            $left = ($width+5).'px';
             $div .= html_writer::tag('div', $val,
                     array('class'=>'legend', 'style'=>"top:$pos_y;left:$left"));
         }
     }
     $pos_y = (10*(BAR_WIDTH+5)-5).'px';
     $width = CHART_WITH.'px';
-    $div .= html_writer::tag('div', '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width;height:1px"));
+    //$div .= html_writer::tag('div', '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width;height:1px"));
     $pos_y = (CHART_HEIGHT+10).'px';
-    $left = '45px';
     $div .= html_writer::tag('div', get_string('pair', 'plagiarism_programming'),
-            array('class'=>'legend', 'style'=>"top:$pos_y;left:$left"));
-    return $div;
+            array('class'=>'legend', 'style'=>"top:$pos_y;left:0px"));
+    return "<div class='canvas'>$div</div>";
 }
 
 function create_student_name_lookup_table(&$result_table, $is_teacher, &$student_names) {

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/programming/db" VERSION="20120607" COMMENT="XMLDB file for Moodle plagiarism/programming"
+<XMLDB PATH="plagiarism/programming/db" VERSION="20120621" COMMENT="XMLDB file for Moodle plagiarism/programming"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="programming_plagiarism" COMMENT="This table saves settings for source code plagiarism detection in programming assignments" NEXT="programming_report">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The id of the course" PREVIOUS="id" NEXT="scandate"/>
-        <FIELD NAME="scandate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="The date submissions are scanned" PREVIOUS="courseid" NEXT="jplag"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The course module id" PREVIOUS="id" NEXT="scandate"/>
+        <FIELD NAME="scandate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="The date submissions are scanned" PREVIOUS="cmid" NEXT="jplag"/>
         <FIELD NAME="jplag" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="JPlag tool is used or not" PREVIOUS="scandate" NEXT="moss"/>
         <FIELD NAME="moss" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="MOSS tool is used or not" PREVIOUS="jplag" NEXT="language"/>
         <FIELD NAME="language" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Which language is used in the assignment" PREVIOUS="moss" NEXT="auto_publish"/>

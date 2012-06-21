@@ -46,7 +46,7 @@ require_capability('mod/assignment:grade', $context);
 // unblock the session to allow parallel running (if use default PHP session)
 session_write_close();
 
-$assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+$assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
 if (!$assignment) {
     echo 'Invalid assignment!';
 }

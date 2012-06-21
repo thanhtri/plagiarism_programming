@@ -78,29 +78,22 @@ M.plagiarism_programming.view_report = {
 
     load_overlay: function(response, Y) {
         var history = Y.JSON.parse(response.responseText);
-        var width = M.plagiarism_programming.view_report.chart_width;
-        var height = M.plagiarism_programming.view_report.chart_height;
 
         var overlay = Y.Node.create('<div class="programming_result_chart_overlay"></div>');
-        overlay.setStyles({
-            width:  width + 'px',
-            height: height+ 'px'
-        });
 
         var canvas = Y.Node.create('<div class="programming_result_popup_chart"></div>');
-        var canvas_height = height-50;
-        canvas.setStyles({
-            width: (width-25) + 'px',
-            height: canvas_height+ 'px'
-        });
+        var canvas_height = M.plagiarism_programming.view_report.chart_height-50;
         var left = 20;
+        var h_label = Y.Node.create('<label class="h_label">'+M.str.moodle.date+'</label>');
+        var v_label = Y.Node.create('<label class="v_label">%</label>')
+        canvas.append(h_label);
+        canvas.append(v_label);
+
         for (var i in history) {
-            var bar = Y.Node.create('<a class="bar"/>');
-            bar.set('href', 'view_compare.php?id='+i);
+            var bar = Y.Node.create('<a class="bar" href="view_compare.php?id='+i+'"/>');
             bar.setStyles({
                 height: (history[i].similarity/100*canvas_height) + 'px',
-                left: left + 'px',
-                bottom: '0px'
+                left: left + 'px'
             });
             canvas.append(bar);
 

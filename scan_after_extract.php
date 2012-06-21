@@ -45,7 +45,7 @@ $token = required_param('token', PARAM_TEXT);
 $wait_to_finish = optional_param('wait', 1, PARAM_INT);
 
 // verify the token
-$assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+$assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
 $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
 if ($scan_info->token!=$token) {
     die ('Forbidden');
@@ -65,7 +65,7 @@ function tool_scanning_error_handler($error_no, $error_message) {
         $tool = $PROCESSING_INFO['stage'];
         $cmid = $PROCESSING_INFO['cmid'];
 
-        $assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
         $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
         $scan_info->status = 'error';
         $scan_info->message = get_string('general_user_error', 'plagiarism_programming');

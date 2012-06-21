@@ -145,7 +145,7 @@ class jplag_tool implements plagiarism_tool {
         if (!is_dir($report_path)) {
             mkdir($report_path);
         }
-        $report = create_next_report($assignment_param->courseid, 'jplag');
+        $report = create_next_report($assignment_param->cmid, 'jplag');
         $assignment_report_path = self::get_report_path($report);
         if (is_dir($assignment_report_path)) {
             rrmdir($assignment_report_path);
@@ -189,7 +189,7 @@ class jplag_tool implements plagiarism_tool {
 
     public function display_link($param) {
         global $CFG;
-        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$param->courseid;
+        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$param->cmid;
         return "<a target='_blank' href='$report_path'>JPlag report</a>";
     }
 
@@ -266,7 +266,7 @@ class jplag_tool implements plagiarism_tool {
      * @return stdClass the same $jplag_info record, with status updated
      */
     public function parse_result($assignment, $jplag_info) {
-        $parser = new jplag_parser($assignment->courseid);
+        $parser = new jplag_parser($assignment->cmid);
         $parser->parse();
         $jplag_info->status = 'finished';
         return $jplag_info;

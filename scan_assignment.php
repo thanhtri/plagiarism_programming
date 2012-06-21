@@ -53,7 +53,7 @@ function create_temporary_dir() {
  * @return a temporary directory that all files of this assignment will be stored
  */
 function get_temp_dir_for_assignment($assignment) {
-    $dir = PLAGIARISM_TEMP_DIR.$assignment->courseid.'/';
+    $dir = PLAGIARISM_TEMP_DIR.$assignment->cmid.'/';
     if (!is_dir($dir)) {
         mkdir($dir);
     }
@@ -165,7 +165,7 @@ function extract_assignment($assignment) {
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);
 
     // select all the submitted files of this assignment
-    $context = get_context_instance(CONTEXT_MODULE, $assignment->courseid, MUST_EXIST);
+    $context = get_context_instance(CONTEXT_MODULE, $assignment->cmid, MUST_EXIST);
     $fs = get_file_storage();
     $file_records = $fs->get_area_files($context->id, 'mod_assignment', 'submission', false, 'userid', false);
 
@@ -337,7 +337,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
         $scan_info->token = $token;
         $DB->update_record('programming_'.$toolname, $scan_info);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
-            ."cmid=$assignment->courseid&tool=$toolname&token=$token&wait=$wait";
+            ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait";
 
         $tool_class_name = $tool['class_name'];
         $logfiles[] = $tool_class_name::get_report_path()."/script_log_$assignment->id-$toolname.html";
@@ -410,7 +410,7 @@ function handle_shutdown() {
         $stage = $PROCESSING_INFO['stage'];
         $cmid = $PROCESSING_INFO['cmid'];
 
-        $assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
 
         /** If extract, set all statuses  */
         if ($stage=='extract') {
@@ -440,7 +440,7 @@ function handle_shutdown() {
     if ($PROCESSING_INFO && $PROCESSING_INFO['stage']!='extract') {
         $cmid = $PROCESSING_INFO['cmid'];
         $tool = $PROCESSING_INFO['stage'];
-        $assignment = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
         $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
         echo 'Before shutdown: status: '.$scan_info->status;
         if ($scan_info->status!='error' && $scan_info->status!='finished') {

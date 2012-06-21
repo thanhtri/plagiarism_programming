@@ -27,7 +27,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
     $dbman = $DB->get_manager();
 
     /// Add a new column newcol to the mdl_myqtype_options
-    if ($oldversion < 2012060701) {
+    if ($oldversion < 2012062001) {
 
         // Define field token to be added to programming_jplag
         $table = new xmldb_table('programming_jplag');
@@ -166,8 +166,15 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->create_table($table);
         }
 
+        // Rename field courseid on table programming_plagiarism to NEWNAMEGOESHERE
+        $table = new xmldb_table('programming_plagiarism');
+        $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'id');
+
+        // Launch rename field courseid
+        $dbman->rename_field($table, $field, 'cmid');
+
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012060701, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');
 
     }
 

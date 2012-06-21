@@ -53,7 +53,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $plagiarism_config = null;
         if ($cmid) {
-            $plagiarism_config = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+            $plagiarism_config = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
         }
 
         $settings = get_config('plagiarism_programming');
@@ -180,12 +180,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         if ($data->programmingYN) { // the plugin is enabled for this assignment
-            $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+            $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
             $new = false;
             if (!$setting) {
                 $new = true;
                 $setting = new stdClass();
-                $setting->courseid = $data->coursemodule;
+                $setting->cmid = $data->coursemodule;
             }
 
             $setting->language = $data->programming_language;
@@ -230,12 +230,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
         } else { // plugin not enabled, delete the records if there are
-            $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+            $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
             if ($setting) {
                 $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id));
                 $DB->delete_records('programming_jplag', array('settingid'=>$setting->id));
                 $DB->delete_records('programming_moss', array('settingid'=>$setting->id));
-                $DB->delete_records('programming_report', array('settingid'=>$setting->courseid));
+                $DB->delete_records('programming_report', array('settingid'=>$setting->cmid));
                 $DB->delete_records('programming_result', array('reportid'=>$setting->reportid));
                 $DB->delete_records('programming_plagiarism', array('id'=>$setting->id));
             }
@@ -263,7 +263,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if ($can_show==null) { //those computed values are cached in static variables and reused
             $can_show = $this->is_plugin_enabled($cmid);
             if ($can_show) {
-                $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+                $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
                 $can_show = $setting!=null;
             }
             if ($can_show) {
@@ -311,7 +311,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function print_disclosure($cmid) {
         global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detection_tools;
-        $setting = $DB->get_record('programming_plagiarism', array('courseid'=>$cmid));
+        $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
 
         // the plugin is enabled for this course ?
         if (!$this->is_plugin_enabled($cmid)) {
@@ -454,7 +454,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     )
                 );
                 $PAGE->requires->js_init_call('M.plagiarism_programming.initialise',
-                        array('cmid' => $setting->courseid, 'checkprogress' => $check), false, $jsmodule);
+                        array('cmid' => $setting->cmid, 'checkprogress' => $check), false, $jsmodule);
             }
         }
     }

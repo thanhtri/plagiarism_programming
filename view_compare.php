@@ -58,7 +58,7 @@ $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment
     if (!has_capability('mod/assignment:submit', $context) || // must have submission right to his assignment
-        !$DB->get_field('programming_plagiarism', 'auto_publish', array('courseid'=>$cmid))) { // or permission to see the report
+        !$DB->get_field('programming_plagiarism', 'auto_publish', array('cmid'=>$cmid))) { // or permission to see the report
         redirect($CFG->wwwroot, "You don't have permission to see this page");
     }
 
@@ -170,7 +170,8 @@ $jsmodule = array(
     'requires' => array('base', 'overlay', 'node', 'json', 'io-base'),
     'strings' => array(
         array('show_similarity_to_others', 'plagiarism_programming'),
-        array('history_char', 'plagiarism_programming')
+        array('history_char', 'plagiarism_programming'),
+        array('date', 'moodle')
      )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',
