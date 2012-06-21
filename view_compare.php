@@ -38,8 +38,11 @@ $report_rec = $DB->get_record('programming_report', array('id'=>$result_record->
 $cmid = $report_rec->cmid;
 $detector = $report_rec->detector;
 require_once(__DIR__.'/'.$detector.'_tool.php');
-$tool_class_name = $detector.'_tool';
-$directory = $tool_class_name::get_report_path($report_rec);
+if ($detector=='jplag') {
+    $directory = jplag_tool::get_report_path();
+} else {
+    $directory = moss_tool::get_report_path();
+}
 //-------------------------------------end parameter processing--------------------------------------------------//
 
 // create page context
@@ -72,7 +75,6 @@ if (!$is_teacher) {
         // this condition cannot happen unless users fabricate the link
         redirect($CFG->wwwroot, "You can only see the report on your work");
     }
-    $student_id = $USER->id;
 } else {
     // teacher can see the students' name
     $users = $DB->get_records_list('user', 'id', array($result_record->student1_id, $result_record->student2_id),
@@ -83,9 +85,6 @@ if (!$is_teacher) {
     $student2 = $user2->firstname.' '.$user2->lastname;
 }
 //---------------------------------end autorisation--------------------------------------------------------------------//
-
-// strip .html
-$name_no_ext = substr($result_record->comparison, 0, -5);
 
 $title = get_string('comparison_title', 'plagiarism_programming');
 $heading = get_string('comparison', 'plagiarism_programming');
@@ -152,6 +151,7 @@ $result_select = "reportid=$report_rec->id ".
     "OR student2_id=$result_record->student1_id OR student2_id=$result_record->student2_id)";
 $result = $DB->get_records_select('programming_result', $result_select);
 
+$all_names = null;
 create_student_name_lookup_table($result, $is_teacher, $all_names);
 
 //----------id lookup table for javascript-----------------------
