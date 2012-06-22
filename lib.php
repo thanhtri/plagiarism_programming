@@ -157,14 +157,15 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         // include the javascript for doing some minor interface adjustment to improve user experience
-        $js_module = array(
-            'name' => 'plagiarism_programming',
-            'fullpath' => '/plagiarism/programming/assignment_setting.js',
-            'strings' => array(
-                array('no_tool_selected_error', 'plagiarism_programming')
-            )
-        );
-        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', null, true, $js_module);
+//        $js_module = array(
+//            'name' => 'plagiarism_programming',
+//            'fullpath' => '/plagiarism/programming/assignment_setting.js',
+//            'requires' => array('base', 'node'),
+//            'strings' => array(
+//                array('no_tool_selected_error', 'plagiarism_programming')
+//            )
+//        );
+//        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', null, true, $js_module);
     }
 
     /**
@@ -254,9 +255,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * @param array $linkarray contain relevant information
      */
     public function get_links($linkarray) {
-        global $DB, $CFG;
+        global $DB;
 
-        static $students, $context, $can_show; // these static variables are just for catching purpose
+        static $students=null, $context=null, $can_show=null; // these static variables are just for catching purpose
 
         $cmid = $linkarray['cmid'];
         $student_id = $linkarray['userid'];

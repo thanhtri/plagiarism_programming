@@ -107,16 +107,17 @@ M.plagiarism_programming.compare_code = {
     },
 
     init_action: function(Y) {
-        Y.one('#action_menu').on('change', this.action_menu_onchange);
+        var select = Y.one('#action_menu');
+        select.on('change', this.action_menu_onchange, select);
     },
 
     init_select_version: function(Y) {
         var version_select = Y.one('#report_version');
         if (version_select!=null) {
             version_select.on('change', function(ev) {
-                var id = this.options[this.selectedIndex].value;
+                var id = this.get('value');
                 window.location = 'view_compare.php?id='+id;
-            });
+            }, version_select);
         }
     },
 
@@ -134,7 +135,7 @@ M.plagiarism_programming.compare_code = {
     },
 
     action_menu_onchange: function(e) {
-        var action = this.options[this.selectedIndex].value;
+        var action = this.get('value');
         var Y = M.plagiarism_programming.compare_code.Y;
         Y.io('mark_result.php', {
             method: 'POST',

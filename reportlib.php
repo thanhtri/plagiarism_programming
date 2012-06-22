@@ -76,7 +76,7 @@ function create_table_grouping_mode(&$list, &$student_names, $cmid) {
 
         foreach ($similarity_array as $s2_id => $similarity) {
             $cell = new html_table_cell();
-            $compare_link = html_writer::link('view_compare.php?id='.$similarity['id'], $similarity['rate'].'%',
+            $compare_link = html_writer::link('view_compare.php?id='.$similarity['id'], round($similarity['rate'], 2).'%',
                 array('class'=>'compare_link'));
             $cell->text = create_student_link($student_names[$s2_id], $s2_id).'<br/>'.$compare_link;
             $mark = $similarity['mark'];
@@ -101,7 +101,6 @@ function create_table_grouping_mode(&$list, &$student_names, $cmid) {
  * @return the html_table object
  */
 function create_table_list_mode(&$list, &$student_names, $cmid) {
-    global $CFG;
 
     $table = new html_table();
     $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
@@ -146,7 +145,6 @@ function create_chart($reportid, $similarity_type) {
     // similarity depends on similarity type, "greatest" is supported in all Moodle except SQLServer
     $result = ($similarity_type=='avg')?'(similarity1+similarity2)/2':'greatest(similarity1,similarity2)';
     $similarities = $DB->get_fieldset_select('programming_result', $result, $select);
-    $thickness = 100;
 
     $histogram = array();
     for ($i=10; $i>=0; $i--) {

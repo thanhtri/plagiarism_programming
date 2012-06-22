@@ -31,10 +31,9 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 class plagiarism_setup_form extends moodleform {
 
     protected function definition () {
-        global $CFG;
 
         $mform = &$this->_form;
-        $choices = array('No', 'Yes');
+
         $mform->addElement('html', get_string('programmingexplain', 'plagiarism_programming'));
         // if the plugin is used
         $mform->addElement('checkbox', 'programming_use', get_string('use_programming', 'plagiarism_programming'));
@@ -83,8 +82,9 @@ class plagiarism_setup_form extends moodleform {
             $pass = $data['jplag_pass'];
             $user = $data['jplag_user'];
             $old_setting = get_config('plagiarism_programming');
-            if ($user != $old_setting->jplag_user || $pass!=$old_setting->jplag_pass) {
-                // change credential, check username and passworkd
+            if (!(isset($old_setting->jplag_user) && isset($old_setting->jplag_pass)) ||
+                    $user != $old_setting->jplag_user || $pass!=$old_setting->jplag_pass) {
+                // change credential, recheck username and password
                 include_once(__DIR__.'/jplag/jplag_stub.php');
                 $jplag_stub = new jplag_stub();
                 $check_result = $jplag_stub->check_credential($data['jplag_user'], $data['jplag_pass']);
@@ -96,7 +96,7 @@ class plagiarism_setup_form extends moodleform {
 
         if (!empty($data['moss_email'])) {
             $pattern = '/\$userid=([0-9]+);/';
-            preg_match($pattern, $email, $match);
+            preg_match($pattern, $data['moss_email'], $match);
             if (!$match) {
                 $errors['moss_email'] = get_string('moss_userid_notfound', 'plagiarism_programming');
             }

@@ -138,12 +138,14 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->drop_field($table, $field);
         }
 
-        // Rename field cmid on table programming_result to NEWNAMEGOESHERE
+        // Rename field cmid on table programming_result to reportid
         $table = new xmldb_table('programming_result');
         $field = new xmldb_field('cmid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'comments');
 
         // Launch rename field cmid
-        $dbman->rename_field($table, $field, 'reportid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'reportid');
+        }
 
          // Define table programming_report to be created
         $table = new xmldb_table('programming_report');
@@ -171,7 +173,9 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         $field = new xmldb_field('courseid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'id');
 
         // Launch rename field courseid
-        $dbman->rename_field($table, $field, 'cmid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'cmid');
+        }
 
         // programming savepoint reached
         upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');

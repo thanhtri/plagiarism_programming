@@ -48,9 +48,8 @@ if ($mform->is_cancelled()) {
     $programming_use = (isset($data->programming_use))?$data->programming_use:0;
     set_config('programming_use', $programming_use, 'plagiarism');
 
-    $variables = array('level_enabled', 'moss_user_id');
+    $variables = array('level_enabled', 'moss_user_id', 'jplag_user', 'jplag_pass', 'moss_user_id');
 
-    $is_error = false;
     $email = $data->moss_email;
     if ($email) {
         $pattern = '/\$userid=([0-9]+);/';
