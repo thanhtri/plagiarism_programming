@@ -39,8 +39,7 @@ define('BAR_WIDTH', 20);
  * @param $cmid: course module id of the assignment
  * @return the html_table object
  */
-function create_table_grouping_mode(&$list, &$student_names, $cmid) {
-    global $CFG;
+function create_table_grouping_mode(&$list, &$student_names) {
 
     $similarity_table = array();
     foreach ($list as $pair) {
@@ -100,7 +99,7 @@ function create_table_grouping_mode(&$list, &$student_names, $cmid) {
  * @param $cmid: course module id of the assignment
  * @return the html_table object
  */
-function create_table_list_mode(&$list, &$student_names, $cmid) {
+function create_table_list_mode(&$list, &$student_names) {
 
     $table = new html_table();
     $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
@@ -226,8 +225,11 @@ function get_suspicious_works($student_id, $cmid) {
     global $DB;
     // get the latest report version
     $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid));
-    $ids = $DB->get_fieldset_select('programming_report', 'id', "cmid=$cmid And version=$version");
+    if ($version===null) {
+        return array();
+    }
 
+    $ids = $DB->get_fieldset_select('programming_report', 'id', "cmid=$cmid And version=$version");
     if (count($ids)>0) {
         $ids = implode(',', $ids);
         $select = "(student1_id=$student_id OR student2_id=$student_id) AND reportid IN ($ids) AND mark='Y'";
@@ -241,6 +243,9 @@ function get_students_similarity_info($cmid, $student_id=null) {
     global $DB;
     // get the latest report version
     $version = $DB->get_field('programming_report', 'max(version)', array('cmid'=>$cmid));
+    if ($version==null) { // no report yet
+        return array();
+    }
     $reports = $DB->get_records('programming_report', array('cmid'=>$cmid, 'version'=>$version));
 
     if (count($reports)==0) {

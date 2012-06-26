@@ -102,9 +102,9 @@ $result = $DB->get_records_sql($select);
 create_student_name_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
 
 if ($display_mode=='group') {
-    $table = create_table_grouping_mode($result, $student_names, $cmid);
+    $table = create_table_grouping_mode($result, $student_names);
 } else {
-    $table = create_table_list_mode($result, $student_names, $cmid);
+    $table = create_table_list_mode($result, $student_names);
 }
 
 $header = get_string('result', 'plagiarism_programming');
