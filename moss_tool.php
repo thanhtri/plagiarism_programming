@@ -144,7 +144,7 @@ class moss_tool implements plagiarism_tool {
     // Therefore, it call another process to function
     public function download_result($assignment, $moss_info) {
         if (!$this->init_stub($moss_info)) { // credential not provided
-            return $moss_param;
+            return $moss_info;
         }
         // Create the directory
         $report = create_next_report($assignment->cmid, 'moss');

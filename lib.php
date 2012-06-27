@@ -43,7 +43,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function get_form_elements_module($mform, $context) {
         global $DB, $PAGE;
-        // when updating an assignment, cmid is passed by "update" param
+        // when updating an assignment, cmid of the assignment is passed by "update" param
         // when creating an assignment, cmid does not exist, but course id is provided via "course" param
         $cmid = optional_param('update', 0, PARAM_INT);
         $course_id = optional_param('course', 0, PARAM_INT);
@@ -56,14 +56,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $plagiarism_config = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
         }
 
-        $settings = get_config('plagiarism_programming');
-
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
 
         // Enable or disable plagiarism checking
         $enable_checking = array();
-        $enable_checking[] = $mform->createElement('radio', 'programmingYN', '', get_string('disable'), 0);
-        $enable_checking[] = $mform->createElement('radio', 'programmingYN', '', get_string('enable'), 1);
+        $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('disable'), 0);
+        $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('enable'), 1);
         $mform->addGroup($enable_checking, 'similarity_checking',
             get_string('programmingYN', 'plagiarism_programming'), array(' '), false);
 
@@ -91,18 +89,20 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             get_string('programming_language', 'plagiarism_programming'), $programming_languages);
 
         // Disable the tools when no credentials provided
-        $mform->addElement('hidden', 'for_disabled', 1);
+        $settings = get_config('plagiarism_programming');
+        $jplag_disabled = null;
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $mform->disabledIf('detection_tools[jplag]', 'for_disabled', 'eq', 1);
+            $jplag_disabled = array('disabled'=>true);
         }
+        $moss_disabled = null;
         if (empty($settings->moss_user_id)) {
-            $mform->disabledIf('detection_tools[moss]', 'for_disabled', 'eq', 1);
+            $moss_disabled = array('disabled'=>true);
         }
 
         // Check box for selecting the tools
         $selected_tools = array();
-        $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'));
-        $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'));
+        $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'), $jplag_disabled);
+        $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'), $moss_disabled);
         $mform->addGroup($selected_tools, 'detection_tools', get_string('detection_tools', 'plagiarism_programming'));
 
         $this->setup_multiple_scandate($mform, $plagiarism_config);
@@ -112,7 +112,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('textarea', 'notification_text', get_string('notification_text', 'plagiarism_programming'),
             'wrap="virtual" rows="4" cols="50"');
 
-        $mform->disabledIf('detection_tools', 'programmingYN', 'eq', 0);
+        if (!$jplag_disabled) {
+            $mform->disabledIf('detection_tools[jplag]', 'programmingYN', 'eq', 0);
+        }
+        if (!$moss_disabled) {
+            $mform->disabledIf('detection_tools[moss]', 'programmingYN', 'eq', 0);
+        }
         $mform->disabledIf('programming_language', 'programmingYN', 'eq', 0);
         $mform->disabledIf('auto_publish', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification', 'programmingYN', 'eq', 0);
@@ -466,7 +471,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
     /** If the plugin is enabled or not (at Moodle level or at course level)
      * @param $cmid: the course module id (can provide the course id instead)
-     * @param $course_id: the course id
+     * @param $course_id: the course id. If course_id is passed, cmid is ignored
      * @return true: if the plugin is enabled in this course context
      *         false:if the plugin is not enabled in this course context
      */

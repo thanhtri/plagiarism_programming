@@ -42,6 +42,9 @@ class jplag_tool implements plagiarism_tool {
         'text' => 'text'
     );
 
+    /**
+     * Initialise the soap stub.
+     */
     private function stub_init($jplag_info=null) {
         // the stub is initiated lazily at most one time (per request) when it is required
         if ($this->jplag_stub==null) {
@@ -79,6 +82,13 @@ class jplag_tool implements plagiarism_tool {
         return $this->jplag_send_to_server($zip_full_path, $assignment, $scan_info);
     }
 
+    /**
+     * Send the zip file to JPlag server by SOAP protocol
+     * @param $zip_file_path the path of zip file
+     * @param stdClass $assignment_param the record object of assignment config
+     * @param stdClass $scan_info the record object of the status of jplag (in programming_jplag table)
+     * @return the same updated record object of jplag status
+     */
     private function jplag_send_to_server($zip_file_path, $assignment_param, $scan_info) {
         if (!$this->stub_init($scan_info)) {
             return $scan_info;
@@ -105,9 +115,17 @@ class jplag_tool implements plagiarism_tool {
         return $scan_info;
     }
 
+    /**
+     * Checking the status of the scanning. If the current status is scanning,
+     * it will contact JPlag server to see if the scanning has been finished
+     * Otherwise, it just return the status in the database
+     * @param $assignment_param the assignment record object (programming_plagiarism table)
+     * @param $jplag_param the jplag record object (programming_jplag table)
+     * @return the updated $jplag_param object
+     */
     public function check_status($assignment_param, $jplag_param) {
         if (!$this->stub_init($jplag_param)) {
-            return $scan_info;
+            return $jplag_param;
         }
 
         // TODO: handle network error
@@ -132,12 +150,13 @@ class jplag_tool implements plagiarism_tool {
         return $jplag_param;
     }
 
-    /** Download the result from jplag server.
-     *  Note that the scanning status must be "done"
+    /**
+     * Download the result from jplag server.
+     * Note that the scanning status must be "done"
      */
     public function download_result($assignment_param, $jplag_param) {
         if (!$this->stub_init($jplag_param)) {
-            return $scan_info;
+            return $jplag_param;
         }
 
         // create a directory
@@ -187,9 +206,13 @@ class jplag_tool implements plagiarism_tool {
         }
     }
 
-    public function display_link($param) {
+    /**
+     * Link to JPlag plagiarism report for the assignment
+     * @param stdClass $scan_info the record object of the status of jplag (in programming_jplag table)
+     */
+    public function display_link($jplag_param) {
         global $CFG;
-        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$param->cmid;
+        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$jplag_param->cmid;
         return "<a target='_blank' href='$report_path'>JPlag report</a>";
     }
 
@@ -202,6 +225,11 @@ class jplag_tool implements plagiarism_tool {
         }
     }
 
+    /**
+     * The supported languages of jplag
+     * @return the supported languages of JPlag under an array('language', 'code')
+     * - code is used by the server to identify the language
+     */
     public static function get_supported_language() {
         return self::$supported_languages;
     }

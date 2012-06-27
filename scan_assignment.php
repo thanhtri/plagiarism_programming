@@ -158,8 +158,6 @@ function extract_zip($zip_file, $extensions, $location, stored_file $file) {
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
  */
 function extract_assignment($assignment) {
-    global $OUTPUT;
-
     echo get_string('extract', 'plagiarism_programming');
     // make a subdir for this assignment in the plugin subdir
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);

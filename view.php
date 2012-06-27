@@ -99,6 +99,7 @@ if ($student_id>0) {
 $select .= ' ORDER BY similarity DESC';
 $result = $DB->get_records_sql($select);
 
+$student_names = null;
 create_student_name_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
 
 if ($display_mode=='group') {

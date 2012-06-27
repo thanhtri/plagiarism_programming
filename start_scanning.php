@@ -150,7 +150,6 @@ function check_status($assignment, $time=0) {
  */
 function download_assignment($assignment) {
     global $DB, $detection_tools;
-    $status = array();
     foreach ($detection_tools as $tool_name => $tool_info) {
         if (!$assignment->$tool_name) {
             continue;

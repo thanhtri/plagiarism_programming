@@ -59,19 +59,18 @@ class jplag_parser {
         for ($i=0; $i<$rownum; $i++) {
             $row = $rows->item($i);
             $cells = $row->getElementsByTagName('td');
-            $student1_id = $cells->item(0)->nodeValue;
+                $percentage = substr($cell->childNodes->item(2)->nodeValue, 1, -2);
 
             for ($j=2; $j<$cells->length; $j++) {
                 $cell = $cells->item($j);
                 $link = $cell->childNodes->item(0);
-                $student2_id = $link->nodeValue;
                 $file = $link->getAttribute('href');
-                $percentage = substr($cell->childNodes->item(2)->nodeValue, 1, -2);
 
                 // the similarity percentage of each student is contained in the -top file
                 $pattern = '/<TR><TH><TH>([0-9]*) \(([0-9]*\.[0-9]*)%\)<TH>([0-9]*) \(([0-9]*\.[0-9]*)%\)<TH>/';
                 $top_filename = $directory.'/'.substr($file, 0, -5).'-top.html';
                 $top_content = file_get_contents($top_filename);
+                $matches = null;
                 preg_match($pattern, $top_content, $matches);
 
                 // save to the db
