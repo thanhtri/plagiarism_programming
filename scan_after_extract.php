@@ -18,7 +18,7 @@
  * This script is used to fork processes in order to scan assignments after extraction.
  * It cannot be called directly through the website, but just through curl libray in
  * scan_assignment function in start_scanning.php file
- * Authentication: a random token is generated and stored in the programming_jplag or programming_moss table
+ * Authentication: a random token is generated and stored in the plagiarism_programming_jplag or plagiarism_programming_moss table
  * in DB before calling the script. This token is passed to this script, which in turn verify it with the one stored in DB.
  *
  * @package    plagiarism
@@ -45,7 +45,7 @@ $token = required_param('token', PARAM_TEXT);
 $wait_to_finish = optional_param('wait', 1, PARAM_INT);
 
 // verify the token
-$assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+$assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
 $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
 if ($scan_info->token!=$token) {
     die ('Forbidden');
@@ -65,7 +65,7 @@ function tool_scanning_error_handler($error_no, $error_message) {
         $tool = $PROCESSING_INFO['stage'];
         $cmid = $PROCESSING_INFO['cmid'];
 
-        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
         $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
         $scan_info->status = 'error';
         $scan_info->message = get_string('general_user_error', 'plagiarism_programming');

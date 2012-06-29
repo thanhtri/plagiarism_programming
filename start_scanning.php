@@ -46,7 +46,7 @@ require_capability('mod/assignment:grade', $context);
 // unblock the session to allow parallel running (if use default PHP session)
 session_write_close();
 
-$assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+$assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
 if (!$assignment) {
     echo 'Invalid assignment!';
 }
@@ -93,7 +93,7 @@ function start_scan_assignment($assignment, $time) {
     // register the timestamp. This helps the check status requests know that the status obtained is the current status of the
     // system, in case it comes sooner
     $assignment->starttime = $time;
-    $DB->update_record('programming_plagiarism', $assignment);
+    $DB->update_record('plagiarism_programming', $assignment);
 
     create_temporary_dir();
     scan_assignment($assignment);

@@ -29,10 +29,10 @@ require_once(__DIR__.'/reportlib.php');
 global $OUTPUT, $PAGE, $DB, $USER, $CFG;
 
 //----------------------------------------Processing of parameters----------------------------------------------//
-$result_id = required_param('id', PARAM_INT); //id in the programming_result table
+$result_id = required_param('id', PARAM_INT); //id in the plagiarism_programming_result table
 $anchor = optional_param('anchor', -1, PARAM_INT);
-$result_record = $DB->get_record('programming_result', array('id'=>$result_id));
-$report_rec = $DB->get_record('programming_report', array('id'=>$result_record->reportid));
+$result_record = $DB->get_record('plagiarism_programming_result', array('id'=>$result_id));
+$report_rec = $DB->get_record('plagiarism_programming_report', array('id'=>$result_record->reportid));
 
 // get the report directory
 $cmid = $report_rec->cmid;
@@ -61,7 +61,7 @@ $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment
     if (!has_capability('mod/assignment:submit', $context) || // must have submission right to his assignment
-        !$DB->get_field('programming_plagiarism', 'auto_publish', array('cmid'=>$cmid))) { // or permission to see the report
+        !$DB->get_field('plagiarism_programming', 'auto_publish', array('cmid'=>$cmid))) { // or permission to see the report
         redirect($CFG->wwwroot, "You don't have permission to see this page");
     }
 
@@ -149,7 +149,7 @@ echo html_writer::tag('div', $result2['content'], array('class'=>'programming_re
 $result_select = "reportid=$report_rec->id ".
     "AND (student1_id=$result_record->student1_id OR student1_id=$result_record->student2_id ".
     "OR student2_id=$result_record->student1_id OR student2_id=$result_record->student2_id)";
-$result = $DB->get_records_select('programming_result', $result_select);
+$result = $DB->get_records_select('plagiarism_programming_result', $result_select);
 
 $all_names = null;
 create_student_name_lookup_table($result, $is_teacher, $all_names);

@@ -79,7 +79,7 @@ class jplag_parser {
                 $res->similarity1 = $matches[2];
                 $res->similarity2 = $matches[4];
                 $res->comparison = $file;
-                $DB->insert_record('programming_result', $res);
+                $DB->insert_record('plagiarism_programming_result', $res);
             }
         }
         $this->get_similar_parts();
@@ -87,7 +87,7 @@ class jplag_parser {
 
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('programming_result', array('reportid'=>$this->report->id));
+        $pairs = $DB->get_records('plagiarism_programming_result', array('reportid'=>$this->report->id));
         $path = dirname($this->filename);
 
         $similarity_array = array();

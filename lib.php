@@ -53,7 +53,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $plagiarism_config = null;
         if ($cmid) {
-            $plagiarism_config = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+            $plagiarism_config = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
         }
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
@@ -186,7 +186,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         if ($data->programmingYN) { // the plugin is enabled for this assignment
-            $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+            $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
             $new = false;
             if (!$setting) {
                 $new = true;
@@ -207,9 +207,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
             if ($new) {
-                $setting->id = $DB->insert_record('programming_plagiarism', $setting);
+                $setting->id = $DB->insert_record('plagiarism_programming', $setting);
             } else {
-                $DB->update_record('programming_plagiarism', $setting);
+                $DB->update_record('plagiarism_programming', $setting);
             }
 
             $date_num = $data->submit_date_num;
@@ -236,14 +236,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
         } else { // plugin not enabled, delete the records if there are
-            $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+            $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
             if ($setting) {
                 $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id));
-                $DB->delete_records('programming_jplag', array('settingid'=>$setting->id));
-                $DB->delete_records('programming_moss', array('settingid'=>$setting->id));
-                $DB->delete_records('programming_report', array('settingid'=>$setting->cmid));
-                $DB->delete_records('programming_result', array('reportid'=>$setting->reportid));
-                $DB->delete_records('programming_plagiarism', array('id'=>$setting->id));
+                $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
+                $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
+                $DB->delete_records('plagiarism_programming_report', array('settingid'=>$setting->cmid));
+                $DB->delete_records('plagiarism_programming_result', array('reportid'=>$setting->reportid));
+                $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
             }
         }
     }
@@ -269,15 +269,15 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if ($can_show==null) { //those computed values are cached in static variables and reused
             $can_show = $this->is_plugin_enabled($cmid);
             if ($can_show) {
-                $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+                $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
                 $can_show = $setting!=null;
             }
             if ($can_show) {
                 if ($setting->moss) {
-                    $moss_param = $DB->get_record('programming_moss', array('settingid'=>$setting->id));
+                    $moss_param = $DB->get_record('plagiarism_programming_moss', array('settingid'=>$setting->id));
                 }
                 if ($setting->jplag) {
-                    $jplag_param = $DB->get_record('programming_jplag', array('settingid'=>$setting->id));
+                    $jplag_param = $DB->get_record('plagiarism_programming_jplag', array('settingid'=>$setting->id));
                 }
                 $can_show = (isset($moss_param) && $moss_param->status=='finished') ||
                     (isset($jplag_param) && $jplag_param->status=='finished');
@@ -317,7 +317,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function print_disclosure($cmid) {
         global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detection_tools;
-        $setting = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+        $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
 
         // the plugin is enabled for this course ?
         if (!$this->is_plugin_enabled($cmid)) {

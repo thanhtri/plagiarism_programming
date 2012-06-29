@@ -41,7 +41,7 @@ $settngids = array_unique($settngids);
 
 echo "Start sending submissions to plagiarism tools\n";
 foreach ($settngids as $setting_id) {
-    $assignment_config = $DB->get_record('programming_plagiarism', array('id'=>$setting_id));
+    $assignment_config = $DB->get_record('plagiarism_programming', array('id'=>$setting_id));
 
     // do not wait for result, the next cron script will check the status and download the result
     scan_assignment($assignment_config, false);

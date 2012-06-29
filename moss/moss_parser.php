@@ -42,7 +42,7 @@ class moss_parser {
     }
 
     /**
-     * Parse the index file of the report and populate the record in programming_result table
+     * Parse the index file of the report and populate the record in plagiarism_programming_result table
      */
     public function parse() {
         global $DB;
@@ -65,7 +65,7 @@ class moss_parser {
             $record->similarity1 = $similarity[$i];
             $record->similarity2 = $similarity[$i+1];
             $record->comparison = $filenames[$i];
-            $DB->insert_record('programming_result', $record);
+            $DB->insert_record('plagiarism_programming_result', $record);
         }
 
         $this->get_similar_parts();
@@ -76,14 +76,14 @@ class moss_parser {
      * in the report, extract the marked similar blocks and produce the marked file.
      * 
      * Input: the similarity report in the report directory (dataroot/plagiarism_report/moss<cmid>/* and the record in
-     * programming_result table
+     * plagiarism_programming_result table
      * Output: output one file for each student, with the file name is the student id, which include all the codes
      * concatenated into one file, and mark the similarity blocks with <span> tags. The begining of the similarity blocks
      * will be marked by <span type='begin' sid='studentids' color=''> (note that one block can be similar to many other students)
      */
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('programming_result', array('reportid'=>$this->report->id));
+        $pairs = $DB->get_records('plagiarism_programming_result', array('reportid'=>$this->report->id));
         $path = dirname($this->filename);
 
         $similarity_array = array();

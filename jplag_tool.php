@@ -86,7 +86,7 @@ class jplag_tool implements plagiarism_tool {
      * Send the zip file to JPlag server by SOAP protocol
      * @param $zip_file_path the path of zip file
      * @param stdClass $assignment_param the record object of assignment config
-     * @param stdClass $scan_info the record object of the status of jplag (in programming_jplag table)
+     * @param stdClass $scan_info the record object of the status of jplag (in plagiarism_programming_jplag table)
      * @return the same updated record object of jplag status
      */
     private function jplag_send_to_server($zip_file_path, $assignment_param, $scan_info) {
@@ -119,8 +119,8 @@ class jplag_tool implements plagiarism_tool {
      * Checking the status of the scanning. If the current status is scanning,
      * it will contact JPlag server to see if the scanning has been finished
      * Otherwise, it just return the status in the database
-     * @param $assignment_param the assignment record object (programming_plagiarism table)
-     * @param $jplag_param the jplag record object (programming_jplag table)
+     * @param $assignment_param the assignment record object (plagiarism_programming table)
+     * @param $jplag_param the jplag record object (plagiarism_programming_jplag table)
      * @return the updated $jplag_param object
      */
     public function check_status($assignment_param, $jplag_param) {
@@ -208,7 +208,7 @@ class jplag_tool implements plagiarism_tool {
 
     /**
      * Link to JPlag plagiarism report for the assignment
-     * @param stdClass $scan_info the record object of the status of jplag (in programming_jplag table)
+     * @param stdClass $scan_info the record object of the status of jplag (in plagiarism_programming_jplag table)
      */
     public function display_link($jplag_param) {
         global $CFG;
@@ -289,8 +289,8 @@ class jplag_tool implements plagiarism_tool {
 
     /**
      * Parse the report
-     * @param stdClass $assignment the assignment config record object (of programming_plagiarism table)
-     * @param stdClass $jplag_info the jplag status record object (of programming_jplag table)
+     * @param stdClass $assignment the assignment config record object (of plagiarism_programming table)
+     * @param stdClass $jplag_info the jplag status record object (of plagiarism_programming_jplag table)
      * @return stdClass the same $jplag_info record, with status updated
      */
     public function parse_result($assignment, $jplag_info) {

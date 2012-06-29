@@ -30,8 +30,8 @@ global $DB;
 
 $result_id = required_param('id', PARAM_INT);
 $task = required_param('task', PARAM_TEXT);
-$result_record = $DB->get_record('programming_result', array('id'=>$result_id));
-$report_record = $DB->get_record('programming_report', array('id'=>$result_record->reportid));
+$result_record = $DB->get_record('plagiarism_programming_result', array('id'=>$result_id));
+$report_record = $DB->get_record('plagiarism_programming_report', array('id'=>$result_record->reportid));
 $context = get_context_instance(CONTEXT_MODULE, $report_record->cmid);
 
 // only teachers can mark the pairs
@@ -41,7 +41,7 @@ if ($task=='mark') {
     $action = required_param('action', PARAM_ALPHA);
     assert($action=='Y' || $action=='N' || $action=='');
     $result_record->mark = $action;
-    $DB->update_record('programming_result', $result_record);
+    $DB->update_record('plagiarism_programming_result', $result_record);
     echo 'OK';
 } else if ($task=='get_history') {
     $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);

@@ -226,7 +226,7 @@ function submit_assignment($assignment, $tool, $scan_info) {
     debugging("Finish sending to $tool_name. Status: $scan_info->status\n");
 
     // note that scan_info is the object containing
-    // the corresponding record in table programming_jplag
+    // the corresponding record in table plagiarism_programming_jplag
     return $scan_info;
 }
 
@@ -342,9 +342,9 @@ function scan_assignment($assignment, $wait_for_result=true) {
     }
 
     // register the start scanning time
-    $assignment = $DB->get_record('programming_plagiarism', array('id'=>$assignment->id));
+    $assignment = $DB->get_record('plagiarism_programming', array('id'=>$assignment->id));
     $assignment->latestscan = time();
-    $DB->update_record('programming_plagiarism', $assignment);
+    $DB->update_record('plagiarism_programming', $assignment);
 
     curl_download($links, $logfiles);
 
@@ -408,7 +408,7 @@ function handle_shutdown() {
         $stage = $PROCESSING_INFO['stage'];
         $cmid = $PROCESSING_INFO['cmid'];
 
-        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
 
         /** If extract, set all statuses  */
         if ($stage=='extract') {
@@ -438,7 +438,7 @@ function handle_shutdown() {
     if ($PROCESSING_INFO && $PROCESSING_INFO['stage']!='extract') {
         $cmid = $PROCESSING_INFO['cmid'];
         $tool = $PROCESSING_INFO['stage'];
-        $assignment = $DB->get_record('programming_plagiarism', array('cmid'=>$cmid));
+        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
         $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
         echo 'Before shutdown: status: '.$scan_info->status;
         if ($scan_info->status!='error' && $scan_info->status!='finished') {
