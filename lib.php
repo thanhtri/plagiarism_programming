@@ -213,7 +213,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
             $date_num = $data->submit_date_num;
-            $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id, 'finished'=>0));
+            $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0));
 
             for ($i=0; $i<$date_num; $i++) {
                 $element_name = "scan_date[$i]";
@@ -223,26 +223,26 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     $scan_date_obj->finished = 0;
                     $scan_date_obj->settingid = $setting->id;
 
-                    $DB->insert_record('programming_scan_date', $scan_date_obj);
+                    $DB->insert_record('plagiarism_programming_date', $scan_date_obj);
                 }
             }
             foreach ($detection_tools as $toolname => $info) {
-                if ($setting->$toolname && !$DB->get_record('programming_'.$toolname, array('settingid'=>$setting->id))) {
+                if ($setting->$toolname && !$DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$setting->id))) {
                     $jplag_rec = new stdClass();
                     $jplag_rec->settingid = $setting->id;
                     $jplag_rec->status = 'pending';
-                    $DB->insert_record('programming_'.$toolname, $jplag_rec);
+                    $DB->insert_record('plagiarism_programming_'.$toolname, $jplag_rec);
                 }
             }
 
         } else { // plugin not enabled, delete the records if there are
             $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
             if ($setting) {
-                $DB->delete_records('programming_scan_date', array('settingid'=>$setting->id));
+                $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id));
                 $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
                 $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
-                $DB->delete_records('plagiarism_programming_report', array('settingid'=>$setting->cmid));
-                $DB->delete_records('plagiarism_programming_result', array('reportid'=>$setting->reportid));
+                $DB->delete_records('plagiarism_programming_rpt', array('settingid'=>$setting->cmid));
+                $DB->delete_records('plagiarism_programming_reslt', array('reportid'=>$setting->reportid));
                 $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
             }
         }
@@ -351,7 +351,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 }
 
                 $toolname = $tool_info['name'];
-                $scanning_info = $DB->get_record('programming_'.$tool, array('settingid' => $setting->id));
+                $scanning_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid' => $setting->id));
 
                 $info = $scanning_info->status;
                 switch ($scanning_info->status) {
@@ -384,7 +384,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             if ($setting->latestscan) {
                 $content .= get_string('latestscan', 'plagiarism_programming').' '.  date('h.i A D j M', $setting->latestscan);
             }
-            $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$setting->id, 'finished'=>0),
+            $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0),
                     'scan_date ASC');
             if (count($scan_dates)>0) {
                 // get the first scan date
@@ -428,7 +428,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if (!$is_teacher && has_capability('mod/assignment:submit', $context, $USER->id)) {
             if ($setting->notification) {
                 $content = format_text($setting->notification_text, FORMAT_MOODLE);
-                $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$setting->id, 'finished'=>0),
+                $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0),
                         'scan_date ASC');
                 if (count($scan_dates)>0) {
                     // get the first scan date
@@ -493,7 +493,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $course_module = get_coursemodule_from_id('assignment', $cmid);
             $course_id = ($course_module)?$course_module->course:0;
         }
-        return $DB->get_record('programming_course_enabled', array('course' => $course_id))!=false;
+        return $DB->get_record('plagiarism_programming_cours', array('course' => $course_id))!=false;
     }
 
     /**
@@ -504,7 +504,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $scan_dates = array();
         if ($plagiarism_config) {
-            $scan_dates = $DB->get_records('programming_scan_date', array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
+            $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
         }
         $db_scandate = count($scan_dates);
 

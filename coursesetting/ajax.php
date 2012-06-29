@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('AJAX_SCRIPT', true);
-global $PAGE;
+global $PAGE, $USER;
 
 require_once(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/course_selection_form.php');
@@ -63,7 +63,6 @@ function search_courses($page, $category=0, $name='') {
 }
 
 function enable_level($level) {
-    global $DB;
     // just two values global and course are accepted
     $level = ($level=='global')?'global':'course';
     set_config('level_enabled', $level, 'plagiarism_programming');
@@ -71,18 +70,18 @@ function enable_level($level) {
 
 function enable_code_plagiarism_checking_for_course($id) {
     global $DB;
-    $course = $DB->get_record('programming_course_enabled', array('course'=>$id));
+    $course = $DB->get_record('plagiarism_programming_cours', array('course'=>$id));
     if (!$course) {
         $course_enabled = new stdClass();
         $course_enabled->course = $id;
-        $DB->insert_record('programming_course_enabled', $course_enabled);
+        $DB->insert_record('plagiarism_programming_cours', $course_enabled);
         echo json_encode(array('status'=>'OK'));
     }
 }
 
 function disable_code_plagiarism_seting_for_course($id) {
     global $DB;
-    $DB->delete_records('programming_course_enabled', array('course'=>$id));
+    $DB->delete_records('plagiarism_programming_cours', array('course'=>$id));
     echo json_encode(array('status'=>'OK'));
 }
 

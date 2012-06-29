@@ -215,14 +215,14 @@ function submit_assignment($assignment, $tool, $scan_info) {
     // update the status to uploading
     $scan_info->status = 'uploading';
     $scan_info->progress = 0;
-    $DB->update_record('programming_'.$tool_name, $scan_info);
+    $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
 
     debugging("Start sending to $tool_name \n");
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);
 
     // submit the assignment
     $scan_info = $tool->submit_assignment($temp_submission_dir, $assignment, $scan_info);
-    $DB->update_record('programming_'.$tool_name, $scan_info);
+    $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
     debugging("Finish sending to $tool_name. Status: $scan_info->status\n");
 
     // note that scan_info is the object containing
@@ -244,7 +244,7 @@ function check_scanning_status($assignment, $tool, $scan_info) {
     // for every other stages, just return the assignment status since it is updated in parallel
     if ($scan_info->status=='scanning') {
         $scan_info = $tool->check_status($assignment, $scan_info);
-        $DB->update_record('programming_'.$tool->get_name(), $scan_info);
+        $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
     }
     return $scan_info;
 }
@@ -266,7 +266,7 @@ function download_result($assignment, $tool, $scan_info) {
     }
     $scan_info->status = 'downloading';
     $scan_info->progress = 0;
-    $DB->update_record('programming_'.$tool->get_name(), $scan_info);
+    $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
 
     echo "Download begin!\n";
     $scan_info = $tool->download_result($assignment, $scan_info);
@@ -275,7 +275,7 @@ function download_result($assignment, $tool, $scan_info) {
     echo "Parse begin\n";
     $scan_info = $tool->parse_result($assignment, $scan_info);
     echo "Parse end\n";
-    $DB->update_record('programming_'.$tool->get_name(), $scan_info);
+    $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
     return $scan_info;
 }
 
@@ -293,7 +293,7 @@ function already_uploaded($assignment) {
         if (!$assignment->$tool_name) {
             continue;
         }
-        $scan_info = $DB->get_record('programming_'.$tool_name, array('settingid'=>$assignment->id));
+        $scan_info = $DB->get_record('plagiarism_programming_'.$tool_name, array('settingid'=>$assignment->id));
         if (!$scan_info || $scan_info->status=='pending' || $scan_info->status=='finished' || $scan_info->status=='error') {
             $uploaded = false;
         }
@@ -331,9 +331,9 @@ function scan_assignment($assignment, $wait_for_result=true) {
         if (!$assignment->$toolname) {    // this detector is not selected
             continue;
         }
-        $scan_info = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
+        $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
         $scan_info->token = $token;
-        $DB->update_record('programming_'.$toolname, $scan_info);
+        $DB->update_record('plagiarism_programming_'.$toolname, $scan_info);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
             ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait";
 
@@ -368,7 +368,7 @@ function scan_after_extract_assignment($assignment, $toolname, $wait_to_download
     $tool = $detection_tools[$toolname];
     $tool_class_name = $tool['class_name'];
     $tool_class = new $tool_class_name();
-    $scan_info = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
+    $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
     assert($scan_info!=null);
 
     if ($scan_info->status=='pending' || $scan_info->status=='error') {
@@ -419,7 +419,7 @@ function handle_shutdown() {
 
         foreach ($tools as $tool) {
             if ($assignment->$tool) {
-                $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
+                $scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
                 $scan_info->status = 'error';
                 $message = get_string('unexpected_error', 'plagiarism_programming');
                 if ($stage=='extract') {
@@ -430,7 +430,7 @@ function handle_shutdown() {
                     $message = get_string('unexpected_error_download', 'plagiarism_programming');
                 }
                 $scan_info->message = $message;
-                $DB->update_record('programming_'.$tool, $scan_info);
+                $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
             }
         }
     }
@@ -439,12 +439,12 @@ function handle_shutdown() {
         $cmid = $PROCESSING_INFO['cmid'];
         $tool = $PROCESSING_INFO['stage'];
         $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-        $scan_info = $DB->get_record('programming_'.$tool, array('settingid'=>$assignment->id));
+        $scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
         echo 'Before shutdown: status: '.$scan_info->status;
         if ($scan_info->status!='error' && $scan_info->status!='finished') {
             $scan_info->status = 'error';
             $scan_info->message = 'An unknown error has occurred!';
-            $DB->update_record('programming_'.$tool, $scan_info);
+            $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
         }
     }
     $file = "$CFG->dataroot/plagiarism_report/".$PROCESSING_INFO['stage'].'.txt';

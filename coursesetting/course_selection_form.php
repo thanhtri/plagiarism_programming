@@ -80,7 +80,7 @@ class course_selection_form extends moodleform {
         global $DB;
 
         $sql = 'Select course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled '.
-            'From {course} course LEFT JOIN {programming_course_enabled} enabled_course On course.id=enabled_course.course';
+            'From {course} course LEFT JOIN {plagiarism_programming_cours} enabled_course On course.id=enabled_course.course';
         $where = 'category>0';
 
         if ($this->category > 0) {

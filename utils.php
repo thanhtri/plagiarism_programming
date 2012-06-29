@@ -200,10 +200,10 @@ class progress_handler {
      */
     public function update_progress($stage, $progress) {
         global $DB;
-        $record = $DB->get_record('programming_'.$this->tool_name, array('id'=>$this->tool_param->id));
+        $record = $DB->get_record('plagiarism_programming_'.$this->tool_name, array('id'=>$this->tool_param->id));
         $record->status = $stage;
         $record->progress = intval($progress);
-        $DB->update_record('programming_'.$this->tool_name, $record);
+        $DB->update_record('plagiarism_programming_'.$this->tool_name, $record);
         $this->tool_param->progress = intval($progress);
         $this->tool_param->status = $stage;
     }

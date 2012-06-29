@@ -81,11 +81,11 @@ function start_scan_assignment($assignment, $time) {
     // reset the status of all tools to pending and clear the error message if it is finished or error
     foreach ($detection_tools as $toolname => $tool) {
         if (isset($assignment->$toolname)) {
-            $tool_record = $DB->get_record('programming_'.$toolname, array('settingid'=>$assignment->id));
+            $tool_record = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
             if ($tool_record && ($tool_record->status=='finished' || $tool_record->status=='error')) {
                 $tool_record->status = 'pending';
                 $tool_record->message = '';
-                $DB->update_record('programming_'.$toolname, $tool_record);
+                $DB->update_record('plagiarism_programming_'.$toolname, $tool_record);
             }
         }
     }
@@ -128,7 +128,7 @@ function check_status($assignment, $time=0) {
         if (!$assignment->$tool_name) {
             continue;
         }
-        $scan_info = $DB->get_record('programming_'.$tool_name, array('settingid'=>$assignment->id));
+        $scan_info = $DB->get_record('plagiarism_programming_'.$tool_name, array('settingid'=>$assignment->id));
         assert($scan_info!=null);
 
         $tool_class_name = $tool_info['class_name'];
@@ -154,7 +154,7 @@ function download_assignment($assignment) {
         if (!$assignment->$tool_name) {
             continue;
         }
-        $scan_info = $DB->get_record('programming_'.$tool_name, array('settingid'=>$assignment->id));
+        $scan_info = $DB->get_record('plagiarism_programming_'.$tool_name, array('settingid'=>$assignment->id));
         assert($scan_info!=null);
 
         if ($scan_info->status=='done') {

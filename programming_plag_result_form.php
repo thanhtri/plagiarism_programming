@@ -61,7 +61,7 @@ class programming_plag_result_form extends moodleform {
         $mform->addElement('select', 'display_mode', get_string('display_mode', 'plagiarism_programming'), $display_modes);
 
         // select the version history
-        $reports = $DB->get_records('plagiarism_programming_report', array('cmid'=>$this->cmid, 'detector'=>$this->detector), 'time_created DESC');
+        $reports = $DB->get_records('plagiarism_programming_rpt', array('cmid'=>$this->cmid, 'detector'=>$this->detector), 'time_created DESC');
         $report_select = array();
         foreach ($reports as $report) {
             $report_select[$report->version] = date('d M h.i A', $report->time_created);

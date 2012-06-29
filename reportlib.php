@@ -32,7 +32,7 @@ define('BAR_WIDTH', 20);
 /**
  * Create the similarity table in grouping mode, in which each row lists all the similarity rate of a student to all others.
  * Used to create the similarity report
- * @param $list: a list of records of plagiarism_programming_result table (in DESC order) for the selected detector.
+ * @param $list: a list of records of plagiarism_programming_reslt table (in DESC order) for the selected detector.
  * Not altered by the function. Passed by reference for performance only
  * @param $student_names: associative array id=>name of the students in this assignment. Not altered by the function.
  *        Passed by reference for performance only
@@ -92,7 +92,7 @@ function create_table_grouping_mode(&$list, &$student_names) {
 /**
  * Create the similarity table in list mode, in which pairs of students are listed in descending similarity rate
  * Used to create the similarity report
- * @param $list: a list of records of plagiarism_programming_result table in DESC order for the selected detector. Not altered by the function.
+ * @param $list: a list of records of plagiarism_programming_reslt table in DESC order for the selected detector. Not altered by the function.
  *        Passed by reference for performance only
  * @param $student_names: associative array id=>name of the students in this assignment. Not altered by the function.
  *        Passed by reference for performance only
@@ -143,7 +143,7 @@ function create_chart($reportid, $similarity_type) {
     $select = "reportid=$reportid";
     // similarity depends on similarity type, "greatest" is supported in all Moodle except SQLServer
     $result = ($similarity_type=='avg')?'(similarity1+similarity2)/2':'greatest(similarity1,similarity2)';
-    $similarities = $DB->get_fieldset_select('plagiarism_programming_result', $result, $select);
+    $similarities = $DB->get_fieldset_select('plagiarism_programming_reslt', $result, $select);
 
     $histogram = array();
     for ($i=10; $i>=0; $i--) {
@@ -224,16 +224,16 @@ function create_student_link($student_name, $student_id) {
 function get_suspicious_works($student_id, $cmid) {
     global $DB;
     // get the latest report version
-    $version = $DB->get_field('plagiarism_programming_report', 'max(version)', array('cmid'=>$cmid));
+    $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid));
     if ($version===null) {
         return array();
     }
 
-    $ids = $DB->get_fieldset_select('plagiarism_programming_report', 'id', "cmid=$cmid And version=$version");
+    $ids = $DB->get_fieldset_select('plagiarism_programming_rpt', 'id', "cmid=$cmid And version=$version");
     if (count($ids)>0) {
         $ids = implode(',', $ids);
         $select = "(student1_id=$student_id OR student2_id=$student_id) AND reportid IN ($ids) AND mark='Y'";
-        return $DB->get_records_select('plagiarism_programming_result', $select);
+        return $DB->get_records_select('plagiarism_programming_reslt', $select);
     } else {
         return array();
     }
@@ -242,18 +242,18 @@ function get_suspicious_works($student_id, $cmid) {
 function get_students_similarity_info($cmid, $student_id=null) {
     global $DB;
     // get the latest report version
-    $version = $DB->get_field('plagiarism_programming_report', 'max(version)', array('cmid'=>$cmid));
+    $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid));
     if ($version==null) { // no report yet
         return array();
     }
-    $reports = $DB->get_records('plagiarism_programming_report', array('cmid'=>$cmid, 'version'=>$version));
+    $reports = $DB->get_records('plagiarism_programming_rpt', array('cmid'=>$cmid, 'version'=>$version));
 
     if (count($reports)==0) {
         return array();
     }
     $ids = implode(',', array_keys($reports));
     $sql = 'Select id,student1_id,student2_id,(similarity1+similarity2)/2 as similarity,mark,reportid '.
-        "FROM {plagiarism_programming_result} Where reportid IN ($ids)";
+        "FROM {plagiarism_programming_reslt} Where reportid IN ($ids)";
     if ($student_id!==null) {
         $sql .= " And (student1_id=$student_id OR student2_id=$student_id)";
     }
@@ -299,9 +299,9 @@ function get_report_link($cmid, $student_id=null, $detector=null, $threshold=nul
  */
 function get_latest_report($cmid, $detector) {
     global $DB;
-    $version = $DB->get_field('plagiarism_programming_report', 'max(version)', array('cmid'=>$cmid, 'detector'=>$detector));
+    $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid, 'detector'=>$detector));
     if ($version!==false) {
-        $report = $DB->get_record('plagiarism_programming_report', array('cmid'=>$cmid, 'version'=>$version, 'detector'=>$detector));
+        $report = $DB->get_record('plagiarism_programming_rpt', array('cmid'=>$cmid, 'version'=>$version, 'detector'=>$detector));
         return $report;
     } else {
         return null;
@@ -328,13 +328,13 @@ function create_next_report($cmid, $detector) {
     $report->time_created = time();
     $report->version = $version;
     $report->detector = $detector;
-    $report->id = $DB->insert_record('plagiarism_programming_report', $report);
+    $report->id = $DB->insert_record('plagiarism_programming_rpt', $report);
     return $report;
 }
 
 function get_student_similarity_history($student1_id, $student2_id, $cmid, $detector, $time_sort='desc') {
     global $DB;
-    $sql = "Select result.*, time_created From {plagiarism_programming_report} report, {plagiarism_programming_result} result ".
+    $sql = "Select result.*, time_created From {plagiarism_programming_rpt} report, {plagiarism_programming_reslt} result ".
         " Where report.cmid=$cmid And report.detector='$detector' And report.id = result.reportid And ".
         " ((student1_id=$student1_id And student2_id=$student2_id) Or".
         " (student1_id=$student2_id And student2_id=$student1_id)) Order By time_created ".$time_sort;

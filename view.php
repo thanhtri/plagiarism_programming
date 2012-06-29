@@ -69,7 +69,7 @@ $PAGE->set_url(new moodle_url('/plagiarism/programming/view.php', array('cmid'=>
 
 // verify the version
 if (!empty($tool) && $report_version>0) {
-    $report = $DB->get_record('plagiarism_programming_report', array('cmid'=>$cmid, 'detector'=>$tool, 'version'=>$report_version));
+    $report = $DB->get_record('plagiarism_programming_rpt', array('cmid'=>$cmid, 'detector'=>$tool, 'version'=>$report_version));
 } else if (empty($tool)) { //if tool empty, assume report version empty
     $report = get_latest_report($cmid, 'jplag');
     if ($report) {
@@ -91,7 +91,7 @@ if ($rate_type=='max') {
 } else {
     $similarity = '(similarity1+similarity2)/2';
 }
-$select = "Select *, $similarity similarity From {plagiarism_programming_result}".
+$select = "Select *, $similarity similarity From {plagiarism_programming_reslt}".
     " Where reportid=$report->id AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
 if ($student_id>0) {
     $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
