@@ -59,7 +59,6 @@ class jplag_parser {
         for ($i=0; $i<$rownum; $i++) {
             $row = $rows->item($i);
             $cells = $row->getElementsByTagName('td');
-                $percentage = substr($cell->childNodes->item(2)->nodeValue, 1, -2);
 
             for ($j=2; $j<$cells->length; $j++) {
                 $cell = $cells->item($j);
