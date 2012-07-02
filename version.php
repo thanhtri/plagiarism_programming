@@ -26,5 +26,5 @@
 $plugin->version =  2012062900;
 $plugin->requires = 2010112400; // Moodle 2.0 or above
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = '1.0';
+$plugin->release = '1.1';
 $plugin->cron     = 7200;
