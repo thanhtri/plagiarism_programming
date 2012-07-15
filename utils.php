@@ -63,6 +63,9 @@ function get_file_extension_by_language($language) {
         case 'javascript':
             $extensions = array('js', 'JS', 'Js');
             break;
+        case 'text':
+            $extensions = array('txt');
+            break;
     }
     return $extensions;
 }
