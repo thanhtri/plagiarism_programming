@@ -85,6 +85,7 @@ function start_scan_assignment($assignment, $time) {
             if ($tool_record && ($tool_record->status=='finished' || $tool_record->status=='error')) {
                 $tool_record->status = 'pending';
                 $tool_record->message = '';
+                $tool_record->error_detail = '';
                 $DB->update_record('plagiarism_programming_'.$toolname, $tool_record);
             }
         }

@@ -74,6 +74,13 @@ class jplag_tool implements plagiarism_tool {
             return $scan_info;
         }
 
+        // check supported assignment
+        if (!isset(self::$supported_languages[$assignment->language])) {
+            $scan_info->status = 'error';
+            $scan_info->message = 'Language not supported by JPlag';
+            return $scan_info;
+        }
+
         $zip_full_path = PLAGIARISM_TEMP_DIR.'zip_jplag_'.$assignment->id.'_'.time().'.zip'; //prevent collision
         $submit_zip_file = new ZipArchive();
         $submit_zip_file->open($zip_full_path, ZipArchive::CREATE);
@@ -96,7 +103,7 @@ class jplag_tool implements plagiarism_tool {
 
         $option = new jplag_option();
         $option->set_language($assignment_param->language);
-        $option->title = 'Test';
+        $option->title = 'Test';  // this param doesn't matter
 
         // initialise progress handler
         $handler = new progress_handler('jplag', $scan_info);

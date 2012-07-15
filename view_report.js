@@ -85,9 +85,11 @@ M.plagiarism_programming.view_report = {
         var canvas_height = M.plagiarism_programming.view_report.chart_height-50;
         var left = 20;
         var h_label = Y.Node.create('<label class="h_label">'+M.str.moodle.date+'</label>');
-        var v_label = Y.Node.create('<label class="v_label">%</label>')
+        var v_label = Y.Node.create('<label class="v_label">%</label>');
+        var title = Y.Node.create('<label class="title">'+M.str.plagiarism_programming.similarity_history+'</label>')
         canvas.append(h_label);
         canvas.append(v_label);
+        canvas.append(title);
 
         for (var i in history) {
             var bar = Y.Node.create('<a class="bar" href="view_compare.php?id='+i+'"/>');

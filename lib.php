@@ -132,14 +132,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // Enable or disable the tools according to the choice of programming languages
         $jplag_support = jplag_tool::get_supported_language();
         $moss_support = moss_tool::get_supported_laguage();
-        foreach ($programming_languages as $code => $name) {
-            if (!isset($jplag_support[$code])) {
-                $mform->disabledIf('detection_tools[jplag]', 'programming_language', 'eq', $code);
-            }
-            if (!isset($moss_support[$code])) {
-                $mform->disabledIf('detection_tools[moss]', 'programming_language', 'eq', $code);
-            }
-        }
+//        foreach ($programming_languages as $code => $name) {
+//            if (!isset($jplag_support[$code])) {
+//                $mform->disabledIf('detection_tools[jplag]', 'programming_language', 'eq', $code);
+//            }
+//            if (!isset($moss_support[$code])) {
+//                $mform->disabledIf('detection_tools[moss]', 'programming_language', 'eq', $code);
+//            }
+//        }
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
@@ -167,10 +167,11 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             'fullpath' => '/plagiarism/programming/assignment_setting.js',
             'requires' => array('base', 'node'),
             'strings' => array(
-                array('no_tool_selected_error', 'plagiarism_programming')
+                array('no_tool_selected_error', 'plagiarism_programming'),
+                array('invalid_submit_date_error', 'plagiarism_programming')
             )
         );
-        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', null, true, $js_module);
+        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', array($jplag_support, $moss_support), true, $js_module);
     }
 
     /**
@@ -236,15 +237,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
         } else { // plugin not enabled, delete the records if there are
-            $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-            if ($setting) {
-                $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id));
-                $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
-                $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
-                $DB->delete_records('plagiarism_programming_rpt', array('settingid'=>$setting->cmid));
-                $DB->delete_records('plagiarism_programming_reslt', array('reportid'=>$setting->reportid));
-                $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
-            }
+            delete_assignment_scanning_config($cmid);
         }
     }
 

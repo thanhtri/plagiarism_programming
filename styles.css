@@ -80,6 +80,16 @@
     text-align: center;
 }
 
+.programming_result_popup_chart label.title {
+    left: 150px;
+    top: 30px;
+    font-weight:bold;
+    font-size: larger;
+    left: 50px;
+    top: -10px;
+    width: 200px;
+}
+
 .programming_result_popup_chart label.h_label {
     left: 290px;
     top:155px;

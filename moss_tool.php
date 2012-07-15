@@ -74,6 +74,13 @@ class moss_tool implements plagiarism_tool {
             return $moss_param;
         }
 
+        // check supported language
+        if (!isset(self::$supported_languages[$assignment->language])) {
+            $moss_param->status = 'error';
+            $moss_param->message= 'Language not supported by MOSS';
+            return $moss_param;
+        }
+
         // MOSS require each students' submission is in a flat directory.
         // Therefore, the filename should be tweaked a bit. e.g. /assignment/main.java => assignment~main.java
 

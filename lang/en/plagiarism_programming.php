@@ -96,6 +96,7 @@ $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been prov
 $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
 $string['credential_missing_instruction'] = 'Please enter the required credential in Administrator -> Plugin -> Plagiarism -> Programming assignment';
 $string['no_tool_selected_error'] = 'You must select at least one tool!';
+$string['invalid_submit_date_error'] = 'Submit date must not be in the past';
 $string['pending'] = 'not started';
 $string['extract'] = 'Extracting the assignment';
 $string['pending_start'] = 'Preparing to send the assignment';
@@ -130,6 +131,7 @@ $string['unexpected_error_download'] = 'An unexpected error occurred while downl
 $string['general_user_error'] = 'Errors occured due to corrupted report data';
 $string['scanning_in_progress'] = 'Scanning may take a longtime depending on server load! Please feel free to navigate away from this page';
 $string['unexpected_error'] = 'An unexpected error has occurred! Please contact administrator!';
+$string['invalid_file_type'] = 'Submissions must have file extensions: ';
 
 // options for displaying results
 $string['option_header'] = 'Options';
@@ -138,6 +140,7 @@ $string['similarity_type'] = 'Similarity type';
 $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
 $string['version'] = 'History';
+$string['similarity_history'] = 'History of similarity rate';
 $string['submit'] = 'Filter';
 $string['showHideLabel'] = 'Show plagiarism options';
 

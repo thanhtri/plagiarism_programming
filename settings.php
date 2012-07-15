@@ -64,7 +64,9 @@ if ($mform->is_cancelled()) {
 
 $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
 $plagiarismsettings = (array) get_config('plagiarism');
-$plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
+if (isset($plagiarismsettings['programming_use'])) {
+    $plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
+}
 
 $mform->set_data($plagiarism_programming_setting);
 

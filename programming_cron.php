@@ -36,12 +36,19 @@ global $DB, $CFG, $detection_tools;
 create_temporary_dir();
 
 $current_time = time();
-$settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<$current_time");
+$settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<=$current_time");
 $settngids = array_unique($settngids);
 
 echo "Start sending submissions to plagiarism tools\n";
 foreach ($settngids as $setting_id) {
     $assignment_config = $DB->get_record('plagiarism_programming', array('id'=>$setting_id));
+    
+    // check whether the assignment is already deleted or not (for safety)
+    $assignment_ctx = get_context_instance(CONTEXT_MODULE, $assignment_config->cmid, IGNORE_MISSING);
+    if (!$assignment_ctx) {
+        delete_assignment_scanning_config($assignment_config->cmid);
+        continue;
+    }
 
     // do not wait for result, the next cron script will check the status and download the result
     scan_assignment($assignment_config, false);

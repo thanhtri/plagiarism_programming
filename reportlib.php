@@ -341,3 +341,18 @@ function get_student_similarity_history($student1_id, $student2_id, $cmid, $dete
     $pairs = $DB->get_records_sql($sql);
     return $pairs;
 }
+
+
+function delete_assignment_scanning_config($cmid) {
+    global $DB;
+
+    $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+    if ($setting) {
+        $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id));
+        $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
+        $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
+        $DB->delete_records('plagiarism_programming_rpt', array('settingid'=>$setting->cmid));
+        $DB->delete_records('plagiarism_programming_reslt', array('reportid'=>$setting->reportid));
+        $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
+    }
+}

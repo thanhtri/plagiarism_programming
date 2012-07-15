@@ -27,6 +27,11 @@
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
+//used in extract_assignment
+define('NOT_SUFFICIENT_SUBMISSION', 1);
+define('CONTEXT_NOT_EXIST', 2);
+define('NOT_CORRECT_FILE_TYPE', 3);
+
 global $CFG;
 
 require_once(__DIR__.'/utils.php');
@@ -126,9 +131,11 @@ function clear_student_name(&$filecontent, $userid) {
  * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
  * @param string $location directory of 
  * @param stored_file $file 
+ * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
 function extract_zip($zip_file, $extensions, $location, stored_file $file) {
     $zip_handle = zip_open($zip_file);
+    $has_valid_file = false;
     if ($zip_handle) {
         while ($zip_entry = zip_read($zip_handle)) {
             $entry_name = zip_entry_name($zip_entry);
@@ -144,10 +151,12 @@ function extract_zip($zip_file, $extensions, $location, stored_file $file) {
                     fwrite($fp, "$buf");
                     zip_entry_close($zip_entry);
                     fclose($fp);
+                    $has_valid_file = true;
                 }
             }
         }
     }
+    return $has_valid_file;
 }
 
 /**
@@ -163,17 +172,22 @@ function extract_assignment($assignment) {
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);
 
     // select all the submitted files of this assignment
-    $context = get_context_instance(CONTEXT_MODULE, $assignment->cmid, MUST_EXIST);
+    $context = get_context_instance(CONTEXT_MODULE, $assignment->cmid, IGNORE_MISSING);
+    if (!$context) { // $context=false in case when the assignment has been deleted (checked for safety)
+        return CONTEXT_NOT_EXIST;
+    }
     $fs = get_file_storage();
     $file_records = $fs->get_area_files($context->id, 'mod_assignment', 'submission', false, 'userid', false);
 
     if (count($file_records) < 2) {
-        return false;
+        return NOT_SUFFICIENT_SUBMISSION;
     }
 
     $extensions = get_file_extension_by_language($assignment->language);
+    $valid_submission = 0;
 
     foreach ($file_records as $file) {
+        $valid_file = false;
         $userid = $file->get_userid();
         $userdir = $temp_submission_dir.$userid.'/';
         if (!is_dir($userdir)) {
@@ -185,15 +199,24 @@ function extract_assignment($assignment) {
             // copy to a temporary file, then read and extract from it (Moodle does not allow to read file directly)
             $temp_file_path = $temp_submission_dir.$file->get_filename();
             $file->copy_content_to($temp_file_path);
-            extract_zip($temp_file_path, $extensions, $userdir, $file);
+            $valid_file = extract_zip($temp_file_path, $extensions, $userdir, $file);
             unlink($temp_file_path);
         } else if (check_extension($file->get_filename(), $extensions)) { // if it is an uncompressed code file
             $file->copy_content_to($userdir.$file->get_filename());
+            $valid_file = false;
         }
         // TODO: support other types of compression files, e.g. rar, 7z
+        
+        if ($valid_file) {
+            $valid_submission++;
+        }
     }
 
-    return true;
+    if ($valid_submission >= 2) {
+        return true;
+    } else {
+        return NOT_CORRECT_FILE_TYPE;
+    }
 }
 
 /**
@@ -315,7 +338,22 @@ function scan_assignment($assignment, $wait_for_result=true) {
     // if the assignment is not submitted, extract them into a temporary directory first
     // this if prevent unnecessary extraction, since another cron can run over when the scanning hasn't finished
     if (!already_uploaded($assignment)) {
-        if (!extract_assignment($assignment)) {
+        $extract_result = extract_assignment($assignment);
+        if ($extract_result===true) {
+        } else if ($extract_result==NOT_SUFFICIENT_SUBMISSION || $extract_result==CONTEXT_NOT_EXIST) {
+            return;
+        } else if ($extract_result==NOT_CORRECT_FILE_TYPE) {
+            $message = get_string('invalid_file_type', 'plagiarism_programming')
+                .implode(', ', get_file_extension_by_language($assignment->language));
+            foreach ($detection_tools as $toolname => $tool) {
+                if (!$assignment->$toolname) {    // this detector is not selected
+                    continue;
+                }
+                $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
+                $scan_info->message = $message;
+                $scan_info->status = 'error';
+                $DB->update_record('plagiarism_programming_'.$toolname, $scan_info);
+            }
             return;
         }
     }
@@ -337,8 +375,11 @@ function scan_assignment($assignment, $wait_for_result=true) {
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
             ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait";
 
-        $tool_class_name = $tool['class_name'];
-        $logfiles[] = $tool_class_name::get_report_path()."/script_log_$assignment->id-$toolname.html";
+        if ($toolname=='jplag_') {
+            $logfiles[] = jplag_tool::get_report_path()."/script_log_$assignment->id-$toolname.html";
+        } else {
+            $logfiles[] = moss_tool::get_report_path()."/script_log_$assignment->id-$toolname.html";
+        }
     }
 
     // register the start scanning time

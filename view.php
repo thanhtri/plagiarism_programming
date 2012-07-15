@@ -132,7 +132,8 @@ $jsmodule = array(
     'fullpath' => '/plagiarism/programming/view_report.js',
     'requires' => array('base', 'overlay', 'node', 'json', 'io-base'),
     'strings' => array(
-        array('date', 'moodle')
+        array('date', 'moodle'),
+        array('similarity_history', 'plagiarism_programming')
      )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.view_report.init', array(), false, $jsmodule);
