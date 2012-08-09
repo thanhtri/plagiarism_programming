@@ -49,13 +49,30 @@ if ($task=='mark') {
         $report_record->cmid, $report_record->detector, 'asc');
     $history = array();
     if ($rate_type=='avg') {
+        $i = 0;
         foreach ($similarity_history as $pair) {
-            $history[$pair->id] = array('time'=>$pair->time_created,'similarity'=>($pair->similarity1+$pair->similarity2)/2,
-                'time_text'=>date('d M', $pair->time_created));
+            $history[$pair->id] = array(
+                'time'=>$pair->time_created,
+                'similarity'=>($pair->similarity1+$pair->similarity2)/2,
+                'time_text'=>date('d M', $pair->time_created)
+            );
+            $i++;
+            if ($i==6) {
+                break;
+            }
         }
     } else {
+        $i = 0;
         foreach ($similarity_history as $pair) {
-            $history[$pair->id] = array('time'=>$pair->time_created,'similarity'=>max($pair->similarity1, $pair->similarity2));
+            $history[$pair->id] = array(
+                'time'=>$pair->time_created,
+                'similarity'=>max($pair->similarity1, $pair->similarity2),
+                'time_text'=>date('d M', $pair->time_created)
+            );
+            $i++;
+            if ($i==6) {
+                break;
+            }
         }
     }
     echo json_encode($history);

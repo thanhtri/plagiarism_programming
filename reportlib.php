@@ -119,7 +119,7 @@ function create_table_list_mode(&$list, &$student_names) {
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = html_writer::link("view_compare.php?id=$pair->id", "$pair->similarity%", array('class'=>'compare_link'));
+        $cell->text = html_writer::link("view_compare.php?id=$pair->id", round($pair->similarity, 2).'%', array('class'=>'compare_link'));
         $row->cells[] = $cell;
 
         $mark = $pair->mark;

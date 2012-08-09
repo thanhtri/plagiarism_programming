@@ -46,12 +46,18 @@ class jplag_tool implements plagiarism_tool {
      * Initialise the soap stub.
      */
     private function stub_init($jplag_info=null) {
+        global $CFG;
         // the stub is initiated lazily at most one time (per request) when it is required
         if ($this->jplag_stub==null) {
             // get the username and password
-            $settings = (array) get_config('plagiarism_programming');
-            if (!empty($settings['jplag_user']) && !empty($settings['jplag_pass'])) {
-                $this->jplag_stub = new jplag_stub($settings['jplag_user'], $settings['jplag_pass']);
+            $settings = get_config('plagiarism_programming');
+            $proxyhost = get_config('proxyhost');
+            $proxyport = get_config('proxyport');
+            $proxyuser = get_config('proxyuser');
+            $proxypass = get_config('proxypassword');
+            if (!empty($settings->jplag_user) && !empty($settings->jplag_pass)) {
+                $this->jplag_stub = new jplag_stub($settings->jplag_user, $settings->jplag_pass,
+                    $proxyhost, $proxyport, $proxyuser, $proxypass);
             } else if ($jplag_info!=null) {
                 $jplag_info->status = 'error';
                 $jplag_info->message = get_string('credential_not_provided', 'plagiarism_programming');

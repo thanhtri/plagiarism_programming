@@ -219,7 +219,11 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         }
 
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012062900, 'plagiarism', 'programming');        
+        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');        
+    }
+    
+    if ($oldversion < 2012080900) {
+        upgrade_plugin_savepoint(true, 2012080900, 'plagiarism', 'programming');        
     }
     return true;
 }

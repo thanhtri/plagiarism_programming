@@ -38,10 +38,17 @@ $string['moss_id_help'] = 'Locate the line $userid=some number in the reply emai
 $string['moss_id_help_2'] = 'Or copy and paste the email content in the box below';
 $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
+
+$string['proxy_config'] = 'Proxy configuration (if applicable)';
+$string['proxy_host'] = 'Proxy address';
+$string['proxy_port'] = 'Proxy port';
+$string['proxy_user'] = 'Proxy login';
+$string['proxy_pass'] = 'Proxy password';
 $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';
 $string['jplag_account_expired'] = 'Your account has expired!';
 $string['jplag_connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
 $string['moss_connection_error'] =  'Cannot connect to MOSS server on port 7690 - Please check the connection';
+$string['proxy_connection_error'] = 'Cannot connect to MOSS through the specified proxy server';
 $string['moss_account_error'] = 'MOSS credential is invalid. Please provide a valid MOSS userid in '
     .'Plugins -> Plagiarism Prevention -> Programming page';
 $string['moss_send_error'] = 'An error occurred while sending the assignment to MOSS. '
@@ -54,6 +61,10 @@ $string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the b
 $string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at '; // + jplag_link
 $string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
 $string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
+$string['proxy_port_missing'] = 'Proxy port must be provided along with the host';
+$string['proxy_host_missing'] = 'Proxy host must be provided along with the port';
+$string['proxy_user_missing'] = 'Proxy login must be provided along with the password';
+$string['proxy_pass_missing'] = 'Proxy password must be provided along with the login';
 
 // form
 $string['plagiarism_header'] = 'Source code plagiarism detection';

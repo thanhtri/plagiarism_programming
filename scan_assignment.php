@@ -203,7 +203,7 @@ function extract_assignment($assignment) {
             unlink($temp_file_path);
         } else if (check_extension($file->get_filename(), $extensions)) { // if it is an uncompressed code file
             $file->copy_content_to($userdir.$file->get_filename());
-            $valid_file = false;
+            $valid_file = true;
         }
         // TODO: support other types of compression files, e.g. rar, 7z
         
@@ -405,7 +405,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
  * 
  */
 function scan_after_extract_assignment($assignment, $toolname, $wait_to_download=true) {
-    global $detection_tools, $DB;
+    global $detection_tools, $DB, $PROCESSING_INFO;
     $tool = $detection_tools[$toolname];
     $tool_class_name = $tool['class_name'];
     $tool_class = new $tool_class_name();
@@ -425,6 +425,8 @@ function scan_after_extract_assignment($assignment, $toolname, $wait_to_download
             sleep(5);
             check_scanning_status($assignment, $tool_class, $scan_info);
         }
+    } else if ($scan_info->status=='scanning'){
+        $PROCESSING_INFO['scanning_not_wait'] = 1;
     }
 
     if ($scan_info->status=='done') {
@@ -476,7 +478,7 @@ function handle_shutdown() {
         }
     }
 
-    if ($PROCESSING_INFO && $PROCESSING_INFO['stage']!='extract') {
+    if ($PROCESSING_INFO && $PROCESSING_INFO['stage']!='extract' && !isset($PROCESSING_INFO['scanning_not_wait'])) {
         $cmid = $PROCESSING_INFO['cmid'];
         $tool = $PROCESSING_INFO['stage'];
         $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));

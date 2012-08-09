@@ -56,10 +56,17 @@ class moss_tool implements plagiarism_tool {
     );
 
     private function init_stub($moss_param=null) {
+        global $CFG;
+
         if (!isset($this->moss_stub)) {
             $userid = get_config('plagiarism_programming', 'moss_user_id');
+            $proxyhost = isset($CFG->proxyhost)?$CFG->proxyhost:'';
+            $proxyport = isset($CFG->proxyport)?$CFG->proxyport:'';
+            $proxyuser = isset($CFG->proxyuser)?$CFG->proxyuser:'';
+            $proxypass = isset($CFG->proxypassword)?$CFG->proxypassword:'';
             if (!empty($userid)) {
-                $this->moss_stub = new moss_stub($userid);
+                $this->moss_stub = new moss_stub($userid, $proxyhost, $proxyport,
+                    $proxyuser, $proxypass);
             } else if ($moss_param) {
                 $moss_param->status = 'error';
                 $moss_param->message = get_string('credential_not_provided', 'plagiarism_programming');
@@ -111,6 +118,11 @@ class moss_tool implements plagiarism_tool {
         return $moss_param;
     }
 
+    /**
+     * Check scanning status.
+     * Since MOSS doesn't have API to probe the scanning status on the server,
+     * the status in the db is returned.
+     */
     public function check_status($assignment_param, $moss_param) {
         // moss doesn't allow to query the scanning progress
         return $moss_param;

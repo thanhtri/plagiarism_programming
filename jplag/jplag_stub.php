@@ -51,8 +51,18 @@ class jplag_stub {
 
     private $client = null;
 
-    public function __construct($username=null, $password=null) {
-        $this->client = new SoapClient(JPLAG_WSDL_URL);
+    public function __construct($username=null, $password=null,
+            $proxy_host=null, $proxy_port=null, $proxy_user=null, $proxy_pass=null) {
+        $proxy_param = array();
+        if (!empty($proxy_host) && !empty($proxy_port)) {
+            $proxy_param['proxy_host'] = $proxy_host;
+            $proxy_param['proxy_port'] = $proxy_port;
+        }
+        if (!empty($proxy_user) && !empty($proxy_pass)) {
+            $proxy_param['proxy_login'] = $proxy_user;
+            $proxy_param['proxy_password'] = $proxy_pass;
+        }
+        $this->client = new SoapClient(JPLAG_WSDL_URL, $proxy_param);
         if ($username && $password) {
             $this->set_credential($username, $password);
         }

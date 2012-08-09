@@ -112,34 +112,17 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('textarea', 'notification_text', get_string('notification_text', 'plagiarism_programming'),
             'wrap="virtual" rows="4" cols="50"');
 
-        if (!$jplag_disabled) {
-            $mform->disabledIf('detection_tools[jplag]', 'programmingYN', 'eq', 0);
-        }
-        if (!$moss_disabled) {
-            $mform->disabledIf('detection_tools[moss]', 'programmingYN', 'eq', 0);
-        }
         $mform->disabledIf('programming_language', 'programmingYN', 'eq', 0);
         $mform->disabledIf('auto_publish', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification_text', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification_text', 'notification', 'notchecked');
+        /* jplag and moss checkbox is enabled and disabled by custom javascript*/
 
         // disable tool if it doesn't support the selected language
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
-
-        // Enable or disable the tools according to the choice of programming languages
-        $jplag_support = jplag_tool::get_supported_language();
-        $moss_support = moss_tool::get_supported_laguage();
-//        foreach ($programming_languages as $code => $name) {
-//            if (!isset($jplag_support[$code])) {
-//                $mform->disabledIf('detection_tools[jplag]', 'programming_language', 'eq', $code);
-//            }
-//            if (!isset($moss_support[$code])) {
-//                $mform->disabledIf('detection_tools[moss]', 'programming_language', 'eq', $code);
-//            }
-//        }
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
@@ -161,6 +144,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
+        // for enable and disable the tools in JPlag and MOSS
+        $jplag_support = $jplag_disabled?false:jplag_tool::get_supported_language();
+        $moss_support = $moss_disabled?false:moss_tool::get_supported_laguage();
         // include the javascript for doing some minor interface adjustment to improve user experience
         $js_module = array(
             'name' => 'plagiarism_programming',
@@ -255,7 +241,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     public function get_links($linkarray) {
         global $DB;
 
-        static $students=null, $context=null, $can_show=null; // these static variables are just for catching purpose
+        // these static variables for are for caching,
+        // as this function will be called a lot of time in grade listing
+        static $students=null, $context=null, $can_show=null;
 
         $cmid = $linkarray['cmid'];
         $student_id = $linkarray['userid'];
@@ -292,7 +280,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if ($can_show) {
             if (isset($students[$student_id])) {
                 $link = get_report_link($cmid, $student_id, $students[$student_id]['detector'], 0);
-                $max_rate = $students[$student_id]['max'];
+                $max_rate = round($students[$student_id]['max'], 2);
                 $output = get_string('max_similarity', 'plagiarism_programming').': '.html_writer::link($link, "$max_rate%");
                 if ($students[$student_id]['mark']=='Y') {
                     $output .= ' '.html_writer::tag('span', get_string('suspicious', 'plagiarism_programming'),
@@ -490,12 +478,16 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /**
-     * This function will setup multiple scan date of the form
+     * This function will setup multiple scan date of the form.
+     * This will be similar to the repeat group of moodle form.
+     * However, since just an instance of $mform is passed in, 
+     * it is not possible to call the protected function repeat_elements
      */
     private function setup_multiple_scandate($mform, $plagiarism_config) {
         global $DB;
 
         $scan_dates = array();
+        $constant_vars = array();
         if ($plagiarism_config) {
             $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
         }
@@ -503,13 +495,13 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $date_num = optional_param('submit_date_num', max($db_scandate, 1), PARAM_INT);
         $is_add_date = optional_param('add_new_date', '', PARAM_TEXT);
-        if (!empty($is_add_date)) {
+        if (!empty($is_add_date)) { // the hidden element, combined with javascript, makes the form jump to the date position
             $date_num++;
             $mform->addElement('hidden', 'is_add_date', 1);
-            $mform->setConstants(array('is_add_date'=>1));
+            $constant_vars['is_add_date'] = 1;
         } else {
             $mform->addElement('hidden', 'is_add_date', 0);
-            $mform->setConstants(array('is_add_date'=>0));
+            $constant_vars['is_add_date'] = 0;
         }
 
         $i = 0;
@@ -518,6 +510,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $name = "scan_date_finished[$i]";
                 $mform->addElement('date_selector', $name, get_string('scan_date_finished', 'plagiarism_programming'),
                         null, array('disabled'=>'disabled'));
+                $constant_vars[$name]=$scan_date->scan_date;
             } else {
                 $name = "scan_date[$i]";
                 $mform->addElement('date_selector', "scan_date[$i]", get_string('scan_date', 'plagiarism_programming'),
@@ -539,5 +532,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('submit', 'add_new_date', get_string('new_scan_date', 'plagiarism_programming'));
         $mform->disabledIf('add_new_date', 'programmingYN', 'eq', 0);
         $mform->registerNoSubmitButton('add_new_date');
+        $mform->setConstants($constant_vars);
     }
 }

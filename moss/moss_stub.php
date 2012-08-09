@@ -23,17 +23,29 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
-
-define ('MOSS_HOST', 'moss.stanford.edu');
-define ('MOSS_PORT', 7690);
+require_once(__DIR__.'/../../../lib/filelib.php');
 
 class moss_stub {
     private $userid;
+    private $proxy_host;
+    private $proxy_port;
+    private $proxy_login;
+    private $proxy_pass;
 
     const TIMEOUT = 3; // maximum time to open socket or download result
+    const MOSS_HOST = 'moss.stanford.edu';
+    const MOSS_PORT = 7690;
 
-    public function __construct($userid) {
+    public function __construct($userid, $proxy_host=null, $proxy_port=null, $proxy_login=null, $proxy_pass=null) {
         $this->userid = $userid;
+        if (!empty($proxy_host) && !empty($proxy_port)) {
+            $this->proxy_host = $proxy_host;
+            $this->proxy_port = $proxy_port;
+        }
+        if (!empty($proxy_login) && !empty($proxy_pass)) {
+            $this->proxy_login = $proxy_login;
+            $this->proxy_pass = $proxy_pass;
+        }
     }
 
     public function scan_assignment(&$file_list, $language, progress_handler $handler) {
@@ -43,25 +55,29 @@ class moss_stub {
         $this->update_progress($handler, 'uploading', 0, $total_size);
         $userid = $this->userid;
 
-        $error_no = 0;
-        $message = '';
-        $socket = @fsockopen(MOSS_HOST, MOSS_PORT, $error_no, $message, self::TIMEOUT);
-        stream_set_timeout($socket, self::TIMEOUT);
+        $socket = $this->create_connection_to_moss();
         if (!$socket) {
             return array('status' => 'KO', 'error' => get_string('moss_connection_error', 'plagiarism_programming'));
         }
 
+        echo "moss $userid\n";
         fwrite($socket, "moss $userid\n");
         // if userid is invalid, MOSS will automatically close the connection and the next write return false
 
+        echo "directory 1\n";
         $result = fwrite($socket, "directory 1\n");
         // send other parameters. Should normally success unless connection is interrupted in the middle
+        echo "X 0\n";
         $result = fwrite($socket, "X 0\n");
+        echo "maxmatches 1000\n";
         $result = fwrite($socket, "maxmatches 1000\n");
+        echo "show 250\n";
         $result = fwrite($socket, "show 250\n");
+        echo "language $language\n";
         $result = fwrite($socket, "language $language\n");
 
         $answer = fgets($socket);
+        echo "$answer\n";
 
         if ($answer=='no') {
             fwrite($socket, "end\n");
@@ -72,21 +88,27 @@ class moss_stub {
         foreach ($file_list as $path => $moss_dir) {
             $content = file_get_contents($path);
             $size = strlen($content);
-            $result = fwrite($socket, "file $fileid java $size $moss_dir\n");
+            $result = fwrite($socket, "file $fileid $language $size $moss_dir\n");
             $result = fwrite($socket, $content);
-            fflush($socket);
             $currently_uploaded += $size;
             $this->update_progress($handler, 'uploading', $currently_uploaded, $total_size);
             $fileid++;
-            debugging("Send $fileid to server\n");
         }
         fwrite($socket, "query 0 \n");
         $this->update_progress($handler, 'scanning', 0, $total_size);
 
         // this answer returns a link by MOSS to the similarity report
+        fflush($socket);
+        stream_set_timeout($socket, 10000); // wait for the result
         $answer = fgets($socket);
         $this->update_progress($handler, 'done', 0, $total_size);
+        if ($answer!==FALSE) {
+            echo "Response from server: $answer\n";
+        } else {
+            echo "Response from server: false";
+        }
         fwrite($socket, "end\n");
+        fflush($socket);
         fclose($socket);
         if (substr($answer, 0, 4)=='http') {
             $result = array('status' => 'OK', 'link' => $answer);
@@ -94,6 +116,41 @@ class moss_stub {
             $result = array('status' => 'KO', 'error' => get_string('moss_send_error', 'plagiarism_programming'));
         }
         return $result;
+    }
+
+    /**
+     * Create a connection to MOSS server. If proxy server information is provided, tunnel it through a proxy.
+     * Otherwise, create a direct connection.
+     */
+    private function create_connection_to_moss() {
+        $error_no = 0;
+        $message = '';
+        // connection is either direct or through a proxy
+        if (!empty($this->proxy_host)) { // connect through proxy
+            $socket = @fsockopen($this->proxy_host, $this->proxy_port, $error_no, $message, self::TIMEOUT);
+            if (!$socket) {
+                return false;
+            }
+            fwrite($socket, 'CONNECT '.self::MOSS_HOST.':'.self::MOSS_PORT." HTTP/1.0\n");
+            if (!empty($this->proxy_login)) {
+                $auth_token = base64_encode("$this->proxy_login:$this->proxy_pass");
+                fwrite($socket, "Proxy-Authorization: Basic $auth_token\n");
+            }
+            fwrite($socket, "\n");
+            $answer = fgets($socket);
+            if (strpos($answer, "200 Connection established")===FALSE) {
+                return false;
+            }
+            // swallow one more blank line
+            $answer = fgets($socket);
+
+        } else { // direct connection
+            $socket = @fsockopen(self::MOSS_HOST, self::MOSS_PORT, $error_no, $message, self::TIMEOUT);
+        }
+        if ($socket) {
+            stream_set_timeout($socket, self::TIMEOUT);
+        }
+        return $socket;
     }
 
     public function download_result($url, $download_dir, $handler=null) {
@@ -116,15 +173,23 @@ class moss_stub {
         $all_links = array();
         foreach ($matches as $match) {
             $name_no_ext = substr($match, 0, -5);  // trip the html extension
-            $all_links[]= $url.$name_no_ext.'-0.html';
-            $all_links[]= $url.$name_no_ext.'-1.html';
+            $all_links[]= array('url'=>$url.$name_no_ext.'-0.html', 'file'=>$name_no_ext.'-0.html');
+            $all_links[]= array('url'=>$url.$name_no_ext.'-1.html', 'file'=>$name_no_ext.'-1.html');
         }
 
         $num = count($all_links);
+        $curl = new curl(array('proxy'=>true));
         $concurrent_num = 10;  // concurrent files to download at a time
+
+        // add a slash at the end if it doesn't exist
+        $download_dir = (substr($download_dir, -1)!='/')?$download_dir.'/':$download_dir;
+
         for ($i=0; $i<$num; $i+=$concurrent_num) {
             $group = array_slice($all_links, $i, $concurrent_num);
-            curl_download($group, $download_dir, self::TIMEOUT);
+            for ($j=0; $j<count($group); $j++) {
+                $group[$j]['file'] = fopen($download_dir.$group[$j]['file'], 'wb');
+            }
+            $curl->download($group);
             $this->update_progress($handler, 'downloading', $i+$concurrent_num, $num);
         }
     }

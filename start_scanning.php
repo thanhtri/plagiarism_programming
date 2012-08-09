@@ -134,6 +134,7 @@ function check_status($assignment, $time=0) {
 
         $tool_class_name = $tool_info['class_name'];
         $tool_class = new $tool_class_name();
+        check_scanning_status($assignment, $tool_class, $scan_info);
 
         $status[$tool_name] = array('stage'=>$scan_info->status, 'progress'=>$scan_info->progress);
         if ($scan_info->status=='finished') { // send back the link

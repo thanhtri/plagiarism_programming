@@ -50,6 +50,17 @@ foreach ($settngids as $setting_id) {
         continue;
     }
 
+    if (!scanning_in_progress($assignment_config)) { // reset the scanning
+        foreach ($detection_tools as $toolname => $toolinfo) {
+            if ($assignment_config->$toolname) {
+                $tool_status = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment_config->id));
+                $tool_status->status = 'pending';
+                $tool_status->message = '';
+                $tool_status->error_detail = '';
+                $DB->update_record('plagiarism_programming_'.$toolname, $tool_status);
+            }
+        }
+    }
     // do not wait for result, the next cron script will check the status and download the result
     scan_assignment($assignment_config, false);
 
@@ -67,11 +78,12 @@ foreach ($settngids as $setting_id) {
     }
     if ($all_tools_finished) {
         $scan_dates = $DB->get_records_select('plagiarism_programming_date',
-            "settingid=$assignment_config->id And finished=0 And scan_date<$current_time", null, 'scan_date ASC');
+            "settingid=$assignment_config->id AND finished=0 AND scan_date<$current_time", null, 'scan_date ASC');
         $scan_date = array_shift($scan_dates);
         $scan_date->finished=1;
         $DB->update_record('plagiarism_programming_date', $scan_date);
     }
+
 }
 echo "Finished sending submissions to plagiarism tools\n";
 
@@ -81,9 +93,9 @@ function scanning_in_progress($assignment_config) {
         if ($assignment_config->$toolname) {
             $tool_status = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment_config->id));
             if ($tool_status->status!='pending' && $tool_status->status!='finished' && $tool_status->status!='error') {
-                return false;
+                return true;
             }
         }
     }
-    return true;
+    return false;
 }
