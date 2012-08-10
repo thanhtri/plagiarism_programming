@@ -347,12 +347,16 @@ function delete_assignment_scanning_config($cmid) {
     global $DB;
 
     $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+    $report_ids = $DB->get_records_menu('plagiarism_programming', array('cmid'=>$cmid), '', 'id,cmid');
     if ($setting) {
         $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id));
         $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
         $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
-        $DB->delete_records('plagiarism_programming_rpt', array('settingid'=>$setting->cmid));
-        $DB->delete_records('plagiarism_programming_reslt', array('reportid'=>$setting->reportid));
+        if (count($report_ids)>0) {
+            $in_clause = implode(',', array_keys($report_ids));
+            $DB->delete_records('plagiarism_programming_rpt', array('cmid'=>$setting->cmid));
+            $DB->delete_records_select('plagiarism_programming_reslt', "reportid IN ($in_clause)");
+        }
         $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
     }
 }

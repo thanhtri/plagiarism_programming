@@ -66,32 +66,32 @@ class plagiarism_setup_form extends moodleform {
         $mform->addElement('html', html_writer::tag('div', get_string('moss_id_help_2', 'plagiarism_programming')));
         $mform->addElement('textarea', 'moss_email', '', 'wrap="virtual" rows="20" cols="80"');
 
-        $mform->addElement('header', 'proxy_config', get_string('proxy_config', 'plagiarism_programming'));
-        $mform->addElement('text', 'proxy_host', get_string('proxy_host', 'plagiarism_programming'));
-        $mform->addElement('text', 'proxy_port', get_string('proxy_port', 'plagiarism_programming'));
-        $mform->addElement('text', 'proxy_user', get_string('proxy_user', 'plagiarism_programming'));
-        $mform->addElement('text', 'proxy_pass', get_string('proxy_pass', 'plagiarism_programming'));
+//        $mform->addElement('header', 'proxy_config', get_string('proxy_config', 'plagiarism_programming'));
+//        $mform->addElement('text', 'proxy_host', get_string('proxy_host', 'plagiarism_programming'));
+//        $mform->addElement('text', 'proxy_port', get_string('proxy_port', 'plagiarism_programming'));
+//        $mform->addElement('text', 'proxy_user', get_string('proxy_user', 'plagiarism_programming'));
+//        $mform->addElement('text', 'proxy_pass', get_string('proxy_pass', 'plagiarism_programming'));
 
         $this->add_action_buttons(true);
     }
 
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        $proxy_host = $data['proxy_host'];
-        $proxy_port = $data['proxy_port'];
-        if (!empty($proxy_host) && empty($proxy_port)) {
-            $errors['proxy_port'] = get_string('proxy_port_missing', 'plagiarism_programming');
-        } else if (empty($proxy_host) && !empty($proxy_port)) {
-            $errors['proxy_host'] = get_string('proxy_host_missing', 'plagiarism_programming');
-        }
-
-        $proxy_user = $data['proxy_user'];
-        $proxy_pass = $data['proxy_pass'];
-        if (!empty($proxy_user) && empty($proxy_pass)) {
-            $errors['proxy_pass'] = get_string('proxy_pass_missing', 'plagiarism_programming');
-        } else if (empty($proxy_user) && !empty($proxy_pass)) {
-            $errors['proxy_user'] = get_string('proxy_user_missing', 'plagiarism_programming');
-        }
+//        $proxy_host = $data['proxy_host'];
+//        $proxy_port = $data['proxy_port'];
+//        if (!empty($proxy_host) && empty($proxy_port)) {
+//            $errors['proxy_port'] = get_string('proxy_port_missing', 'plagiarism_programming');
+//        } else if (empty($proxy_host) && !empty($proxy_port)) {
+//            $errors['proxy_host'] = get_string('proxy_host_missing', 'plagiarism_programming');
+//        }
+//
+//        $proxy_user = $data['proxy_user'];
+//        $proxy_pass = $data['proxy_pass'];
+//        if (!empty($proxy_user) && empty($proxy_pass)) {
+//            $errors['proxy_pass'] = get_string('proxy_pass_missing', 'plagiarism_programming');
+//        } else if (empty($proxy_user) && !empty($proxy_pass)) {
+//            $errors['proxy_user'] = get_string('proxy_user_missing', 'plagiarism_programming');
+//        }
 
         $empty_user = empty($data['jplag_user']);
         $empty_pass = empty($data['jplag_pass']);
