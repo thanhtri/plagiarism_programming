@@ -52,16 +52,17 @@ function create_temporary_dir() {
 }
 
 /** 
- * Create the temporary directory for the assignment.
+ * Create the temporary directory (if doesn't exist) for the assignment.
  * Students' code will be extracted here
  * @param: $assignment: the record object of setting for the assignment
  * @return a temporary directory that all files of this assignment will be stored
  */
-function get_temp_dir_for_assignment($assignment) {
+function get_temp_dir_for_assignment($assignment, $empty_dir=false) {
     $dir = PLAGIARISM_TEMP_DIR.$assignment->cmid.'/';
-    if (is_dir($dir)) {
+    if ($empty_dir) {
         rrmdir($dir);
-    } else {
+        mkdir($dir);
+    } else if (!is_dir($dir)) {
         mkdir($dir);
     }
     return $dir;
@@ -170,8 +171,8 @@ function extract_zip($zip_file, $extensions, $location, stored_file $file) {
  */
 function extract_assignment($assignment) {
     echo get_string('extract', 'plagiarism_programming');
-    // make a subdir for this assignment in the plugin subdir
-    $temp_submission_dir = get_temp_dir_for_assignment($assignment);
+    // make a subdir for this assignment in the plugin subdir and emptying it
+    $temp_submission_dir = get_temp_dir_for_assignment($assignment, true);
 
     // select all the submitted files of this assignment
     $context = get_context_instance(CONTEXT_MODULE, $assignment->cmid, IGNORE_MISSING);
