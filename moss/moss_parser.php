@@ -224,7 +224,7 @@ class moss_parser {
             if ($this->is_start_block($line)) { // start of a block, skip this line
                 fgets($comparison_file); // skip another blank line
             } else if ($this->is_end_block($line)) {
-                fwrite($code_file, substr($line, 7)); //skip the </FONT> tag
+                fwrite($code_file, substr($line, 7)."\n"); //skip the </FONT> tag
             } else {
                 fwrite($code_file, $line."\n");
             }

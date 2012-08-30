@@ -59,7 +59,9 @@ function create_temporary_dir() {
  */
 function get_temp_dir_for_assignment($assignment) {
     $dir = PLAGIARISM_TEMP_DIR.$assignment->cmid.'/';
-    if (!is_dir($dir)) {
+    if (is_dir($dir)) {
+        rrmdir($dir);
+    } else {
         mkdir($dir);
     }
     return $dir;

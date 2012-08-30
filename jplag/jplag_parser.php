@@ -216,8 +216,8 @@ class jplag_parser {
         foreach ($file_array as $student_id => $code) {
             $file = fopen($directory.'/'.$student_id, 'w');
             foreach ($code as $code_name => $filename) {
-                $code_name = htmlspecialchars($code_name);
-                fwrite($file, "<hr/><h3>$code_name</h3><hr/>\n");
+                $html_codename = htmlspecialchars($code_name);
+                fwrite($file, "<hr/><h3>$html_codename</h3><hr/>\n");
                 $content = file_get_contents($filename);
                 $this->mark_similarity($content, $record_array[$student_id][$code_name]);
                 fwrite($file, $content);
