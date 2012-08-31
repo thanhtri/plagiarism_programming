@@ -1,5 +1,7 @@
 This user guide describes the installation steps of the Moodle plugin for source code plagiarism detection.
 
+For an illustrated and more detailed information, consult Moodle doc at http://docs.moodle.org/22/en/Programming_Code_Plagiarism_Plugin
+
 1. Registration to JPlag and MOSS account
 The plugin relies on JPlag and MOSS engine in the background to carry out the scanning for similarity.
 
