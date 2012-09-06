@@ -383,7 +383,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
             $file_records = get_submitted_files($context);
             if (count($file_records) < 2) {
-                $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
+                $content .= html_writer::tag('div', get_string('no.t_enough_submission', 'plagiarism_programming'));
                 $button_disabled = true;
             }
             // write the rescan button
@@ -402,8 +402,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
                 array('style'=>'display:none', 'id'=>'scan_message'));
 
-            $PAGE->requires->yui2_lib('progressbar');
-            $PAGE->requires->yui2_lib('json');
         }
 
         // if this is a student
@@ -430,7 +428,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                        .$content
                        .$OUTPUT->box_end();
             if ($is_teacher) {
-            // include the javascript
+                $PAGE->requires->yui2_lib('progressbar');
+                $PAGE->requires->yui2_lib('json');
+                $PAGE->requires->yui2_lib('connection');
+                // include the javascript
                 $jsmodule = array(
                     'name' => 'plagiarism_programming',
                     'fullpath' => '/plagiarism/programming/scanning.js',
