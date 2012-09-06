@@ -32,6 +32,7 @@ global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
 require_once(__DIR__.'/detection_tools.php');
 require_once(__DIR__.'/reportlib.php');
+require_once(__DIR__.'/scan_assignment.php');
 
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
@@ -379,8 +380,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
                 array('style'=>'margin-top:5px'));
             // check at least two assignments submitted
-            $fs = get_file_storage();
-            $file_records = $fs->get_area_files($context->id, 'mod_assignment', 'submission', false, 'userid', false);
+
+            $file_records = get_submitted_files($context);
             if (count($file_records) < 2) {
                 $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
                 $button_disabled = true;
@@ -425,9 +426,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         if (!empty($content)) {
-            echo $OUTPUT->box_start('generalbox boxaligncenter', 'plagiarism_info');
-            echo $content;
-            echo $OUTPUT->box_end();
+            $content =  $OUTPUT->box_start('generalbox boxaligncenter', 'plagiarism_info')
+                       .$content
+                       .$OUTPUT->box_end();
             if ($is_teacher) {
             // include the javascript
                 $jsmodule = array(
@@ -444,6 +445,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                         array('cmid' => $setting->cmid, 'checkprogress' => $check), false, $jsmodule);
             }
         }
+        
+        return $content;
     }
 
     public function update_status($course, $cm) {

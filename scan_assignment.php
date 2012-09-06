@@ -89,6 +89,23 @@ function create_file($fullpath) {
     }
 }
 
+function get_submitted_files($assignment_context) {
+    global $CFG;
+
+    include($CFG->dirroot.'/version.php');
+    // component and file area for submissions changed in Moodle 2.3
+    if ($version >= 2012062500.00) {
+        $component = 'assignsubmission_file';
+        $file_area = 'submission_files';
+    } else {
+        $component = 'mod_assignment';
+        $file_area = 'submission';
+    }
+    $fs = get_file_storage();
+    $file_records = $fs->get_area_files($assignment_context->id, $component, $file_area, false, 'userid', false);
+    return $file_records;
+}
+
 /**
  * Search the file to clear the students' name and clear them
  * @param $filecontent: the content of a file
@@ -179,8 +196,7 @@ function extract_assignment($assignment) {
     if (!$context) { // $context=false in case when the assignment has been deleted (checked for safety)
         return CONTEXT_NOT_EXIST;
     }
-    $fs = get_file_storage();
-    $file_records = $fs->get_area_files($context->id, 'mod_assignment', 'submission', false, 'userid', false);
+    $file_records = get_submitted_files($context);
 
     if (count($file_records) < 2) {
         return NOT_SUFFICIENT_SUBMISSION;
