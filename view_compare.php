@@ -46,7 +46,7 @@ if ($detector=='jplag') {
 //-------------------------------------end parameter processing--------------------------------------------------//
 
 // create page context
-if (!$course_module = get_coursemodule_from_id('assignment', $cmid)) {
+if (!$course_module = $DB->get_record('course_modules', array('id'=>$cmid))) {
     redirect($CFG->wwwroot, 'Invalid course module id');
 }
 $course = $DB->get_record('course', array('id'=>$course_module->course));
