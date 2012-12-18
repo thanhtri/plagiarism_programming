@@ -32,6 +32,10 @@ define('NOT_SUFFICIENT_SUBMISSION', 1);
 define('CONTEXT_NOT_EXIST', 2);
 define('NOT_CORRECT_FILE_TYPE', 3);
 
+define('CODE_FILE_DIRECTORY_FORMAT', 'code_file_directory_format');
+define('CODE_FILE_ARCHIVE_FORMAT', 'code_file_archive_format');
+define('CODE_FILE_SINGLE_SUBMISSION_FORMAT', 'code_file_single_submission_format');
+
 global $CFG;
 
 require_once(__DIR__.'/utils.php');
@@ -68,27 +72,12 @@ function get_temp_dir_for_assignment($assignment, $empty_dir=false) {
     return $dir;
 }
 
-/** Create a file for write. This function will create a directory along the file path if it doesn't exist
- * @param $fullpath: the path of the file
- * @return the write file handle. fclose have to be called when finishing with it
+/**
+ * Get the submitted file for the assignment
+ * This function will take into account the difference of component and
+ * file area between Moodle 2.3 and previous version
+ * @param context_module $assignment_context The context of the assignment
  */
-function create_file($fullpath) {
-    $dir_path = dirname($fullpath);
-    if (is_dir($dir_path)) { // directory already exist
-        return fopen($fullpath, 'w');
-    } else {
-        $dirs = explode('/', $dir_path);
-        $path = '';
-        foreach ($dirs as $dir) {
-            $path .= $dir.'/';
-            if (!is_dir($path)) {
-                mkdir($path);
-            }
-        }
-        return fopen($fullpath, 'w');
-    }
-}
-
 function get_submitted_files($assignment_context) {
     global $CFG;
 
@@ -107,76 +96,120 @@ function get_submitted_files($assignment_context) {
 }
 
 /**
- * Search the file to clear the students' name and clear them
- * @param $filecontent: the content of a file
- * @param $userid: the user id of the file (in order to search the username and id to clear from the content)
+ * Extract a compressed file, either zip or rar
  */
-function clear_student_name(&$filecontent, $userid) {
-    global $DB;
-    // find all the comments. First version just support C++ style comments
-    $pattern = '/\/\*.*?\*\//s'; // C style
-    preg_match_all($pattern, $filecontent, $comments1);
-    $pattern = '/\/\/.*/';       // C++ style
-    preg_match_all($pattern, $filecontent, $comments2);
-    $allcomments = array_merge($comments1[0], $comments2[0]);
+function extract_compressed_file($file, $extensions, $location, $user=null, $textfile_only=true) {
 
-    // get student name
-    $student = $DB->get_record('user', array('id'=>$userid));
-    $fname = $student->firstname;
-    $lname = $student->lastname;
-    $find_array = array($fname, $lname, $student->idnumber);
-    $replace_array = array('#firstname', '#lastname', '#id');
-
-    $finds = array();
-    $replaces = array();
-
-    foreach ($allcomments as $comment) {
-        if (stripos($comment, $fname)!=false || stripos($comment, $lname)!=false || strpos($comment, $userid)!=false) {
-            $new_comment = str_ireplace($find_array, $replace_array, $comment);
-            $finds[]= $comment;
-            $replaces[]=$new_comment;
-            // to be safe, delete the comment with author inside, maybe the student write his name in another form
-        } else if (strpos($comment, 'author')!=false) {
-            $finds[]= $comment;
-            $replaces[]= '';
-        }
+    if ($file instanceof stored_file) {
+        $temp_file_path = dirname($location).'/'.$file->get_filename();
+        $file->copy_content_to($temp_file_path);
+        $filename = $file->get_filename();
+        $file_ext = substr($filename, -4, 4);
+    } else { // file is a string
+        $temp_file_path = $file;
+        $filename = basename($temp_file_path);
+        $file_ext = substr($filename, -4, 4);
     }
-    $filecontent = str_replace($finds, $replaces, $filecontent);
+    if ($file_ext == '.zip') {
+        $valid_file = extract_zip($temp_file_path, $extensions, $location, $user, $textfile_only);
+    } else if ($file_ext == '.rar') {
+        $valid_file = extract_rar($temp_file_path, $extensions, $location, $user, $textfile_only);
+    } else {
+        debugging("Error extracting file: ".$filename.' is not a compressed file');
+    }
+
+    if ($file instanceof stored_file) {
+        unlink($temp_file_path);
+    }
+    return $valid_file;
 }
 
 /**
- * Extract a zip file. In addition, this function also clear students' name and id if there
- * are in the comments and the name of the file
- * @param string $zip_file full path of the zip file
- * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
- * @param string $location directory of 
- * @param stored_file $file 
- * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
+ * Determine the structure of the additional code file. The zip file could contain:
+ *  + an assignment as a whole (in this case, there must be at least 1 file
+ *    at the top most directory level
+ *  + a number of directories, each contains an assignment
+ *  + a number zip files, each contains an assignment
  */
-function extract_zip($zip_file, $extensions, $location, stored_file $file) {
-    $zip_handle = zip_open($zip_file);
-    $has_valid_file = false;
-    if ($zip_handle) {
-        while ($zip_entry = zip_read($zip_handle)) {
-            $entry_name = zip_entry_name($zip_entry);
-            // if an entry name contain the id, remove it
-            $entry_name = preg_replace('/[0-9]{8}/', '_id_', $entry_name);
-            // if it's a file (skip directory entry since directories along the path
-            // will be created when writing to the files
-            if (substr($entry_name, -1)!='/' && check_extension($entry_name, $extensions)) {
-                $fp = create_file($location.$entry_name);
-                if (zip_entry_open($zip_handle, $zip_entry, "r")) {
-                    $buf = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
-                    clear_student_name($buf, $file->get_userid());
-                    fwrite($fp, "$buf");
-                    zip_entry_close($zip_entry);
-                    fclose($fp);
-                    $has_valid_file = true;
-                }
+function check_additional_code_structure($decompressed_dir) {
+    if (!is_dir($decompressed_dir)) {
+        debugging("$decompressed_dir is not a directory to decompress");
+        return NULL;
+    }
+
+    $not_all_dir = false;
+    $not_all_compressed = false;
+    $file_list = scandir($decompressed_dir);
+    foreach ($file_list as $file) {
+        if (!is_dir($decompressed_dir.'/'.$file)) {
+            $not_all_dir = true;
+            if (!is_compressed_file($file)) {
+                $not_all_compressed = true;
+            }
+        }
+        if ($not_all_dir && $not_all_compressed) {
+            break;
+        }
+    }
+    if (!$not_all_dir) { // all directory, should be 
+        return CODE_FILE_DIRECTORY_FORMAT;
+    } else if (!$not_all_compressed) {
+        return CODE_FILE_ARCHIVE_FORMAT;
+    } else {
+        return CODE_FILE_SINGLE_SUBMISSION_FORMAT;
+    }
+}
+
+/**
+ * Extract the additional code file
+ */
+function process_code_file_archive_format($decompressed_dir, array $extensions, $location) {
+    if (!is_dir($decompressed_dir)) {
+        debugging("$decompressed_dir is not a directory!");
+        return null;
+    }
+
+    $files = scandir($decompressed_dir);
+    foreach ($files as $file) {
+
+        if ($file=='.' || $file=='..') {
+            continue;
+        }
+
+        $file_fullpath = "$decompressed_dir/$file";
+        // it is assumed that file must all be zip or rar
+        if (!is_compressed_file($file_fullpath)) {
+            debugging("File $file is not a compressed file");
+            continue;
+        }
+
+        extract_compressed_file($file_fullpath, $extensions, "$location/ext_$file/");
+    }
+}
+
+function process_code_file_directory_format($decompressed_dir, array $extensions, $location) {
+    if (!is_dir($decompressed_dir)) {
+        debugging("$decompressed_dir is not a directory");
+        return null;
+    }
+
+    $files = scandir($decompressed_dir);
+    foreach ($files as $file) {
+        if ($file=='.' || $file=='..') {
+            continue;
+        }
+
+        $fullpath = "$decompressed_dir/$file";
+
+        if (is_dir($fullpath)) {
+            mkdir("$location/$file");
+            process_code_file_directory_format($fullpath, $extensions, "$location/$file");
+        } else { // is a file
+            if (check_extension($file, $extensions)) { // move the file (faster than copy)
+                rename($fullpath, "$location/$file");
             }
         }
     }
-    return $has_valid_file;
 }
 
 /**
@@ -187,6 +220,8 @@ function extract_zip($zip_file, $extensions, $location, stored_file $file) {
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
  */
 function extract_assignment($assignment) {
+    global $DB;
+
     echo get_string('extract', 'plagiarism_programming');
     // make a subdir for this assignment in the plugin subdir and emptying it
     $temp_submission_dir = get_temp_dir_for_assignment($assignment, true);
@@ -213,22 +248,55 @@ function extract_assignment($assignment) {
             mkdir($userdir);
         }
 
+        $student = $DB->get_record('user', array('id' => $file->get_userid()));
         // check if the file is zipped files
-        if ($file->get_mimetype()=='application/zip') { //unzip files
-            // copy to a temporary file, then read and extract from it (Moodle does not allow to read file directly)
-            $temp_file_path = $temp_submission_dir.$file->get_filename();
-            $file->copy_content_to($temp_file_path);
-            $valid_file = extract_zip($temp_file_path, $extensions, $userdir, $file);
-            unlink($temp_file_path);
+        mtrace("File ".$file->get_filename()." has mime type: ".$file->get_mimetype());
+
+        if (is_compressed_file($file->get_filename())) { // decompress file
+            $valid_file = extract_compressed_file($file, $extensions, $userdir, $student);
         } else if (check_extension($file->get_filename(), $extensions)) { // if it is an uncompressed code file
             $file->copy_content_to($userdir.$file->get_filename());
             $valid_file = true;
         }
-        // TODO: support other types of compression files, e.g. rar, 7z
-        
+        // TODO: support other types of compression files: 7z, tar.gz
+
         if ($valid_file) {
             $valid_submission++;
         }
+    }
+
+    // include the code teacher upload
+    $fs = get_file_storage();
+    $additional_code_files = $fs->get_area_files($context->id, 'plagiarism_programming',
+            'codeseeding', $assignment->id, '', false);
+
+    $count = 1;
+    foreach ($additional_code_files as $code_file) {
+
+        $filename = $code_file->get_filename();
+        if (!is_compressed_file($filename)) {
+            mtrace("Invalid code seeding file");
+            return NOT_CORRECT_FILE_TYPE;
+        }
+
+        // create a temporary directory to store the extracted files
+        $temp_dir = $temp_submission_dir.'tmp_code'.($count++).'/';
+        if (!is_dir($temp_dir)) {
+            mkdir($temp_dir);
+        }
+
+        // extract all files to this directory
+        extract_compressed_file($code_file, null, $temp_dir, null, false);
+        $code_file_type = check_additional_code_structure($temp_dir);
+        switch ($code_file_type) {
+            case CODE_FILE_ARCHIVE_FORMAT:
+                process_code_file_archive_format($temp_dir, $extensions, $temp_submission_dir);
+                break;
+            case CODE_FILE_DIRECTORY_FORMAT:
+                process_code_file_directory_format($temp_dir, $extensions, $temp_submission_dir);
+                break;
+        }
+        rrmdir($temp_dir);
     }
 
     if ($valid_submission >= 2) {
@@ -259,13 +327,13 @@ function submit_assignment($assignment, $tool, $scan_info) {
     $scan_info->progress = 0;
     $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
 
-    debugging("Start sending to $tool_name \n");
+    mtrace("Start sending to $tool_name");
     $temp_submission_dir = get_temp_dir_for_assignment($assignment);
 
     // submit the assignment
     $scan_info = $tool->submit_assignment($temp_submission_dir, $assignment, $scan_info);
     $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
-    debugging("Finish sending to $tool_name. Status: $scan_info->status\n");
+    mtrace("Finish sending to $tool_name. Status: $scan_info->status");
 
     // note that scan_info is the object containing
     // the corresponding record in table plagiarism_programming_jplag
@@ -310,13 +378,13 @@ function download_result($assignment, $tool, $scan_info) {
     $scan_info->progress = 0;
     $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
 
-    echo "Download begin!\n";
+    mtrace("Download begin!");
     $scan_info = $tool->download_result($assignment, $scan_info);
-    echo "Download finish!\n";
+    mtrace("Download finish!");
 
-    echo "Parse begin\n";
+    mtrace("Parse begin");
     $scan_info = $tool->parse_result($assignment, $scan_info);
-    echo "Parse end\n";
+    mtrace("Parse end");
     $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
     return $scan_info;
 }
@@ -351,7 +419,7 @@ function already_uploaded($assignment) {
  * @param $wait_for_result wait for the scanning to finish to get the result (default true)
  * @return void
  */
-function scan_assignment($assignment, $wait_for_result=true) {
+function scan_assignment($assignment, $wait_for_result=true, $notification_mail=false) {
     global $DB, $CFG, $detection_tools;
 
     // if the assignment is not submitted, extract them into a temporary directory first
@@ -382,6 +450,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
     $logfiles = array();
 
     $wait = ($wait_for_result)?1:0;
+    $mail = ($notification_mail)?1:0;
     // generating the token
     $token = md5(time()+  rand(1000000, 9999999));
     foreach ($detection_tools as $toolname => $tool) {
@@ -392,7 +461,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
         $scan_info->token = $token;
         $DB->update_record('plagiarism_programming_'.$toolname, $scan_info);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
-            ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait";
+            ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait&mail=$mail";
 
         if ($toolname=='jplag_') {
             $logfiles[] = jplag_tool::get_report_path()."/script_log_$assignment->id-$toolname.html";
@@ -423,7 +492,7 @@ function scan_assignment($assignment, $wait_for_result=true) {
  * @param $wait_to_download: if set to true, the scanning will wait and periodically check the status until it finish and download
  * 
  */
-function scan_after_extract_assignment($assignment, $toolname, $wait_to_download=true) {
+function scan_after_extract_assignment($assignment, $toolname, $wait_to_download=true, $notification_mail=false) {
     global $detection_tools, $DB, $PROCESSING_INFO;
     $tool = $detection_tools[$toolname];
     $tool_class_name = $tool['class_name'];
@@ -452,6 +521,10 @@ function scan_after_extract_assignment($assignment, $toolname, $wait_to_download
         debugging("Start downloading with $toolname \n");
         download_result($assignment, $tool_class, $scan_info);
         debugging("Finish downloading with $toolname. Status: $scan_info->status \n");
+
+        if ($notification_mail) {
+            send_scanning_notification_email($assignment, $toolname);
+        }
     }
 }
 

@@ -62,7 +62,8 @@ foreach ($settngids as $setting_id) {
         }
     }
     // do not wait for result, the next cron script will check the status and download the result
-    scan_assignment($assignment_config, false);
+    // send an email when scanning complete
+    scan_assignment($assignment_config, false, true);
 
     $all_tools_finished = true;
 

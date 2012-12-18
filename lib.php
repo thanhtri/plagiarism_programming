@@ -36,6 +36,12 @@ require_once(__DIR__.'/scan_assignment.php');
 
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
+    private $filemanager_option;
+
+    public function __construct() {
+        $this->filemanager_option = array('subdir'=>0, 'maxbytes'=> 20*1024*1024, 'maxfiles'=>50, 'accepted_type' => array('*.zip', '*.rar'));
+    }
+
     /**
      * Define the configuration block of plagiarism detection in assignment setting form.
      * This method will be called by mod_assignment_mod_form class, in its definition method
@@ -53,8 +59,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         $plagiarism_config = null;
+        $assignment_context = null;
         if ($cmid) {
             $plagiarism_config = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+            $assignment_context = get_context_instance(CONTEXT_MODULE, $cmid);
         }
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
@@ -112,6 +120,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('checkbox', 'notification', get_string('notification', 'plagiarism_programming'));
         $mform->addElement('textarea', 'notification_text', get_string('notification_text', 'plagiarism_programming'),
             'wrap="virtual" rows="4" cols="50"');
+        $this->setup_code_seeding_filemanager($mform, $plagiarism_config, $assignment_context);
 
         $mform->disabledIf('programming_language', 'programmingYN', 'eq', 0);
         $mform->disabledIf('auto_publish', 'programmingYN', 'eq', 0);
@@ -120,10 +129,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->disabledIf('notification_text', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification_text', 'notification', 'notchecked');
         /* jplag and moss checkbox is enabled and disabled by custom javascript*/
-
-        // disable tool if it doesn't support the selected language
-        include_once(__DIR__.'/jplag_tool.php');
-        include_once(__DIR__.'/moss_tool.php');
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
@@ -145,7 +150,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
-        // for enable and disable the tools in JPlag and MOSS
+        // disable tool if it doesn't support the selected language
+        include_once(__DIR__.'/jplag_tool.php');
+        include_once(__DIR__.'/moss_tool.php');
         $jplag_support = $jplag_disabled?false:jplag_tool::get_supported_language();
         $moss_support = $moss_disabled?false:moss_tool::get_supported_laguage();
         // include the javascript for doing some minor interface adjustment to improve user experience
@@ -169,6 +176,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     public function save_form_elements($data) {
         global $DB, $detection_tools;
         $cmid = $data->coursemodule;
+        $context = get_context_instance(CONTEXT_MODULE, $cmid);
         if (!$this->is_plugin_enabled($cmid)) {
             return;
         }
@@ -179,7 +187,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             if (!$setting) {
                 $new = true;
                 $setting = new stdClass();
-                $setting->cmid = $data->coursemodule;
+                $setting->cmid = $cmid;
             }
 
             $setting->language = $data->programming_language;
@@ -199,6 +207,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             } else {
                 $DB->update_record('plagiarism_programming', $setting);
             }
+            file_postupdate_standard_filemanager($data, 'code', $this->filemanager_option, $context, 'plagiarism_programming', 'codeseeding', $setting->id);
 
             $date_num = $data->submit_date_num;
             $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0));
@@ -298,7 +307,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * Print some information on the assignment page
      */
     public function print_disclosure($cmid) {
-        global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detection_tools;
+        global $OUTPUT, $DB, $USER;
         $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
 
         // the plugin is enabled for this course ?
@@ -364,8 +373,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
         $content = '';
 
-        // if plagiarism report available, display link to report
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
         $already_scanned = false;
 
         $button_disabled = false;
@@ -418,7 +425,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
         $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0),
                 'scan_date ASC');
-        if (count($scan_dates)>0) {
+        if (count($scan_dates) > 0) {
             // get the first scan date
             $scan_date = array_shift($scan_dates);
             $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
@@ -433,7 +440,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $file_records = get_submitted_files($context);
         if (count($file_records) < 2) {
-            $content .= html_writer::tag('div', get_string('no.t_enough_submission', 'plagiarism_programming'));
+            $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
             $button_disabled = true;
         }
         // write the rescan button
@@ -557,5 +564,16 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->disabledIf('add_new_date', 'programmingYN', 'eq', 0);
         $mform->registerNoSubmitButton('add_new_date');
         $mform->setConstants($constant_vars);
+    }
+
+    private function setup_code_seeding_filemanager($mform, $plagiarism_config, $assignment_context) {
+
+        $mform->addElement('filemanager', 'code_filemanager', get_string('additional_code', 'plagiarism_programming'), null, $this->filemanager_option);
+        $mform->addHelpButton('code_filemanager', 'additional_code_hlp', 'plagiarism_programming');
+        $data = new stdClass();
+        file_prepare_standard_filemanager($data, 'code', $this->filemanager_option,
+                $assignment_context, 'plagiarism_programming', 'codeseeding',
+                ($plagiarism_config)? $plagiarism_config->id : null);
+        $mform->setDefault('code_filemanager', $data->code_filemanager);
     }
 }

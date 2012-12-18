@@ -223,9 +223,9 @@ class jplag_tool implements plagiarism_tool {
      * Link to JPlag plagiarism report for the assignment
      * @param stdClass $scan_info the record object of the status of jplag (in plagiarism_programming_jplag table)
      */
-    public function display_link($jplag_param) {
+    public function display_link($scan_info) {
         global $CFG;
-        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$jplag_param->cmid;
+        $report_path = $CFG->wwwroot.'/plagiarism/programming/view.php?cmid='.$scan_info->cmid;
         return "<a target='_blank' href='$report_path'>JPlag report</a>";
     }
 

@@ -221,9 +221,17 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         // programming savepoint reached
         upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');        
     }
-    
-    if ($oldversion < 2012080900) {
-        upgrade_plugin_savepoint(true, 2012080900, 'plagiarism', 'programming');        
+
+    if ($oldversion < 2012120700) {
+        $table = new xmldb_table('plagiarism_programming_reslt');
+        $field = new xmldb_field('additional_codefile_name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'student2_id');
+
+        // Conditionally launch add field additional_codefile_name
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2012120700, 'plagiarism', 'programming');        
     }
     return true;
 }

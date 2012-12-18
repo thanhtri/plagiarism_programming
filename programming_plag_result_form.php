@@ -30,6 +30,7 @@ class programming_plag_result_form extends moodleform {
 
     private $cmid;
     private $detector;
+
     public function __construct($cmid, $detector) {
         $this->cmid = $cmid;
         $this->detector = $detector;
@@ -39,6 +40,7 @@ class programming_plag_result_form extends moodleform {
     protected function definition() {
         global $DB, $detection_tools;
 
+        $assignment = $DB->get_record('plagiarism_programming', array('cmid' => $this->cmid));
         $mform = $this->_form;
 
         // similarity threshold
@@ -52,7 +54,9 @@ class programming_plag_result_form extends moodleform {
         // select the tool to display
         $tools = array();
         foreach ($detection_tools as $tool => $info) {
-            $tools[$tool] = $info['name'];
+            if ($assignment->$tool) {
+                $tools[$tool] = $info['name'];
+            }
         }
         $mform->addElement('select', 'tool', get_string('detection_tool', 'plagiarism_programming'), $tools);
 
@@ -67,6 +71,16 @@ class programming_plag_result_form extends moodleform {
             $report_select[$report->version] = date('d M h.i A', $report->time_created);
         }
         $mform->addElement('select', 'version', get_string('version', 'plagiarism_programming'), $report_select);
+
+        // if having repository, include a checkbox to include repository files or not
+        $fs = get_file_storage();
+        $context = get_context_instance(CONTEXT_MODULE, $this->cmid);
+        $repo_files = $fs->get_area_files($context->id, 'plagiarism_programming', 'codeseeding', $assignment->id, '', false);
+        if (!empty($repo_files)) {
+            $mform->addElement('advcheckbox', 'include_repository',
+                    get_string('include_repository', 'plagiarism_programming'),
+                    '', array('group' => 0), array(0, 1));
+        }
 
         // other elements
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);

@@ -77,14 +77,111 @@ function get_file_extension_by_language($language) {
  * @return true if the file has the extension in the array
  */
 function check_extension($filename, $extensions) {
+
+    if ($extensions==null) { // if extensions array is null, accept all extension
+        return true;
+    }
     $dot_index = strrpos($filename, '.');
 
     if ($dot_index === false) {
-        return 0;
+        return false;
     }
 
     $ext = substr($filename, $dot_index + 1);
     return in_array($ext, $extensions);
+}
+
+/** Create a file for write. This function will create a directory along the file path if it doesn't exist
+ * @param $fullpath: the path of the file
+ * @return the write file handle. fclose have to be called when finishing with it
+ */
+function create_file($fullpath) {
+    $dir_path = dirname($fullpath);
+    if (is_dir($dir_path)) { // directory already exist
+        return fopen($fullpath, 'w');
+    } else {
+        $dirs = explode('/', $dir_path);
+        $path = '';
+        foreach ($dirs as $dir) {
+            $path .= $dir.'/';
+            if (!is_dir($path)) {
+                mkdir($path);
+            }
+        }
+        return fopen($fullpath, 'w');
+    }
+}
+
+/**
+ * Search the file to clear the students' name and clear them
+ * @param $filecontent: the content of a file
+ * @param $student: the user record object of the students. Name and id occurrences will be cleared
+ */
+function clear_student_identity(&$filecontent, $student) {
+
+    if ($student==null) { // do not have information to clear
+        return;
+    }
+    // find all the comments. First version just support C++ style comments
+    $pattern = '/\/\*.*?\*\//s'; // C style
+    preg_match_all($pattern, $filecontent, $comments1);
+    $pattern = '/\/\/.*/';       // C++ style
+    preg_match_all($pattern, $filecontent, $comments2);
+    $allcomments = array_merge($comments1[0], $comments2[0]);
+
+    // get student name
+    $fname = $student->firstname;
+    $lname = $student->lastname;
+    $idnumber = $student->idnumber;
+    $find_array = array($fname, $lname, $idnumber);
+    $replace_array = array('#firstname', '#lastname', '#id');
+
+    $finds = array();
+    $replaces = array();
+
+    foreach ($allcomments as $comment) {
+        if (stripos($comment, $fname)!=false || stripos($comment, $lname)!=false || 
+                (!empty($idnumber) && strpos($comment, $idnumber)!=false)) {
+            $new_comment = str_ireplace($find_array, $replace_array, $comment);
+            $finds[]= $comment;
+            $replaces[]=$new_comment;
+            // to be safe, delete the comment with author inside, maybe the student write his name in another form
+        } else if (strpos($comment, 'author')!==false) {
+            $finds[] = $comment;
+            $replaces[] = '';
+        }
+    }
+    $filecontent = str_replace($finds, $replaces, $filecontent);
+}
+
+function send_scanning_notification_email($assignment, $toolname) {
+    global $CFG, $DB;
+
+    $context_assignment = get_context_instance(CONTEXT_MODULE, $assignment->cmid);
+
+    $markers = get_enrolled_users($context_assignment, 'mod/assignment:grade');
+    $moodle_support = generate_email_supportuser();
+    $cm = get_coursemodule_from_id('assignment', $assignment->cmid);
+    $course = $DB->get_record('course', array('id' => $cm->course));
+    $assignment = $DB->get_record('assignment', array('id' => $cm->instance));
+
+    $email_params = array('course_short_name' => $course->shortname,
+                          'course_name'       => $course->fullname,
+                          'assignment_name'   => $assignment->name,
+                          'time'              => userdate(time(), get_string('strftimerecent')),
+                          'link'              => "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$assignment->cmid&detector=$toolname"
+        );
+
+    $markers_count = count($markers);
+    mtrace("Sending email to $markers_count markers\n");
+    foreach ($markers as $marker) {
+        mtrace("Email to $marker->firstname $marker->lastname\n");
+        $email_params['recipientname'] = fullname($marker);
+        email_to_user($marker, $moodle_support,
+                get_string('scanning_complete_email_notification_subject', 'plagiarism_programming', $email_params),
+                get_string('scanning_complete_email_notification_body_txt', 'plagiarism_programming', $email_params),
+                get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming'), $email_params);
+    }
 }
 
 /**
@@ -168,8 +265,122 @@ function curl_download($links, $directory=null, $timeout=0) {
 }
 
 /**
+ * Extract a rar file. In addition, this function also clear students' name and id if there
+ * are in the comments and the name of the file
+ * @param string $zip_file full path of the zip file
+ * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location directory of 
+ * @param stdClass $user: record object of the student who submitted the file
+ * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
+ */
+function extract_rar($rar_file, $extensions, $location, $student=null, $textfile_only=false) {
+    mtrace("Extracting rar file...\n");
+    if (!class_exists('RarArchive')) {
+        mtrace("Rar library doesn't exist");
+        return false;
+    }
+    $rar_archive = RarArchive::open($rar_file);
+    if (!$rar_archive) {
+        return false;
+    }
+
+    $has_valid_file = false;
+
+    // finfo object to check for plain text file
+    $finfo = new finfo(FILEINFO_MIME);
+
+    $entries = $rar_archive->getEntries();
+    foreach ($entries as $entry) {
+        $entry_name = $entry->getName();
+        // if an entry name contain the id, remove it
+        if (isset($student->idnumber)) {
+            $entry_name = str_replace($student->idnumber, '_id_', $entry_name);
+        }
+        // if it's a file (skip directory entry since directories along the path
+        // will be created $handlewhen writing to the files
+        if (!$entry->isDirectory() && check_extension($entry_name, $extensions)) {
+            $stream = $entry->getStream();
+            if ($stream) {
+                $buf = fread($stream, $entry->getUnpackedSize());
+                if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check if it is not a binary file
+                    $file_path = $location.$entry_name;
+                    $fp = create_file($file_path);
+
+                    clear_student_identity($buf, $student);
+                    fwrite($fp, $buf);
+                    fclose($fp);
+                    $has_valid_file = true;
+                }
+                fclose($stream);
+            }
+        }
+    }
+
+    return $has_valid_file;
+}
+
+/**
+ * Extract a zip file. In addition, this function also clear students' name and id if there
+ * are in the comments and the name of the file
+ * @param string $zip_file full path of the zip file
+ * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location directory of 
+ * @param stdClass $user: record object of the student who submitted the file
+ * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
+ */
+function extract_zip($zip_file, $extensions, $location, $user = null, $textfile_only = true) {
+    $zip_handle = zip_open($zip_file);
+    $has_valid_file = false;
+    if (!$zip_handle) {
+        return false;
+    }
+
+    // finfo object to check for plain text file
+    $finfo = new finfo(FILEINFO_MIME);
+
+    while ($zip_entry = zip_read($zip_handle)) {
+        $entry_name = zip_entry_name($zip_entry);
+
+        // if an entry name contain the student id, hide it
+        if ($user) {
+            $entry_name = str_replace($user->idnumber, '_id_', $entry_name);
+        }
+        // if it's a file (skip directory entry since directories along the path
+        // will be created when writing to the files
+        if (substr($entry_name, -1)!='/' && check_extension($entry_name, $extensions)) {
+            if (zip_entry_open($zip_handle, $zip_entry, 'r')) {
+                $buf = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
+                if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check text file
+                    $file_path = $location.$entry_name;
+                    $fp = create_file($file_path);
+                    if ($user) {
+                        clear_student_identity($buf, $user);
+                    }
+                    fwrite($fp, $buf);
+                    fclose($fp);
+                    $has_valid_file = true;
+                }
+                zip_entry_close($zip_entry);
+            }
+        }
+    }
+
+    return $has_valid_file;
+}
+
+/**
+ * The file is a compressed file or not. Since the plugin supports only zip and
+ * rar files, every other compression type will be considered not compressed.
+ * Just a simple extension check is performed (zip or rar)
+ */
+function is_compressed_file($filename) {
+    $ext = substr($filename, -4, 4);
+    return ($ext=='.zip') || ($ext=='.rar');
+}
+
+/**
  * Count the number of line and the number of characters at the final line in the provided string
- * @param: the string to count
+ * @param: the string to countstring
  */
 function count_line(&$text) {
     $line_count = substr_count($text, "\n");

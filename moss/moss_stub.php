@@ -86,6 +86,8 @@ class moss_stub {
         $fileid = 1;
         $currently_uploaded = 0;
         foreach ($file_list as $path => $moss_dir) {
+            // MOSS has some problem with white space in file names
+            $moss_dir = str_replace(' ', '_', $moss_dir);
             $content = file_get_contents($path);
             $size = strlen($content);
             $result = fwrite($socket, "file $fileid $language $size $moss_dir\n");

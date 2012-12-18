@@ -81,6 +81,7 @@ $string['auto_publish'] = 'Publish similarity report';
 $string['notification'] = 'Display notification';
 $string['notification_text'] = 'Notification text';
 $string['notification_text_default'] = 'This assignment will be scanned for code similarity';
+$string['additional_code'] = 'Additional code to compare against';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Enable programming plagiarism detection for this assignment';
@@ -102,6 +103,9 @@ $string['notification_hlp_help'] = 'Notify the student that their submission wil
 $string['programming_language_missing'] = 'Programming language is required';
 $string['notification_text_hlp'] = '';
 $string['notification_text_hlp_help'] = 'Set the notification text to be displayed';
+$string['additional_code_hlp'] = 'Code seeding';
+$string['additional_code_hlp_help'] = 'Upload other codes to compare against (e.g. code found on the internet or past assigments). '
+    .'Only zip and rar files are supported. A compressed file must contain a number of directories or compressed files, each correspond to an assignment';
 
 $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
 $string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
@@ -196,3 +200,20 @@ $string['report'] = 'Report';
 $string['max_similarity'] = 'max similarity';
 $string['suspicious'] = 'suspicious';
 $string['no_similarity'] = 'No similarity';
+
+$string['scanning_complete_email_notification_subject'] =
+    '{$a->course_short_name} {$a->assignment_name}: similarity scanning available';
+$string['scanning_complete_email_notification_body_html'] = 'Dear {$a->recipientname}, <br/>
+This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}
+has finished at {$a->time}.
+
+You could access the similarity report by following this link: <a href="{$a->report_link}">{$a->report_link}</a>.
+';
+$string['scanning_complete_email_notification_body_txt'] = 'Dear {$a->recipientname},
+This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}
+has finished at {$a->time}.
+
+You could access the similarity report by using this link: {$a->report_link}';
+
+$string['similarity_report'] = 'Similarity result report';
+$string['include_repository'] = 'Include repository';

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/programming/db" VERSION="20120629" COMMENT="XMLDB file for Moodle plagiarism/programming"
+<XMLDB PATH="plagiarism/programming/db" VERSION="20121207" COMMENT="XMLDB file for Moodle plagiarism/programming"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -68,12 +68,13 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="plagiarism_programming_reslt" COMMENT="store the result of the scanning, each record contain a pair" PREVIOUS="plagiarism_programming_moss" NEXT="plagiarism_programming_cours">
+    <TABLE NAME="plagiarism_programming_reslt" COMMENT="store the result of the scanning, each record contains a pair" PREVIOUS="plagiarism_programming_moss" NEXT="plagiarism_programming_cours">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="student1_id"/>
         <FIELD NAME="student1_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="id" NEXT="student2_id"/>
-        <FIELD NAME="student2_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="student1_id" NEXT="similarity1"/>
-        <FIELD NAME="similarity1" TYPE="number" LENGTH="5" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" DECIMALS="2" COMMENT="similarity rate of student id 1" PREVIOUS="student2_id" NEXT="similarity2"/>
+        <FIELD NAME="student2_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="student1_id" NEXT="additional_codefile_name"/>
+        <FIELD NAME="additional_codefile_name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="not null when the pair match is a comparison between a student and an additional code file" PREVIOUS="student2_id" NEXT="similarity1"/>
+        <FIELD NAME="similarity1" TYPE="number" LENGTH="5" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" DECIMALS="2" COMMENT="similarity rate of student id 1" PREVIOUS="additional_codefile_name" NEXT="similarity2"/>
         <FIELD NAME="similarity2" TYPE="number" LENGTH="5" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" DECIMALS="2" COMMENT="similarity rate of student id 2" PREVIOUS="similarity1" NEXT="comparison"/>
         <FIELD NAME="comparison" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="similarity2" NEXT="comments"/>
         <FIELD NAME="comments" TYPE="char" LENGTH="150" NOTNULL="false" SEQUENCE="false" PREVIOUS="comparison" NEXT="reportid"/>

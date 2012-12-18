@@ -34,6 +34,8 @@ $anchor = optional_param('anchor', -1, PARAM_INT);
 $result_record = $DB->get_record('plagiarism_programming_reslt', array('id'=>$result_id));
 $report_rec = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result_record->reportid));
 
+$result_record = plagiarism_programming_transform_similarity_pair($result_record);
+
 // get the report directory
 $cmid = $report_rec->cmid;
 $detector = $report_rec->detector;
@@ -61,7 +63,7 @@ $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment
     if (!has_capability('mod/assignment:submit', $context) || // must have submission right to his assignment
-        !$DB->get_field('plagiarism_programming', 'auto_publish', array('cmid'=>$cmid))) { // or permission to see the report
+        !$DB->get_field('plagiarism_programming', 'auto_publish', array('cmid' => $cmid))) { // and permission to see the report
         redirect($CFG->wwwroot, "You don't have permission to see this page");
     }
 
@@ -79,26 +81,31 @@ if (!$is_teacher) {
     // teacher can see the students' name
     $users = $DB->get_records_list('user', 'id', array($result_record->student1_id, $result_record->student2_id),
         'firstname,lastname,idnumber');
-    $user1 = $users[$result_record->student1_id];
-    $student1 = $user1->firstname.' '.$user1->lastname;
-    $user2 = $users[$result_record->student2_id];
-    $student2 = $user2->firstname.' '.$user2->lastname;
+    $student1 = isset($users[$result_record->student1_id]) ?
+        fullname($users[$result_record->student1_id]) :
+        $result_record->student1_id;
+    $student2 = isset($users[$result_record->student2_id]) ?
+        fullname($users[$result_record->student2_id]) :
+        $result_record->student2_id;
 }
 //---------------------------------end autorisation--------------------------------------------------------------------//
 
 $title = get_string('comparison_title', 'plagiarism_programming');
 $heading = get_string('comparison', 'plagiarism_programming');
 
+$PAGE->set_pagelayout('base'); // don't want the blocks to save space
 $PAGE->set_url(me());
 $PAGE->set_title($title);
 $PAGE->set_heading($heading);
+$PAGE->navbar->add(get_string('similarity_report', 'plagiarism_programming'), "view.php?cmid=$cmid&tool=$report_rec->detector");
 $PAGE->navbar->add($heading);
 echo $OUTPUT->header();
 
 // the top bar
 $average_similarity = ($result_record->similarity1+$result_record->similarity2)/2;
-$content = html_writer::tag('div', "Similarities between $student1 and $student2 "
-    ."($average_similarity%)", array('class'=>'compare_header'));
+$content = html_writer::tag('div',
+        get_string('and', '', array('one'=>$student1, 'two'=>$student2)). "($average_similarity%)",
+        array('class'=>'compare_header'));
 
 $result1 = reconstruct_file($result_record->student1_id, $result_record->student2_id, $directory);
 $result2 = reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
@@ -147,8 +154,8 @@ echo html_writer::tag('div', $result2['content'], array('class'=>'programming_re
 
 //----- name lookup table for javascript--------
 $result_select = "reportid=$report_rec->id ".
-    "AND (student1_id=$result_record->student1_id OR student1_id=$result_record->student2_id ".
-    "OR student2_id=$result_record->student1_id OR student2_id=$result_record->student2_id)";
+    "AND (student1_id='$result_record->student1_id' OR student1_id='$result_record->student2_id' ".
+    "OR student2_id='$result_record->student1_id' OR student2_id='$result_record->student2_id')";
 $result = $DB->get_records_select('plagiarism_programming_reslt', $result_select);
 
 $all_names = null;

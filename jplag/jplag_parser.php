@@ -66,19 +66,21 @@ class jplag_parser {
                 $file = $link->getAttribute('href');
 
                 // the similarity percentage of each student is contained in the -top file
-                $pattern = '/<TR><TH><TH>([0-9]*) \(([0-9]*\.[0-9]*)%\)<TH>([0-9]*) \(([0-9]*\.[0-9]*)%\)<TH>/';
+                $pattern = '/<TR><TH><TH>([^)]*) \(([0-9]*\.[0-9]*)%\)<TH>([^)]*) \(([0-9]*\.[0-9]*)%\)<TH>/';
                 $top_filename = $directory.'/'.substr($file, 0, -5).'-top.html';
                 $top_content = file_get_contents($top_filename);
                 $matches = null;
                 preg_match($pattern, $top_content, $matches);
 
                 // save to the db
-                $res->student1_id = $matches[1];
-                $res->student2_id = $matches[3];
-                $res->similarity1 = $matches[2];
-                $res->similarity2 = $matches[4];
-                $res->comparison = $file;
-                $DB->insert_record('plagiarism_programming_reslt', $res);
+                if (ctype_digit($matches[1]) || ctype_digit($matches[3])) {
+                    $res->student1_id = $matches[1];
+                    $res->student2_id = $matches[3];
+                    $res->similarity1 = $matches[2];
+                    $res->similarity2 = $matches[4];
+                    $res->comparison  = $file;
+                    plagiarism_programming_save_similarity_pair($res);
+                }
             }
         }
         $this->get_similar_parts();
@@ -87,6 +89,7 @@ class jplag_parser {
     public function get_similar_parts() {
         global $DB;
         $pairs = $DB->get_records('plagiarism_programming_reslt', array('reportid'=>$this->report->id));
+        $pairs = plagiarism_programming_transform_similarity_pair($pairs);
         $path = dirname($this->filename);
 
         $similarity_array = array();
@@ -204,7 +207,7 @@ class jplag_parser {
 
         // if this code is not recorded yet, record it to disk (avoid holding too much in memory)
         if (!isset($file_array[$student_id][$code_name])) {
-            $filename = tempnam($directory, $student_id);
+            $filename = tempnam($directory, str_replace(' ', '_', "$student_id"));
             $file_array[$student_id][$code_name]= $filename;
             file_put_contents($filename, htmlspecialchars($code->nodeValue));
         }

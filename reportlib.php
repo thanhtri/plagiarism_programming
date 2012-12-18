@@ -47,21 +47,27 @@ function create_table_grouping_mode(&$list, &$student_names) {
         $student1 = max($pair->student1_id, $pair->student2_id);
         $student2 = min($pair->student1_id, $pair->student2_id);
 
-        $similarity_table[$student1][$student2] =
-            array('rate'=>$pair->similarity,
-                  'file'=>$pair->comparison,
-                  'id'=>$pair->id,
-                  'mark'=>$pair->mark);
-        $similarity_table[$student2][$student1] =
-            array('rate'=>$pair->similarity,
-                  'file'=>$pair->comparison,
-                  'id'=>$pair->id,
-                  'mark'=>$pair->mark);
+        if (is_numeric($student1)) {
+            $similarity_table[$student1][$student2] =
+                array('rate'=>$pair->similarity,
+                      'file'=>$pair->comparison,
+                      'id'=>$pair->id,
+                      'mark'=>$pair->mark);
+        }
+
+        if (is_numeric($student2)) { // only add a line for student2 if it is a real student
+            $similarity_table[$student2][$student1] =
+                array('rate'=>$pair->similarity,
+                      'file'=>$pair->comparison,
+                      'id'=>$pair->id,
+                      'mark'=>$pair->mark);
+        }
     }
 
     $table = new html_table();
     $table->attributes['class']='plagiarism_programming_result_table generaltable';
     foreach ($similarity_table as $s_id => $similarity_array) {
+        
         $row = new html_table_row();
         // first cell
         $cell = new html_table_cell();
@@ -96,26 +102,36 @@ function create_table_grouping_mode(&$list, &$student_names) {
  *        Passed by reference for performance only
  * @param $student_names: associative array id=>name of the students in this assignment. Not altered by the function.
  *        Passed by reference for performance only
- * @param $cmid: course module id of the assignment
+ * @param $anchor: if anchor is specified, the anchored student will always appear on the left
  * @return the html_table object
  */
-function create_table_list_mode(&$list, &$student_names) {
+function create_table_list_mode(&$list, &$student_names, $anchor=null) {
 
     $table = new html_table();
     $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
     $rownum = 1;
     foreach ($list as $pair) {
+
+        $student1 = $student_names[$pair->student1_id];
+        $student2 = $student_names[$pair->student2_id];
+        if ($anchor && $anchor!=$pair->student1_id) {
+            $temp = $student1;
+            $student1 = $student2;
+            $student2 = $temp;
+            unset($temp);
+        }
+
         $row = new html_table_row();
 
         $cell = new html_table_cell($rownum++);
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = create_student_link($student_names[$pair->student1_id], $pair->student1_id);
+        $cell->text = create_student_link($student1, $pair->student1_id);
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = create_student_link($student_names[$pair->student2_id], $pair->student2_id);
+        $cell->text = create_student_link($student2, $pair->student2_id);
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
@@ -198,9 +214,16 @@ function create_student_name_lookup_table(&$result_table, $is_teacher, &$student
     global $USER, $DB;
 
     $student_names = array();
-    foreach ($result_table as $pair) {
-        $student_names[$pair->student1_id] = "someone's";
-        $student_names[$pair->student2_id] = "someone's";
+    if ($is_teacher) {
+        foreach ($result_table as $pair) {
+            $student_names[$pair->student1_id] = $pair->student1_id;
+            $student_names[$pair->student2_id] = $pair->student2_id;
+        }
+    } else {
+        foreach ($result_table as $pair) {
+            $student_names[$pair->student1_id] = "someone's";
+            $student_names[$pair->student2_id] = "someone's";
+        }
     }
 
     // find students' name if he is the lecturer
@@ -208,7 +231,7 @@ function create_student_name_lookup_table(&$result_table, $is_teacher, &$student
         $ids = array_keys($student_names);
         $students = $DB->get_records_list('user', 'id', $ids, null, 'id,firstname,lastname');
         foreach ($students as $student) {
-            $student_names[$student->id] = $student->firstname.' '.$student->lastname;
+            $student_names[$student->id] = fullname($student);
         }
     } else {    // if user is a student
         $student_names[$USER->id] = 'Yours';
@@ -240,13 +263,21 @@ function get_suspicious_works($student_id, $cmid) {
 }
 
 function get_students_similarity_info($cmid, $student_id=null) {
-    global $DB;
+    global $DB, $detection_tools;
+
+    // get the enabled plugins
+    $setting = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
     // get the latest report version
-    $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid));
-    if ($version==null) { // no report yet
-        return array();
+    $reports = array();
+    foreach ($detection_tools as $toolname => $toolinfo) {
+        if ($setting->$toolname) {
+            $report = get_latest_report($cmid, $toolname);
+            if ($report) {
+                $reports[$report->id] = new stdClass();
+                $reports[$report->id]->detector = $toolname;
+            }
+        }
     }
-    $reports = $DB->get_records('plagiarism_programming_rpt', array('cmid'=>$cmid, 'version'=>$version));
 
     if (count($reports)==0) {
         return array();
@@ -332,12 +363,45 @@ function create_next_report($cmid, $detector) {
     return $report;
 }
 
+function plagiarism_programming_save_similarity_pair($pair_result) {
+    global $DB;
+    if (!ctype_digit($pair_result->student1_id)) {
+        $pair_result->additional_codefile_name = $pair_result->student1_id;
+        $pair_result->student1_id = 0;
+    } else if (!ctype_digit($pair_result->student2_id)) {
+        $pair_result->additional_codefile_name = $pair_result->student2_id;
+        $pair_result->student2_id = 0;
+    } else {
+        $pair_result->additional_codefile_name = null;
+    }
+    $DB->insert_record('plagiarism_programming_reslt', $pair_result);
+}
+
+function plagiarism_programming_transform_similarity_pair($similar_pairs) {
+    if (!is_array($similar_pairs)) { // only one object is passed
+        $pairs = array($similar_pairs);
+    } else {
+        $pairs = $similar_pairs;
+    }
+    foreach ($pairs as $pair) {
+        if ($pair && !empty($pair->additional_codefile_name)) {
+            if ($pair->student1_id==0) {
+                $pair->student1_id = $pair->additional_codefile_name;
+            } else if ($pair->student2_id==0) {
+                $pair->student2_id = $pair->additional_codefile_name;
+            }
+        }
+    }
+    // objects are passed by reference and we only modify the object
+    return $similar_pairs;
+}
+
 function get_student_similarity_history($student1_id, $student2_id, $cmid, $detector, $time_sort='desc') {
     global $DB;
     $sql = "Select result.*, time_created From {plagiarism_programming_rpt} report, {plagiarism_programming_reslt} result ".
         " Where report.cmid=$cmid And report.detector='$detector' And report.id = result.reportid And ".
-        " ((student1_id=$student1_id And student2_id=$student2_id) Or".
-        " (student1_id=$student2_id And student2_id=$student1_id)) Order By time_created ".$time_sort;
+        " ((student1_id='$student1_id' And student2_id='$student2_id') Or".
+        " (student1_id='$student2_id' And student2_id='$student1_id')) Order By time_created ".$time_sort;
     $pairs = $DB->get_records_sql($sql);
     return $pairs;
 }

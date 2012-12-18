@@ -49,7 +49,7 @@ class moss_parser {
 
         $content = file_get_contents($this->filename);
         // this pattern extract the link
-        $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([0-9]*)\/\s\(([0-9]*)%\)<\/A>/';
+        $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([^\/]*)\/\s\(([0-9]*)%\)<\/A>/';
         $matches = null;
         preg_match_all($pattern, $content, $matches);
         $filenames = $matches[1];
@@ -60,12 +60,15 @@ class moss_parser {
         $record = new stdClass();
         $record->reportid = $this->report->id;
         for ($i=0; $i<$num; $i+=2) {
-            $record->student1_id = $studentids[$i];
-            $record->student2_id = $studentids[$i+1];
-            $record->similarity1 = $similarity[$i];
-            $record->similarity2 = $similarity[$i+1];
-            $record->comparison = $filenames[$i];
-            $DB->insert_record('plagiarism_programming_reslt', $record);
+            // we only need to save pairs in which there is at least one real student
+            if (ctype_digit($studentids[$i]) || ctype_digit($studentids[$i+1])) {
+                $record->student1_id = $studentids[$i];
+                $record->student2_id = $studentids[$i+1];
+                $record->similarity1 = $similarity[$i];
+                $record->similarity2 = $similarity[$i+1];
+                $record->comparison = $filenames[$i];
+                plagiarism_programming_save_similarity_pair($record);
+            }
         }
 
         $this->get_similar_parts();
@@ -84,6 +87,8 @@ class moss_parser {
     public function get_similar_parts() {
         global $DB;
         $pairs = $DB->get_records('plagiarism_programming_reslt', array('reportid'=>$this->report->id));
+        // uniformise the pairs where 1 is external code
+        $pairs = plagiarism_programming_transform_similarity_pair($pairs);
         $path = dirname($this->filename);
 
         $similarity_array = array();

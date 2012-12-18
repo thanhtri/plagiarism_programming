@@ -30,12 +30,13 @@ require_once(__DIR__.'/reportlib.php');
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
 
 $cmid = required_param('cmid', PARAM_INT);
-$student_id = optional_param('student', -1, PARAM_INT);
+$student_id = optional_param('student', null, PARAM_TEXT);
 $lower_threshold = optional_param('lower_threshold', 20, PARAM_FLOAT); // rate will be above this similarity
 $upper_threshold = optional_param('upper_threshold', 100, PARAM_FLOAT);
 $tool = optional_param('tool', '', PARAM_TEXT);
 $report_version = optional_param('version', -1, PARAM_INT);
 $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);
+$include_repository = optional_param('include_repository', 1, PARAM_INT);
 
 // display_mode is either table (similar to JPlag style)  or group (similar to MOSS style)
 $display_mode = optional_param('display_mode', 'group', PARAM_TEXT);
@@ -47,6 +48,7 @@ $course = $DB->get_record('course', array('id'=>$course_module->course));
 if (!$course) {
     redirect($CFG->wwwroot, 'Invalid course id');
 }
+
 require_login($course, true, $course_module);
 
 // if the user is a student (does not have grade capability), he can only see the report on his assignment if allowed
@@ -61,7 +63,7 @@ if (!$is_teacher) {
     $student_id = $USER->id;
 }
 
-if ($student_id > 0) {
+if ($student_id != null) {
     $display_mode = 'table';
 }
 
@@ -91,13 +93,23 @@ if ($rate_type=='max') {
 } else {
     $similarity = '(similarity1+similarity2)/2';
 }
+
 $select = "Select *, $similarity similarity From {plagiarism_programming_reslt}".
     " Where reportid=$report->id AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
-if ($student_id>0) {
-    $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
+
+if ($student_id != null) { // filter by student_id
+    if (ctype_digit($student_id)) {
+        $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
+    } else {
+        $select .= " AND additional_codefile_name = '$student_id'";
+    }
+}
+if (!$include_repository) {
+    $select .= " AND additional_codefile_name IS NULL ";
 }
 $select .= ' ORDER BY similarity DESC';
 $result = $DB->get_records_sql($select);
+$result = plagiarism_programming_transform_similarity_pair($result);
 
 $student_names = null;
 create_student_name_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
@@ -105,11 +117,11 @@ create_student_name_lookup_table($result, $is_teacher, $student_names); // this 
 if ($display_mode=='group') {
     $table = create_table_grouping_mode($result, $student_names);
 } else {
-    $table = create_table_list_mode($result, $student_names);
+    $table = create_table_list_mode($result, $student_names, $student_id);
 }
 
 $header = get_string('result', 'plagiarism_programming');
-$PAGE->set_title('Similarity result report');
+$PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->navbar->add($header);
 echo $OUTPUT->header();
@@ -120,7 +132,8 @@ $filter_forms->set_data(array('cmid'=>$cmid,
     'lower_threshold'=>$lower_threshold,
     'tool'=>$tool,
     'rate_type'=>$rate_type,
-    'display_mode'=>$display_mode));
+    'display_mode'=>$display_mode,
+    'include_repository'=>$include_repository));
 $filter_forms->display();
 
 echo html_writer::tag('div', get_string('chart_legend', 'plagiarism_programming'));

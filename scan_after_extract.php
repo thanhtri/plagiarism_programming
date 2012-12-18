@@ -43,6 +43,7 @@ $tool = required_param('tool', PARAM_TEXT);
 $cmid = required_param('cmid', PARAM_INT);
 $token = required_param('token', PARAM_TEXT);
 $wait_to_finish = optional_param('wait', 1, PARAM_INT);
+$notification_mail = optional_param('mail', 0, PARAM_INT);
 
 // verify the token
 $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
@@ -58,8 +59,11 @@ session_write_close();
 $PROCESSING_INFO = array('stage'=>$tool, 'cmid'=>$cmid);
 set_error_handler('tool_scanning_error_handler');
 register_shutdown_function('handle_shutdown');
-scan_after_extract_assignment($assignment, $tool, $wait_to_finish);
+scan_after_extract_assignment($assignment, $tool, $wait_to_finish, $notification_mail);
+
+
 function tool_scanning_error_handler($error_no, $error_message) {
+
     if ($error_no==E_USER_ERROR) {
         global $DB, $PROCESSING_INFO;
         $tool = $PROCESSING_INFO['stage'];
