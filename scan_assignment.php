@@ -81,9 +81,8 @@ function get_temp_dir_for_assignment($assignment, $empty_dir=false) {
 function get_submitted_files($assignment_context) {
     global $CFG;
 
-    include($CFG->dirroot.'/version.php');
-    // component and file area for submissions changed in Moodle 2.3
-    if ($version >= 2012062500.00) {
+    $cm = get_coursemodule_from_id('', $assignment_context->instanceid);
+    if ($cm->modname =='assign') {
         $component = 'assignsubmission_file';
         $file_area = 'submission_files';
     } else {
