@@ -76,22 +76,8 @@ class plagiarism_setup_form extends moodleform {
     }
 
     public function validation($data, $files) {
+        global $CFG;
         $errors = parent::validation($data, $files);
-//        $proxy_host = $data['proxy_host'];
-//        $proxy_port = $data['proxy_port'];
-//        if (!empty($proxy_host) && empty($proxy_port)) {
-//            $errors['proxy_port'] = get_string('proxy_port_missing', 'plagiarism_programming');
-//        } else if (empty($proxy_host) && !empty($proxy_port)) {
-//            $errors['proxy_host'] = get_string('proxy_host_missing', 'plagiarism_programming');
-//        }
-//
-//        $proxy_user = $data['proxy_user'];
-//        $proxy_pass = $data['proxy_pass'];
-//        if (!empty($proxy_user) && empty($proxy_pass)) {
-//            $errors['proxy_pass'] = get_string('proxy_pass_missing', 'plagiarism_programming');
-//        } else if (empty($proxy_user) && !empty($proxy_pass)) {
-//            $errors['proxy_user'] = get_string('proxy_user_missing', 'plagiarism_programming');
-//        }
 
         $empty_user = empty($data['jplag_user']);
         $empty_pass = empty($data['jplag_pass']);
@@ -99,8 +85,11 @@ class plagiarism_setup_form extends moodleform {
             $errors['jplag_pass'] = get_string('password_missing', 'plagiarism_programming');
         } else if (!$empty_pass && $empty_user) { // missing password
             $errors['jplag_user'] = get_string('username_missing', 'plagiarism_programming');
-        } else if (!$empty_user && !$empty_pass) {
-            // check if the user changed his username and password
+        } else if (!$empty_user && !$empty_pass) {  // check if the user changed his username and password
+            $proxyhost = isset($CFG->proxyhost)?$CFG->proxyhost:'';
+            $proxyport = isset($CFG->proxyport)?$CFG->proxyport:'';
+            $proxyuser = isset($CFG->proxyuser)?$CFG->proxyuser:'';
+            $proxypass = isset($CFG->proxypassword)?$CFG->proxypassword:'';
             $pass = $data['jplag_pass'];
             $user = $data['jplag_user'];
             $old_setting = get_config('plagiarism_programming');
@@ -109,7 +98,7 @@ class plagiarism_setup_form extends moodleform {
                 // change credential, recheck username and password
                 include_once(__DIR__.'/jplag/jplag_stub.php');
                 $jplag_stub = new jplag_stub($data['jplag_user'], $data['jplag_pass'],
-                    $data['proxy_host'], $data['proxy_port'], $data['proxy_user'], $data['proxy_pass']);
+                    $proxyhost, $proxyport, $proxyuser, $proxypass);
                 $check_result = $jplag_stub->check_credential();
                 if ($check_result !==true) {
                     $errors['jplag_user'] = $check_result['message'];

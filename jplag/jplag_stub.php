@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 define('JPLAG_WSDL_URL',  dirname(__FILE__).'/jplag.wsdl');
-define('JPLAG_TYPE_NAMESPACE', 'http://www.ipd.uni-karlsruhe.de/jplag/types');
+define('JPLAG_TYPE_NAMESPACE', 'http://jplag.ipd.kit.edu/JPlagService/types');
 define('INVALID_CREDENTIAL', 1);
 define('MAX_CHUNK_SIZE', 81920);     // maximum size per chunk is 81920
 
@@ -92,7 +92,7 @@ class jplag_stub {
      */
     public function check_credential($username=null, $password=null) {
         if ($username && $password) {
-            $credential = array('username' => $username, 'password' => $password, 'compatLevel' => 4);
+            $credential = array('username' => $username, 'password' => $password, 'compatLevel' => '4');
             $header = new SoapHeader(JPLAG_TYPE_NAMESPACE, 'Access', $credential);
             $client = new SoapClient(JPLAG_WSDL_URL);
             $client->__setSoapHeaders($header);

@@ -51,10 +51,10 @@ class jplag_tool implements plagiarism_tool {
         if ($this->jplag_stub==null) {
             // get the username and password
             $settings = get_config('plagiarism_programming');
-            $proxyhost = get_config('proxyhost');
-            $proxyport = get_config('proxyport');
-            $proxyuser = get_config('proxyuser');
-            $proxypass = get_config('proxypassword');
+            $proxyhost = isset($CFG->proxyhost)?$CFG->proxyhost:'';
+            $proxyport = isset($CFG->proxyport)?$CFG->proxyport:'';
+            $proxyuser = isset($CFG->proxyuser)?$CFG->proxyuser:'';
+            $proxypass = isset($CFG->proxypassword)?$CFG->proxypassword:'';
             if (!empty($settings->jplag_user) && !empty($settings->jplag_pass)) {
                 $this->jplag_stub = new jplag_stub($settings->jplag_user, $settings->jplag_pass,
                     $proxyhost, $proxyport, $proxyuser, $proxypass);

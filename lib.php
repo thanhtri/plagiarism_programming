@@ -181,7 +181,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return;
         }
 
-        if ($data->programmingYN) { // the plugin is enabled for this assignment
+        if (!empty($data->programmingYN)) { // the plugin is enabled for this assignment
             $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
             $new = false;
             if (!$setting) {
