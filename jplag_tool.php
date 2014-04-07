@@ -232,9 +232,9 @@ class jplag_tool implements plagiarism_tool {
     public static function get_report_path($report=null) {
         global $CFG;
         if (!$report) {
-            return "$CFG->dataroot/plagiarism_report/";
+            return "{$CFG->tempdir}/plagiarism_report/";
         } else {
-            return "$CFG->dataroot/plagiarism_report/report$report->cmid"."_v$report->version";
+            return "{$CFG->tempdir}/plagiarism_report/report{$report->cmid}"."_v{$report->version}";
         }
     }
 
