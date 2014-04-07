@@ -44,10 +44,10 @@ require_once(__DIR__.'/jplag_tool.php');
 require_once(__DIR__.'/moss_tool.php');
 require_once(__DIR__.'/utils.php');
 
-define('PLAGIARISM_TEMP_DIR', $CFG->dataroot.'/temp/plagiarism_programming/');
+define('PLAGIARISM_TEMP_DIR', $CFG->tempdir.'/plagiarism_programming/');
 
 /**
- * Create a temporary directory for this plugin in $CFG->dataroot/temp/ directory
+ * Create a temporary directory for this plugin in $CFG->tempdir directory
  */
 function plagiarism_programming_create_temp_dir() {
     if (!is_dir(PLAGIARISM_TEMP_DIR)) {
@@ -214,7 +214,7 @@ function process_code_file_directory_format($decompressed_dir, array $extensions
 
 /**
  * Extract students' assignments. This function will extract the students' compressed files and save them temporarily.
- * The directory is $CFG->dataroot/plagiarism_programming/student_id/files
+ * The directory is $CFG->tempdir/plagiarism_programming/student_id/files
  * @param $assignment: the record object of setting for the assignment
  * @return boolean true if extraction is successful and there are at least 2 students submitted their assignments
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
@@ -582,7 +582,7 @@ function plagiarism_programming_handle_shutdown() {
             $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
         }
     }
-    $file = "$CFG->dataroot/plagiarism_report/".$PROCESSING_INFO['stage'].'.txt';
+    $file = "{$CFG->tempdir}/plagiarism_report/".$PROCESSING_INFO['stage'].'.txt';
     $content = ob_get_contents();
     file_put_contents($file, $content);
 }
