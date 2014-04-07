@@ -70,7 +70,7 @@ M.plagiarism_programming = {
         M.plagiarism_programming.display_progress(0,'jplag');
         M.plagiarism_programming.display_progress(0,'moss');
         // make the request for scanning
-        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php',
+        YAHOO.util.Connect.asyncRequest('POST', M.cfg.wwwroot+'/plagiarism/programming/start_scanning.php',
             callback, 'cmid='+cmid+'&task=scan&time='+time);
     },
 
@@ -88,7 +88,7 @@ M.plagiarism_programming = {
         var timestamp = new Date().getTime();
         // M.plagiarism_programming.scan_finished = false;
         // the timestamp is just a dummy variable to prevent browser catching!
-        YAHOO.util.Connect.asyncRequest('GET', '../../plagiarism/programming/start_scanning.php?'+
+        YAHOO.util.Connect.asyncRequest('GET', M.cfg.wwwroot+'/plagiarism/programming/start_scanning.php?'+
             'cmid='+cmid+'&task=check&time='+time+'&timestamp='+timestamp, callback);
     },
 

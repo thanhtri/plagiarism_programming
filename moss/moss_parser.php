@@ -78,7 +78,7 @@ class moss_parser {
      * Extract the similarities of each student with all the others. This function will read through all comparison files
      * in the report, extract the marked similar blocks and produce the marked file.
      * 
-     * Input: the similarity report in the report directory (dataroot/plagiarism_report/moss<cmid>/* and the record in
+     * Input: the similarity report in the report directory (dataroot/temp/plagiarism_report/moss<cmid>/* and the record in
      * plagiarism_programming_reslt table
      * Output: output one file for each student, with the file name is the student id, which include all the codes
      * concatenated into one file, and mark the similarity blocks with <span> tags. The begining of the similarity blocks

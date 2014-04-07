@@ -398,10 +398,15 @@ function plagiarism_programming_transform_similarity_pair($similar_pairs) {
 
 function get_student_similarity_history($student1_id, $student2_id, $cmid, $detector, $time_sort='desc') {
     global $DB;
-    $sql = "Select result.*, time_created From {plagiarism_programming_rpt} report, {plagiarism_programming_reslt} result ".
-        " Where report.cmid=$cmid And report.detector='$detector' And report.id = result.reportid And ".
-        " ((student1_id='$student1_id' And student2_id='$student2_id') Or".
-        " (student1_id='$student2_id' And student2_id='$student1_id')) Order By time_created ".$time_sort;
+    $sql = "SELECT result.*, time_created
+              FROM {plagiarism_programming_rpt} report,
+                    {plagiarism_programming_reslt} result
+             WHERE report.cmid=$cmid
+               AND report.detector='$detector'
+               AND report.id=result.reportid
+               AND ((student1_id='$student1_id' And student2_id='$student2_id')
+                OR  (student1_id='$student2_id' And student2_id='$student1_id'))
+             ORDER BY time_created ".$time_sort;
     $pairs = $DB->get_records_sql($sql);
     return $pairs;
 }

@@ -94,7 +94,7 @@ if ($rate_type=='max') {
     $similarity = '(similarity1+similarity2)/2';
 }
 
-$select = "Select *, $similarity similarity From {plagiarism_programming_reslt}".
+$select = "Select *, $similarity as similarity From {plagiarism_programming_reslt}".
     " Where reportid=$report->id AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
 
 if ($student_id != null) { // filter by student_id
