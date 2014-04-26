@@ -12,6 +12,7 @@ M.plagiarism_programming = {
      *               they will see the bar displayed if the scanning still proceed.
      */
     initialise : function(Y, cmid, checkprogress) {
+        this.Y = Y;
         Y.one('#plagiarism_programming_scan').on('click', function(e) {
             e.preventDefault();
             var time = new Date().getTime() % 100000000;
@@ -31,17 +32,22 @@ M.plagiarism_programming = {
      * @param tool either 'jplag' or 'moss' 
      **/
     display_progress : function(progress, tool) {
+        var Y = M.plagiarism_programming.Y;
         if (!M.plagiarism_programming['progressbar_'+tool]) {
             // if not yet created, create the progress bar
-            M.plagiarism_programming['progressbar_'+tool] = new YAHOO.widget.ProgressBar({
+            M.plagiarism_programming['progressbar_'+tool] = new Y.ProgressBar({
+                    contentBox: '#'+tool+'_tool',
                     width:'200px',
                     height:'10px',
                     minValue:0,
                     maxValue:100,
-                    value:progress
-            }).render(tool+'_tool');
+                    value:progress,
+                    barColor: 'blue',
+                    border: '1px solid black'
+            });
+            M.plagiarism_programming['progressbar_'+tool].render();
         } else {
-            M.plagiarism_programming['progressbar_'+tool].set('value',progress);
+            M.plagiarism_programming['progressbar_'+tool].set('value', progress);
         }
     },
 
@@ -61,17 +67,21 @@ M.plagiarism_programming = {
      * to monitor upload, scanning, download, finish
      */
     initiate_scanning : function(cmid, time) {
-        var callback = {
-            success : function(o) {},
-            failure : function(o) {}
-        };
+        var Y = this.Y;
+
         M.plagiarism_programming.enable_scanning(false);
         // show the progress bar
         M.plagiarism_programming.display_progress(0,'jplag');
         M.plagiarism_programming.display_progress(0,'moss');
         // make the request for scanning
-        YAHOO.util.Connect.asyncRequest('POST', '../../plagiarism/programming/start_scanning.php',
-            callback, 'cmid='+cmid+'&task=scan&time='+time);
+        Y.io('../../plagiarism/programming/start_scanning.php', {
+            method: 'POST',
+            data: {
+                cmid: cmid,
+                task: 'scan',
+                time: time
+            }
+        });
     },
 
     /**
@@ -80,43 +90,51 @@ M.plagiarism_programming = {
      * @param time: the time initiating the scanning (optional) - this parameter is just to synchronise the time
      **/
     monitor_scanning : function(cmid, time) {
-        var callback = {
-            success: M.plagiarism_programming.display_monitor_info,
-            argument:[cmid,time]
-        };
-        time = (time)?time:0;
-        var timestamp = new Date().getTime();
-        // M.plagiarism_programming.scan_finished = false;
-        // the timestamp is just a dummy variable to prevent browser catching!
-        YAHOO.util.Connect.asyncRequest('GET', '../../plagiarism/programming/start_scanning.php?'+
-            'cmid='+cmid+'&task=check&time='+time+'&timestamp='+timestamp, callback);
+        var Y = M.plagiarism_programming.Y;
+
+        time = (time) ? time: 0;
+
+        Y.io('../../plagiarism/programming/start_scanning.php', {
+            method: 'GET',
+            data: {
+                cmid: cmid,
+                task: 'check',
+                time: time
+            },
+            arguments: [cmid, time],
+            on: {
+                success: M.plagiarism_programming.display_monitor_info
+            }
+        });
     },
 
     /**
      * Display the progress information. This is the callback function of monitor_progress
+     * @param id: ajax request id (not used)
      * @param o: the response
      **/
-    display_monitor_info : function(o) {
-        var status = YAHOO.lang.JSON.parse(o.responseText);
+    display_monitor_info : function(id, o, arguments) {
+        var Y = M.plagiarism_programming.Y;
+        var status = Y.JSON.parse(o.responseText);
         var finished = true;
         for (var tool in status) {
-            var stage = YAHOO.util.Dom.get(tool+'_status');
-            stage.innerHTML = M.plagiarism_programming.convert_status_message(status[tool].stage);
-            M.plagiarism_programming.display_progress(1*status[tool].progress,tool);
+            var stage = Y.one('#'+tool+'_status');
+            stage.setContent(M.plagiarism_programming.convert_status_message(status[tool].stage));
+            M.plagiarism_programming.display_progress(1*status[tool].progress, tool);
 
             if (status[tool].stage!='finished' && status[tool].stage!='error') {
                 finished = false;
             } else if (status[tool].link) {
-                stage.innerHTML = status[tool].link;
+                stage.setContent(status[tool].link);
             } else if (status[tool].stage=='error') {
-                stage.innerHTML = 'Error: '+status[tool].message;
+                stage.setContent('Error: '+status[tool].message);
             }
             if (status[tool].stage=='finished' || status[tool].stage=='error') {
                 M.plagiarism_programming.remove_progress(tool);
             }
         }
         if (!finished) {
-            setTimeout('M.plagiarism_programming.monitor_scanning('+o.argument[0]+','+o.argument[1]+')',2000);
+            setTimeout('M.plagiarism_programming.monitor_scanning('+arguments[0]+','+arguments[1]+')',2000);
         } else {
             M.plagiarism_programming.enable_scanning(true);
         }
@@ -126,14 +144,8 @@ M.plagiarism_programming = {
      * Convert status to an informative message. The message are passed from the code
      **/
     convert_status_message : function(status) {
-        if (status=='pending') {
-            return M.str.plagiarism_programming.pending_start;
-        } else if (status=='uploading') {
-            return M.str.plagiarism_programming.uploading;
-        } else if (status=='scanning') {
-            return M.str.plagiarism_programming.scanning;
-        } else if (status=='downloading') {
-            return M.str.plagiarism_programming.downloading;
+        if (status=='pending' || status=='uploading' || status=='scanning' || status=='downloading') {
+            return M.str.plagiarism_programming[status];
         } else {
             return status;
         }
@@ -144,16 +156,17 @@ M.plagiarism_programming = {
      * or cannot be performed
      **/
     enable_scanning : function(is_on) {
-        var button = document.getElementById('plagiarism_programming_scan');
-        var message = document.getElementById('scan_message');
+        var Y = M.plagiarism_programming.Y;
+        var button = Y.one('#plagiarism_programming_scan');
+        var message = Y.one('#scan_message');
         if (is_on) {   // turn scanning on
-            button.disabled = false;
-            button.value = 'Rescan';
-            message.style.display = 'none';
+            button.set('disabled', false);
+            button.set('value', 'Rescan');
+            message.hide();
             
         } else {
-            button.disabled = true;
-            message.style.display = 'inline';
+            button.set('disabled', true);
+            message.show();
         }
     }
 }

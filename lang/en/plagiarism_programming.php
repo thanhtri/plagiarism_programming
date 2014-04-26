@@ -217,3 +217,7 @@ You could access the similarity report by using this link: {$a->report_link}';
 
 $string['similarity_report'] = 'Similarity result report';
 $string['include_repository'] = 'Include repository';
+$string['course_select'] = 'Select courses using code plagiarism scanning';
+$string['by_name'] = 'By name ';
+$string['search'] = 'Search';
+$string['search_by_category'] = 'Course search by category';

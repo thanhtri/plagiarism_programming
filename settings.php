@@ -23,12 +23,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+global $CFG, $PAGE, $OUTPUT;
 require_once(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
-
-global $PAGE;
 
 require_login();
 admin_externalpage_setup('plagiarismprogramming');
@@ -73,15 +72,16 @@ $mform->set_data($plagiarism_programming_setting);
 echo $OUTPUT->header();
 
 // include the javascript
-$PAGE->requires->yui2_lib('yahoo-dom-event');
-$PAGE->requires->yui2_lib('dragdrop');
-$PAGE->requires->yui2_lib('container');
-$PAGE->requires->yui2_lib('element');
-$PAGE->requires->yui2_lib('json');
-
 $jsmodule = array(
     'name' => 'plagiarism_programming',
-    'fullpath' => '/plagiarism/programming/coursesetting/course_selection.js'
+    'fullpath' => '/plagiarism/programming/coursesetting/course_selection.js',
+    'requires' => array('panel', 'io'),
+    'strings' => array(
+        array('course_select', 'plagiarism_programming'),
+        array('by_name', 'plagiarism_programming'),
+        array('search', 'plagiarism_programming'),
+        array('search_by_category', 'plagiarism_programming'),
+    )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init', null, true, $jsmodule);
 

@@ -48,7 +48,6 @@ class course_selection_form extends moodleform {
         $courses = $this->course_search($total_num);
         $mform = $this->_form;
 
-        $checkboxes = array();
         foreach ($courses as $course) {
             $element_name = "course_$course->id";
             $mform->addElement('checkbox', $element_name, '', $course->fullname.' '.$course->idnumber);
@@ -64,14 +63,14 @@ class course_selection_form extends moodleform {
         $is_first_page = $this->page > 1;
         $back_link = '';
         if ($is_first_page) {
-            $back_link = html_writer::link('', get_string('back'), array('id'=>'changepagelink', 'page'=>  $this->page-1));
+            $back_link = html_writer::link('', get_string('back'), array('class'=>'changepagelink', 'page'=>  $this->page-1));
         }
 
         $next_link = '';
         $is_last_page = ($this->page*PAGE_SIZE)>=$total_num;
         $page = $this->page;
         if (!$is_last_page) {
-            $next_link = html_writer::link('', get_string('next'), array('id'=>'changepagelink', 'page'=>  $this->page+1));
+            $next_link = html_writer::link('', get_string('next'), array('class'=>'changepagelink', 'page'=>  $this->page+1));
         }
         $mform->addElement('html', html_writer::tag('div', $back_link.' '.$next_link, array('style'=>'text-align:center')));
     }
@@ -79,9 +78,11 @@ class course_selection_form extends moodleform {
     private function course_search(&$total_record) {
         global $DB;
 
-        $sql = 'Select course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled '.
-            'From {course} course LEFT JOIN {plagiarism_programming_cours} enabled_course On course.id=enabled_course.course';
-        $where = 'category>0';
+        $sql = 'SELECT course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled
+                  FROM {course} course
+             LEFT JOIN {plagiarism_programming_cours} enabled_course
+                    ON (course.id=enabled_course.course) ';
+        $where = ' category>0 ';
 
         if ($this->category > 0) {
             $category_list = get_categories($this->category, null, false);
@@ -90,13 +91,13 @@ class course_selection_form extends moodleform {
                 $category_ids[]=$category->id;
             }
             $id_list = implode(',', $category_ids);
-            $where .= " And category IN ($id_list)";
+            $where .= " AND category IN ($id_list)";
         }
 
         if (!empty($this->name)) {
-            $where .= " And (fullname Like '%$this->name%' Or idnumber Like '%$this->name%')";
+            $where .= " AND (fullname Like '%$this->name%' Or idnumber Like '%$this->name%')";
         }
-        $sql .= " Where $where Order By fullname ASC";
+        $sql .= " WHERE $where ORDER BY fullname ASC ";
         if ($this->category == 0 && empty($this->name)) { // only limit with ordinary browsing, not in search mode
             $limit_from = ($this->page-1)*PAGE_SIZE;
             $courses = $DB->get_records_sql($sql, null, $limit_from, PAGE_SIZE);

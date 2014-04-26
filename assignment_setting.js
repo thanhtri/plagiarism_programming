@@ -7,15 +7,17 @@ M.plagiarism_programming.assignment_setting = {
 
     init : function(Y, jplag_support, moss_support) {
         this.Y = Y;
-        this.init_mandatory_field(Y);
+        this.init_mandatory_field();
         this.init_disable_unsupported_tool(Y, jplag_support, moss_support);
         this.enable_disable_elements(Y, jplag_support, moss_support);
     },
 
-    init_mandatory_field: function(Y) {
+    init_mandatory_field: function() {
+        var Y = this.Y;
         var required_img = Y.one('.req');
 
         // put the required class for the select and checkboxes
+        // the problem with the mform require rule is that they fails validation even when not enabled
         var config_block = Y.one('#programming_header');
         var items = config_block.all('.fitem');
         var div = items.item(1);
@@ -28,7 +30,8 @@ M.plagiarism_programming.assignment_setting = {
         label = div.one('span.helplink');
         label.insert(required_img.cloneNode(true), 'before');
 
-        Y.one(document.forms[0]).on('submit', function(e) {
+        var skipClientValidation = false;
+        Y.one('#mform1').on('submit', function(e) {
             if (skipClientValidation) {
                 return;
             }
@@ -37,8 +40,9 @@ M.plagiarism_programming.assignment_setting = {
             if (!is_tool_selected || !is_date_valid) {
                 e.preventDefault();
             }
-        }, this);var config_block = this.Y.one('#programming_header');
+        }, this);
 
+        // do not need to validate when clicking no submit button
         var new_date_button = config_block.one('input[name=add_new_date]');
         new_date_button.on('click', function(e) {
             skipClientValidation = true;
@@ -139,6 +143,10 @@ M.plagiarism_programming.assignment_setting = {
         }
     },
 
+    /**
+     * Is at least one tool is enabled
+     * @return true if at least one among jplag and moss is checked
+     **/
     is_plugin_enabled: function() {
         var config_block = this.Y.one('#programming_header');
         return config_block.one('input[name=programmingYN]:checked').get('value')=='1';

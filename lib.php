@@ -50,6 +50,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function get_form_elements_module($mform, $context) {
         global $DB, $PAGE;
+
         // when updating an assignment, cmid of the assignment is passed by "update" param
         // when creating an assignment, cmid does not exist, but course id is provided via "course" param
         $cmid = optional_param('update', 0, PARAM_INT);
@@ -153,8 +154,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // disable tool if it doesn't support the selected language
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
-        $jplag_support = $jplag_disabled?false:jplag_tool::get_supported_language();
-        $moss_support = $moss_disabled?false:moss_tool::get_supported_laguage();
+        $jplag_support = $jplag_disabled ? false : jplag_tool::get_supported_language();
+        $moss_support = $moss_disabled ? false : moss_tool::get_supported_laguage();
         // include the javascript for doing some minor interface adjustment to improve user experience
         $js_module = array(
             'name' => 'plagiarism_programming',
@@ -175,6 +176,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function save_form_elements($data) {
         global $DB, $detection_tools;
+
         $cmid = $data->coursemodule;
         $context = get_context_instance(CONTEXT_MODULE, $cmid);
         if (!$this->is_plugin_enabled($cmid)) {
@@ -459,13 +461,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
             array('style'=>'display:none', 'id'=>'scan_message'));
 
-        $PAGE->requires->yui2_lib('progressbar');
-        $PAGE->requires->yui2_lib('json');
-        $PAGE->requires->yui2_lib('connection');
         // include the javascript
+        $PAGE->requires->js('/plagiarism/programming/progressbar.js');
         $jsmodule = array(
             'name' => 'plagiarism_programming',
             'fullpath' => '/plagiarism/programming/scanning.js',
+            'requires' => array('progressbar', 'json', 'io'),
             'strings' => array(
                 array('pending_start', 'plagiarism_programming'),
                 array('uploading', 'plagiarism_programming'),
