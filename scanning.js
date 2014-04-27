@@ -33,6 +33,9 @@ M.plagiarism_programming = {
      **/
     display_progress : function(progress, tool) {
         var Y = M.plagiarism_programming.Y;
+        if (!Y.one('#'+tool+'_tool')) {
+            return;
+        }
         if (!M.plagiarism_programming['progressbar_'+tool]) {
             // if not yet created, create the progress bar
             M.plagiarism_programming['progressbar_'+tool] = new Y.ProgressBar({
@@ -55,9 +58,14 @@ M.plagiarism_programming = {
      * Removing the progress bar
      **/
     remove_progress : function(tool) {
+        var Y = M.plagiarism_programming.Y;
         if (M.plagiarism_programming['progressbar_'+tool]) {
-            M.plagiarism_programming['progressbar_'+tool].destroy()
+            M.plagiarism_programming['progressbar_'+tool].destroy();
             M.plagiarism_programming['progressbar_'+tool] = null;
+        }
+        if (!Y.one('#'+tool+'_tool')) {
+            var node = Y.Node.create('<div id="'+tool+'_tool"></div>')
+            Y.one('#'+tool+'_tool').get('parentNode').insert(node, 'after');
         }
     },
 
@@ -74,7 +82,7 @@ M.plagiarism_programming = {
         M.plagiarism_programming.display_progress(0,'jplag');
         M.plagiarism_programming.display_progress(0,'moss');
         // make the request for scanning
-        Y.io('../../plagiarism/programming/start_scanning.php', {
+        Y.io(M.cfg.wwwroot+'/plagiarism/programming/start_scanning.php', {
             method: 'POST',
             data: {
                 cmid: cmid,

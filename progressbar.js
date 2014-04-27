@@ -48,7 +48,7 @@ YUI.add('progressbar', function(Y) {
 		isNull	  = L.isNull;
 	
 	var ProgressBar = function() {
-		Y.log('creating new instance');
+//		Y.log('creating new instance');
 
 		ProgressBar.superclass.constructor.apply(this, arguments);
 	};
@@ -143,7 +143,7 @@ YUI.add('progressbar', function(Y) {
 
 		initializer: function  (config) {
 		
-			Y.log('initializer');
+//			Y.log('initializer');
 
 			this.publish('startEvent', { emitFacade: false });
 			// If animation is loaded, this one will trigger for each frame of the animation providing partial values
@@ -166,12 +166,12 @@ YUI.add('progressbar', function(Y) {
 		},
 		
 		renderer : function() {
-			Y.log('renderer');
+//			Y.log('renderer');
 			ProgressBar.superclass.renderer.apply(this, arguments);
 		},
 
 		renderUI: function () {
-			Y.log('renderUI');
+//			Y.log('renderUI');
 			var cb   = this.get(CONTENT_BOX);
 			this.set(BAR_EL, cb.appendChild(Y.Node.create(BAR_MARKUP)));
 			this.set(MASK_EL, cb.appendChild(Y.Node.create(MASK_MARKUP)));
@@ -213,7 +213,7 @@ YUI.add('progressbar', function(Y) {
 		},
 		*/
 		syncUI: function() {
-			Y.log('syncUI');
+//			Y.log('syncUI');
 			this.get(CONTENT_BOX).setAttribute('tabIndex',1).setAttribute('role','progressbar').setAttribute('aria-valuemin',this.get('minValue')).setAttribute('aria-valuemax',this.get('maxValue')).setAttribute('aria-valuenow',this.get('value')).setAttribute('aria-valuetext',this.get('ariaText').replace('|',this.get('value')));
 			this.redraw();
 			
@@ -225,7 +225,7 @@ YUI.add('progressbar', function(Y) {
 		
 		_redraw: function () {
 			var value = this.get('value');
-			Y.log('set value: ' + value);
+//			Y.log('set value: ' + value);
 			var pixelValue = (value - this._mn) * this._barFactor;
 			this.get(CONTENT_BOX).setAttribute('aria-valuenow',value).setAttribute('aria-valuetext',this.get('ariaText').replace('|',value));
 			this.fire('startEvent',this._previousValue);
@@ -345,14 +345,14 @@ YUI.add('progressbar', function(Y) {
 			if (isNumber(value)) {
 				value += 'px';
 			}
-			Y.log('Setting width: ' + value);
+//			Y.log('Setting width: ' + value);
 			return value;
 		},
 		_setHeightAtt:function(value) {
 			if (isNumber(value)) {
 				value += 'px';
 			}
-			Y.log('Setting height: ' + value);
+//			Y.log('Setting height: ' + value);
 			return value;
 
 		},

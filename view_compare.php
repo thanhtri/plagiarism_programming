@@ -109,9 +109,10 @@ $content = html_writer::tag('div',
 
 $result1 = plagiarism_programming_reconstruct_file($result_record->student1_id, $result_record->student2_id, $directory);
 $result2 = plagiarism_programming_reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
-$table = plagiarism_programming_construct_similarity_summary_table($result1['list'], $student1, $result_record->similarity1,
+$sumary_data = plagiarism_programming_get_summary_data($result1['list'], $student1, $result_record->similarity1,
                                             $result2['list'], $student2, $result_record->similarity2);
-echo html_writer::tag('div', $content."<div class='simiarity_table_holder'>$table</div>",
+// place holder for summary table, content will be rendered via javascript
+echo html_writer::tag('div', $content."<div class='simiarity_table_holder'></div>",
         array('name'=>'link', 'frameborder'=>'0', 'width'=>'40%',
         'class'=>'programming_result_comparison_top_left'));
 
@@ -174,7 +175,7 @@ $result_info = array('id'=>$result_id, 'mark'=>$result_record->mark, 'student1'=
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',
-    'requires' => array('base', 'overlay', 'node', 'json', 'io-base'),
+    'requires' => array('base', 'overlay', 'node', 'json', 'io', 'datatable', 'datatable-scroll'),
     'strings' => array(
         array('show_similarity_to_others', 'plagiarism_programming'),
         array('history_char', 'plagiarism_programming'),
@@ -182,14 +183,12 @@ $jsmodule = array(
      )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',
-    array($result_info, $all_names, $result_id_table, $anchor), true, $jsmodule);
+    array($result_info, $all_names, $sumary_data, $result_id_table, $anchor), true, $jsmodule);
 echo $OUTPUT->footer();
 
-function plagiarism_programming_construct_similarity_summary_table($list1, $student1, $rate1, $list2, $student2, $rate2) {
+function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $list2, $student2, $rate2) {
     // header
-    $rows = '<table>';
-    $rows .="<thead><tr><th></th><th>$student1 ($rate1%)</th><th>$student2 ($rate2%)</th></tr></thead>";
-    $rows .= '<tbody>';
+    $data = array();
     foreach ($list1 as $anchor => $portion) {
         $line1 = $portion['line'];
         $file1 = $portion['file'];
@@ -197,12 +196,22 @@ function plagiarism_programming_construct_similarity_summary_table($list1, $stud
         $file2 = $list2[$anchor]['file'];
 
         $color = $portion['color'];
-        $rows .= "<tr><td bgcolor='#$color'></td><td><a style='color:#$color' class='similarity_link' href='sim_$anchor'>"
-            ."$file1 ($line1)</a></td><td><a style='color:#$color' class='similarity_link' "
-            ."href='sim_$anchor'>$file2 ($line2)</a></td></tr>";
+
+        $data[]= array(
+            'color'    => "#$color",
+            'student1' => "<a style='color:#$color' class='similarity_link' href='sim_$anchor'>$file1 ($line1)</a>",
+            'student2' => "<a style='color:#$color' class='similarity_link' href='sim_$anchor'>$file2 ($line2)</a>",
+        );
     }
-    $rows .= '</tbody></table>';
-    return $rows;
+    $columns = array(
+        array('key' => 'color', 'label' => ''),
+        array('key' => 'student1', 'label' => "$student1 ($rate1%)"),
+        array('key' => 'student2', 'label' => "$student2 ($rate2%)"),
+    );
+    return array(
+        'columns' => $columns,
+        'data'    => $data,
+    );
 }
 
 function plagiarism_programming_reconstruct_file($student_id, $other_student_id, $dir) {

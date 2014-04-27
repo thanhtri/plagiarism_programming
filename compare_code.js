@@ -40,14 +40,16 @@ M.plagiarism_programming.compare_code = {
     chart_width: 325,
     chart_height: 150,
 
-    init : function(Y, info, name_table, result_table, anchor) {
+    init : function(Y, info, name_table, summary_table, result_table, anchor) {
         this.Y = Y;
         this.id = info.id;
         this.student1 = info.student1;
         this.student2 = info.student2;
         this.name_table = name_table;
         this.result_table = result_table;
+        this.summary_table = summary_table;
 
+        this.init_summary_table();
         this.init_links(Y);
         this.init_action(Y);
         this.init_select_version(Y);
@@ -367,5 +369,39 @@ M.plagiarism_programming.compare_code = {
         overlay.append(canvas);
         M.plagiarism_programming.compare_code.history_overlay.set('bodyContent', overlay);
         M.plagiarism_programming.compare_code.history_overlay.render(document.body)
+    },
+
+    init_summary_table: function() {
+        var Y = this.Y;
+
+        var table = null;
+        if (Y.version=='3.4.1') {
+            this.summary_table.columns[0].formatter = function(o) {
+                var color = o.value;
+                o.value = '';
+                var cell = this.createCell(o);
+                cell.setAttribute('style', 'background-color: '+color);
+            }
+            table = new Y.DataTable.Base({
+                columnset: this.summary_table.columns,
+                recordset: this.summary_table.data
+            });
+            table.plug(Y.Plugin.DataTableScroll, {
+                height: "93px"
+            });
+        } else {
+            this.summary_table.columns[0].nodeFormatter = function(o) {
+                o.cell.setAttribute('style', 'background-color: '+o.value);
+                o.value = '';
+            }
+            table = new Y.DataTable.Base({
+                columnset: this.summary_table.columns,
+                recordset: this.summary_table.data,
+                scrollable: 'y',
+                height: '93px'
+            });
+        }
+
+        table.render('.simiarity_table_holder');
     }
 }

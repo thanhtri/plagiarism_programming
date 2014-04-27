@@ -66,7 +66,7 @@ class jplag_parser {
                 $file = $link->getAttribute('href');
 
                 // the similarity percentage of each student is contained in the -top file
-                $pattern = '/<TR><TH><TH>([^)]*) \(([0-9]*\.[0-9]*)%\)<TH>([^)]*) \(([0-9]*\.[0-9]*)%\)<TH>/';
+                $pattern = '/<TR><TH><TH>(.*) \(([0-9]*\.[0-9]*)%\)<TH>(.*) \(([0-9]*\.[0-9]*)%\)<TH>/';
                 $top_filename = $directory.'/'.substr($file, 0, -5).'-top.html';
                 $top_content = file_get_contents($top_filename);
                 $matches = null;
