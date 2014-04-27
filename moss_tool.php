@@ -166,10 +166,10 @@ class moss_tool implements plagiarism_tool {
             return $moss_info;
         }
         // Create the directory
-        $report = create_next_report($assignment->cmid, 'moss');
+        $report = plagiarism_programming_create_new_report($assignment->cmid, 'moss');
         $report_path = self::get_report_path($report);
         if (is_dir($report_path)) {
-            rrmdir($report_path);
+            plagiarism_programming_rrmdir($report_path);
         }
         mkdir($report_path);
 

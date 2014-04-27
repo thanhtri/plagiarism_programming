@@ -73,15 +73,15 @@ $PAGE->set_url(new moodle_url('/plagiarism/programming/view.php', array('cmid'=>
 if (!empty($tool) && $report_version>0) {
     $report = $DB->get_record('plagiarism_programming_rpt', array('cmid'=>$cmid, 'detector'=>$tool, 'version'=>$report_version));
 } else if (empty($tool)) { //if tool empty, assume report version empty
-    $report = get_latest_report($cmid, 'jplag');
+    $report = plagiarism_programming_get_latest_report($cmid, 'jplag');
     if ($report) {
         $tool = 'jplag';
     } else {
-        $report = get_latest_report($cmid, 'moss');
+        $report = plagiarism_programming_get_latest_report($cmid, 'moss');
         $tool = 'moss';
     }
 } else if ($report_version<=0) {
-    $report = get_latest_report($cmid, $tool);
+    $report = plagiarism_programming_get_latest_report($cmid, $tool);
 }
 
 if (!$report) { // at this point, we don't have any report available
@@ -112,12 +112,12 @@ $result = $DB->get_records_sql($select);
 $result = plagiarism_programming_transform_similarity_pair($result);
 
 $student_names = null;
-create_student_name_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
+plagiarism_programming_create_student_lookup_table($result, $is_teacher, $student_names); // this will create the array id=>name in $student_names
 
 if ($display_mode=='group') {
-    $table = create_table_grouping_mode($result, $student_names);
+    $table = plagiarism_programming_create_table_grouping_mode($result, $student_names);
 } else {
-    $table = create_table_list_mode($result, $student_names, $student_id);
+    $table = plagiarism_programming_create_table_list_mode($result, $student_names, $student_id);
 }
 
 $header = get_string('result', 'plagiarism_programming');
@@ -137,7 +137,7 @@ $filter_forms->set_data(array('cmid'=>$cmid,
 $filter_forms->display();
 
 echo html_writer::tag('div', get_string('chart_legend', 'plagiarism_programming'));
-echo html_writer::tag('div', create_chart($report->id, $rate_type), array('class'=>'programming_result_chart'));
+echo html_writer::tag('div', plagiarism_programming_create_chart($report->id, $rate_type), array('class'=>'programming_result_chart'));
 echo html_writer::tag('div', html_writer::table($table), array('class'=>'programming_result_table'));
 
 $jsmodule = array(

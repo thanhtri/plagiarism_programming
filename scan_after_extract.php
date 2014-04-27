@@ -36,8 +36,8 @@ global $DB, $CFG;
 // to record status if an unexpected error occurs.
 // It is an array containing stage (which is extract,moss,jplag) and cmid
 global $PROCESSING_INFO;
-ignore_user_abort();
-set_time_limit(0);
+ignore_user_abort(true);
+set_time_limit(DAYSECS);
 ob_start();
 $tool = required_param('tool', PARAM_TEXT);
 $cmid = required_param('cmid', PARAM_INT);
@@ -52,19 +52,19 @@ if ($scan_info->token!=$token) {
     die ('Forbidden');
 }
 
-// unblock the session to allow parallel running (if use default PHP session)
+// unlock the session to allow parallel running
 session_write_close();
 
 // this is for error handling
 $PROCESSING_INFO = array('stage'=>$tool, 'cmid'=>$cmid);
-set_error_handler('tool_scanning_error_handler');
-register_shutdown_function('handle_shutdown');
+set_error_handler('plagiarism_programming_error_handler');
+register_shutdown_function('plagiarism_programming_handle_shutdown');
 scan_after_extract_assignment($assignment, $tool, $wait_to_finish, $notification_mail);
 
 
-function tool_scanning_error_handler($error_no, $error_message) {
+function plagiarism_programming_error_handler($error_no, $error_message) {
 
-    if ($error_no==E_USER_ERROR) {
+    if ($error_no==E_ERROR) {
         global $DB, $PROCESSING_INFO;
         $tool = $PROCESSING_INFO['stage'];
         $cmid = $PROCESSING_INFO['cmid'];

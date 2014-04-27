@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
  * @param $language: either java, c, csharp
  * @return array of extensions of the language
  */
-function get_file_extension_by_language($language) {
+function plagiarism_programming_get_file_extension($language) {
     $extensions = array();
     switch ($language) {
         case 'java':
@@ -76,7 +76,7 @@ function get_file_extension_by_language($language) {
  * @param $extension: an array of possible extensions
  * @return true if the file has the extension in the array
  */
-function check_extension($filename, $extensions) {
+function plagiarism_programming_check_extension($filename, $extensions) {
 
     if ($extensions==null) { // if extensions array is null, accept all extension
         return true;
@@ -95,7 +95,7 @@ function check_extension($filename, $extensions) {
  * @param $fullpath: the path of the file
  * @return the write file handle. fclose have to be called when finishing with it
  */
-function create_file($fullpath) {
+function plagiarism_programming_create_file($fullpath) {
     $dir_path = dirname($fullpath);
     if (is_dir($dir_path)) { // directory already exist
         return fopen($fullpath, 'w');
@@ -117,7 +117,7 @@ function create_file($fullpath) {
  * @param $filecontent: the content of a file
  * @param $student: the user record object of the students. Name and id occurrences will be cleared
  */
-function clear_student_identity(&$filecontent, $student) {
+function plagiarism_programming_annonymise_students(&$filecontent, $student) {
 
     if ($student==null) { // do not have information to clear
         return;
@@ -154,7 +154,7 @@ function clear_student_identity(&$filecontent, $student) {
     $filecontent = str_replace($finds, $replaces, $filecontent);
 }
 
-function send_scanning_notification_email($assignment, $toolname) {
+function plagiarism_programming_send_scanning_notification_email($assignment, $toolname) {
     global $CFG, $DB;
 
     $context_assignment = get_context_instance(CONTEXT_MODULE, $assignment->cmid);
@@ -188,13 +188,13 @@ function send_scanning_notification_email($assignment, $toolname) {
  * Delete a directory (taken from php.net) with all of its sub-dirs and files
  * @param string $dir: the directory to be deleted
  */
-function rrmdir($dir) {
+function plagiarism_programming_rrmdir($dir) {
     if (is_dir($dir)) {
         $objects = scandir($dir);
         foreach ($objects as $object) {
             if ($object != "." && $object != "..") {
                 if (filetype($dir.'/'.$object) == 'dir') {
-                    rrmdir($dir."/".$object);
+                    plagiarism_programming_rrmdir($dir."/".$object);
                 } else {
                     unlink($dir.'/'.$object);
                 }
@@ -214,7 +214,7 @@ function rrmdir($dir) {
  * (each directory entry should contain the full path, including the filename)
  * @param int $timeout the maximum time (in number of second) to wait
  */
-function curl_download($links, $directory=null, $timeout=0) {
+function plagiarism_programming_curl_download($links, $directory=null, $timeout=0) {
     $curl_handle_array = array();
     $multi_handler = curl_multi_init();
 
@@ -273,7 +273,7 @@ function curl_download($links, $directory=null, $timeout=0) {
  * @param stdClass $user: record object of the student who submitted the file
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
-function extract_rar($rar_file, $extensions, $location, $student=null, $textfile_only=false) {
+function plagiarism_programming_extract_rar($rar_file, $extensions, $location, $student=null, $textfile_only=false) {
     mtrace("Extracting rar file...\n");
     if (!class_exists('RarArchive')) {
         mtrace("Rar library doesn't exist");
@@ -298,15 +298,15 @@ function extract_rar($rar_file, $extensions, $location, $student=null, $textfile
         }
         // if it's a file (skip directory entry since directories along the path
         // will be created $handlewhen writing to the files
-        if (!$entry->isDirectory() && check_extension($entry_name, $extensions)) {
+        if (!$entry->isDirectory() && plagiarism_programming_check_extension($entry_name, $extensions)) {
             $stream = $entry->getStream();
             if ($stream) {
                 $buf = fread($stream, $entry->getUnpackedSize());
                 if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check if it is not a binary file
                     $file_path = $location.$entry_name;
-                    $fp = create_file($file_path);
+                    $fp = plagiarism_programming_create_file($file_path);
 
-                    clear_student_identity($buf, $student);
+                    plagiarism_programming_annonymise_students($buf, $student);
                     fwrite($fp, $buf);
                     fclose($fp);
                     $has_valid_file = true;
@@ -328,7 +328,7 @@ function extract_rar($rar_file, $extensions, $location, $student=null, $textfile
  * @param stdClass $user: record object of the student who submitted the file
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
-function extract_zip($zip_file, $extensions, $location, $user = null, $textfile_only = true) {
+function plagiarism_programming_extract_zip($zip_file, $extensions, $location, $user = null, $textfile_only = true) {
     $zip_handle = zip_open($zip_file);
     $has_valid_file = false;
     if (!$zip_handle) {
@@ -347,14 +347,14 @@ function extract_zip($zip_file, $extensions, $location, $user = null, $textfile_
         }
         // if it's a file (skip directory entry since directories along the path
         // will be created when writing to the files
-        if (substr($entry_name, -1)!='/' && check_extension($entry_name, $extensions)) {
+        if (substr($entry_name, -1)!='/' && plagiarism_programming_check_extension($entry_name, $extensions)) {
             if (zip_entry_open($zip_handle, $zip_entry, 'r')) {
                 $buf = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
                 if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check text file
                     $file_path = $location.$entry_name;
-                    $fp = create_file($file_path);
+                    $fp = plagiarism_programming_create_file($file_path);
                     if ($user) {
-                        clear_student_identity($buf, $user);
+                        plagiarism_programming_annonymise_students($buf, $user);
                     }
                     fwrite($fp, $buf);
                     fclose($fp);
@@ -373,7 +373,7 @@ function extract_zip($zip_file, $extensions, $location, $user = null, $textfile_
  * rar files, every other compression type will be considered not compressed.
  * Just a simple extension check is performed (zip or rar)
  */
-function is_compressed_file($filename) {
+function plagiarism_programming_is_compressed_file($filename) {
     $ext = substr($filename, -4, 4);
     return ($ext=='.zip') || ($ext=='.rar');
 }
@@ -382,7 +382,7 @@ function is_compressed_file($filename) {
  * Count the number of line and the number of characters at the final line in the provided string
  * @param: the string to countstring
  */
-function count_line(&$text) {
+function plagiarism_programming_count_line(&$text) {
     $line_count = substr_count($text, "\n");
     $char_num = strlen($text)-strrpos($text, "\n");
     return array($line_count, $char_num);

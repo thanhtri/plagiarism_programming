@@ -36,7 +36,7 @@ class moss_parser {
      */
     public function __construct($cmid) {
         $this->cmid = $cmid;
-        $this->report = get_latest_report($cmid, 'moss');
+        $this->report = plagiarism_programming_get_latest_report($cmid, 'moss');
         $this->filename = moss_tool::get_report_path($this->report).'/index.html';
         assert(is_file($this->filename));
     }

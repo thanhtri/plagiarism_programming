@@ -177,10 +177,10 @@ class jplag_tool implements plagiarism_tool {
         if (!is_dir($report_path)) {
             mkdir($report_path);
         }
-        $report = create_next_report($assignment_param->cmid, 'jplag');
+        $report = plagiarism_programming_create_new_report($assignment_param->cmid, 'jplag');
         $assignment_report_path = self::get_report_path($report);
         if (is_dir($assignment_report_path)) {
-            rrmdir($assignment_report_path);
+            plagiarism_programming_rrmdir($assignment_report_path);
         }
         mkdir($assignment_report_path);
         $result_file = $assignment_report_path.'/download.zip';
@@ -288,7 +288,7 @@ class jplag_tool implements plagiarism_tool {
             while ($zip_entry = zip_read($handle)) {
                 $entry_name = zip_entry_name($zip_entry);
                 if (substr($entry_name, -1)!='/') {  // a file
-                    $fp = create_file($base_dir.'/'.$entry_name);
+                    $fp = plagiarism_programming_create_file($base_dir.'/'.$entry_name);
                     if (zip_entry_open($handle, $zip_entry, 'r')) {
                         $buf = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
                         fwrite($fp, $buf);

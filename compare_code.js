@@ -57,6 +57,7 @@ M.plagiarism_programming.compare_code = {
             this.move_frame('programming_result_comparison_bottom_right','sim_'+anchor);
         }
         this.init_history_chart(Y);
+
         // hide menu and chart if click outside
         Y.one(document).on('click', function(e) {
             var node = e.target;
@@ -68,6 +69,8 @@ M.plagiarism_programming.compare_code = {
                 M.plagiarism_programming.compare_code.menu.hide();
             }
         });
+
+        this.change_image(Y.one('#action_menu').get('value'));
     },
 
     init_links: function(Y) {
@@ -86,21 +89,26 @@ M.plagiarism_programming.compare_code = {
 
     init_compare_code: function(Y) {
         var div = Y.one('.programming_result_comparison_top_right');
-        div.append('<br/>');
-        var checkbox1 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_left');
-        checkbox1.set('id', 'chk_student_1');
-        div.append(checkbox1);
-        div.append('<label for="chk_student_1">'+
-            M.str.plagiarism_programming.show_similarity_to_others.replace('{student}',this.name_table[this.student1])
-            +'</label>');
 
-        div.append('<br/>');
-        var checkbox2 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_right');
-        checkbox2.set('id', 'chk_student_2');
-        div.append(checkbox2);
-        div.append('<label for="chk_student_2">'+
-            M.str.plagiarism_programming.show_similarity_to_others.replace('{student}', this.name_table[this.student2])+
-            '</label>');
+        if (this.name_table[this.student1]) {
+            div.append('<br/>');
+            var checkbox1 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_left');
+            checkbox1.set('id', 'chk_student_1');
+            div.append(checkbox1);
+            div.append('<label for="chk_student_1">'+
+                M.str.plagiarism_programming.show_similarity_to_others.replace('{student}',this.name_table[this.student1])
+                +'</label>');
+        }
+
+        if (this.name_table[this.student2]) {
+            div.append('<br/>');
+            var checkbox2 = this.create_checkbox_for_turning_on_cross_similarity('programming_result_comparison_bottom_right');
+            checkbox2.set('id', 'chk_student_2');
+            div.append(checkbox2);
+            div.append('<label for="chk_student_2">'+
+                M.str.plagiarism_programming.show_similarity_to_others.replace('{student}', this.name_table[this.student2])+
+                '</label>');
+        }
 
         // the similarity menu
         M.plagiarism_programming.compare_code.menu = new Y.Overlay({});
@@ -153,8 +161,8 @@ M.plagiarism_programming.compare_code = {
     change_image: function(action) {
         var src = '';
         switch (action) {
-            case 'Y':src = 'pix/suspicious.png';break;
-            case 'N':src = 'pix/normal.png';break;
+            case 'Y':src = 'pix/suspicious.png'; break;
+            case 'N':src = 'pix/normal.png'; break;
             default :src = '';
         }
         var Y = M.plagiarism_programming.compare_code.Y;
@@ -281,8 +289,10 @@ M.plagiarism_programming.compare_code = {
             var name = this.name_table[sids[i]];
             var std1 = Math.max(this_student, sids[i]);
             var std2 = Math.min(this_student, sids[i]);
-            var href = 'view_compare.php?id='+this.result_table[std1][std2]+'&anchor='+anchors[i];
-            menu_list.append('<li><a href="'+href+'">'+name+'</a></li>');
+            if (std1 && std2) {
+                var href = 'view_compare.php?id='+this.result_table[std1][std2]+'&anchor='+anchors[i];
+                menu_list.append('<li><a href="'+href+'">'+name+'</a></li>');
+            }
         }
         menu.set('bodyContent', menu_list);
         menu.align(span.firstChild, [Y.WidgetPositionAlign.TL, Y.WidgetPositionAlign.TR]);

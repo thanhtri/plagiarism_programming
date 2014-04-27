@@ -33,7 +33,7 @@ require_once(__DIR__.'/detection_tools.php');
 // select the assignments needed to be scanned
 global $DB, $CFG, $detection_tools;
 
-create_temporary_dir();
+plagiarism_programming_create_temp_dir();
 
 $current_time = time();
 $settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<=$current_time");
@@ -46,7 +46,7 @@ foreach ($settngids as $setting_id) {
     // check whether the assignment is already deleted or not (for safety)
     $assignment_ctx = get_context_instance(CONTEXT_MODULE, $assignment_config->cmid, IGNORE_MISSING);
     if (!$assignment_ctx) {
-        delete_assignment_scanning_config($assignment_config->cmid);
+        plagiarism_programming_delete_config($assignment_config->cmid);
         continue;
     }
 
@@ -63,7 +63,7 @@ foreach ($settngids as $setting_id) {
     }
     // do not wait for result, the next cron script will check the status and download the result
     // send an email when scanning complete
-    scan_assignment($assignment_config, false, true);
+    plagiarism_programming_scan_assignment($assignment_config, false, true);
 
     $all_tools_finished = true;
 

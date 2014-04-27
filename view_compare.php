@@ -107,9 +107,9 @@ $content = html_writer::tag('div',
         get_string('and', '', array('one'=>$student1, 'two'=>$student2)). "($average_similarity%)",
         array('class'=>'compare_header'));
 
-$result1 = reconstruct_file($result_record->student1_id, $result_record->student2_id, $directory);
-$result2 = reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
-$table = construct_similarity_summary_table($result1['list'], $student1, $result_record->similarity1,
+$result1 = plagiarism_programming_reconstruct_file($result_record->student1_id, $result_record->student2_id, $directory);
+$result2 = plagiarism_programming_reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
+$table = plagiarism_programming_construct_similarity_summary_table($result1['list'], $student1, $result_record->similarity1,
                                             $result2['list'], $student2, $result_record->similarity2);
 echo html_writer::tag('div', $content."<div class='simiarity_table_holder'>$table</div>",
         array('name'=>'link', 'frameborder'=>'0', 'width'=>'40%',
@@ -133,7 +133,7 @@ if ($result_record->mark=='Y') {
 $content .= html_writer::empty_tag('img', array('src'=>$img_src, 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));
 
 // select the report history
-$similarity_history = get_student_similarity_history($result_record->student1_id, $result_record->student2_id, $cmid, $detector);
+$similarity_history = plagiarism_programming_get_student_similarity_history($result_record);
 $report_select = array();
 foreach ($similarity_history as $pair) {
     $report_select[$pair->id] = date('d M h.i A', $pair->time_created);
@@ -159,7 +159,7 @@ $result_select = "reportid=$report_rec->id ".
 $result = $DB->get_records_select('plagiarism_programming_reslt', $result_select);
 
 $all_names = null;
-create_student_name_lookup_table($result, $is_teacher, $all_names);
+plagiarism_programming_create_student_lookup_table($result, $is_teacher, $all_names);
 
 //----------id lookup table for javascript-----------------------
 $result_id_table = array();
@@ -185,7 +185,7 @@ $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',
     array($result_info, $all_names, $result_id_table, $anchor), true, $jsmodule);
 echo $OUTPUT->footer();
 
-function construct_similarity_summary_table($list1, $student1, $rate1, $list2, $student2, $rate2) {
+function plagiarism_programming_construct_similarity_summary_table($list1, $student1, $rate1, $list2, $student2, $rate2) {
     // header
     $rows = '<table>';
     $rows .="<thead><tr><th></th><th>$student1 ($rate1%)</th><th>$student2 ($rate2%)</th></tr></thead>";
@@ -205,7 +205,7 @@ function construct_similarity_summary_table($list1, $student1, $rate1, $list2, $
     return $rows;
 }
 
-function reconstruct_file($student_id, $other_student_id, $dir) {
+function plagiarism_programming_reconstruct_file($student_id, $other_student_id, $dir) {
     $code_file = $dir.'/'.$student_id;
 
     $dom = new DOMDocument();
@@ -240,7 +240,7 @@ function reconstruct_file($student_id, $other_student_id, $dir) {
                 $font = $node->parentNode->insertBefore($font, $node);
                 $sibling = $node->nextSibling;
                 $start_line = $line_no;
-                while (!end_span_node($sibling, $other_student_id)) {
+                while (!plagiarism_programming_end_span_node($sibling, $other_student_id)) {
                     if ($sibling->nodeType==XML_TEXT_NODE) {
                         $line_no += substr_count($sibling->nodeValue, "\n");
                     }
@@ -265,7 +265,7 @@ function reconstruct_file($student_id, $other_student_id, $dir) {
     return array('list'=>$portion_list, 'content'=>$dom->saveHTML());
 }
 
-function end_span_node($node, $student_id) {
+function plagiarism_programming_end_span_node($node, $student_id) {
     if ($node->nodeType==XML_ELEMENT_NODE &&
            $node->tagName=='span' &&
            $node->getAttribute('type')=='end') {

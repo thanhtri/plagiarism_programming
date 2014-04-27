@@ -235,7 +235,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
         } else { // plugin not enabled, delete the records if there are
-            delete_assignment_scanning_config($cmid);
+            plagiarism_programming_delete_config($cmid);
         }
     }
 
@@ -281,9 +281,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 $can_show = $is_teacher || ($setting->auto_publish && has_capability('mod/assignment:view', $context));
 
                 if ($is_teacher) {
-                    $students = get_students_similarity_info($cmid);
+                    $students = plagiarism_programming_get_students_similarity_info($cmid);
                 } else {
-                    $students = get_students_similarity_info($cmid, $student_id);
+                    $students = plagiarism_programming_get_students_similarity_info($cmid, $student_id);
                 }
             }
         }
@@ -291,7 +291,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $output = '';
         if ($can_show) {
             if (isset($students[$student_id])) {
-                $link = get_report_link($cmid, $student_id, $students[$student_id]['detector'], 0);
+                $link = plagiarism_programming_get_report_link($cmid, $student_id, $students[$student_id]['detector'], 0);
                 $max_rate = round($students[$student_id]['max'], 2);
                 $output = get_string('max_similarity', 'plagiarism_programming').': '.html_writer::link($link, "$max_rate%");
                 if ($students[$student_id]['mark']=='Y') {
@@ -340,7 +340,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     date('D j M', $scan_date->scan_date));
             }
         }
-        if ($setting->auto_publish && count(get_suspicious_works($USER->id, $cmid))>0) {
+        if ($setting->auto_publish && count(plagiarism_programming_get_suspicious_works($USER->id, $cmid))>0) {
             $warning = get_string('high_similarity_warning', 'plagiarism_programming');
             $content .= html_writer::tag('span', $warning, array('class'=>'programming_result_warning'));
         }
@@ -440,7 +440,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             array('style'=>'margin-top:5px'));
         // check at least two assignments submitted
 
-        $file_records = get_submitted_files($context);
+        $file_records = plagiarism_programming_get_submitted_files($context);
         if (count($file_records) < 2) {
             $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
             $button_disabled = true;

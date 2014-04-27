@@ -61,7 +61,7 @@ class jplag_option {
         $supported_languages = jplag_tool::get_supported_language();
         if (isset($supported_languages[$language])) {
             $this->language = $supported_languages[$language];
-            $this->suffixes = get_file_extension_by_language($language);
+            $this->suffixes = plagiarism_programming_get_file_extension($language);
         } else {
             throw new Exception('Invalid language', INVALID_LANGUAGE_EXCEPTION);
         }

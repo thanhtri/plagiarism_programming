@@ -52,20 +52,20 @@ if (!$assignment) {
 }
 // possible values are scan, check and download
 if ($task=='scan') {
-    ignore_user_abort();
-    set_time_limit(0); // uploading may last very long
-    register_shutdown_function('handle_shutdown');
+    ignore_user_abort(true);
+    set_time_limit(1*DAYSECS); // uploading may last very long, we cannot allow the script to wait for 1 day
+    register_shutdown_function('plagiarism_programming_handle_shutdown');
     $time = optional_param('time', 0, PARAM_INT);
     $PROCESSING_INFO = array('stage'=>'extract', 'cmid'=>$cmid);
     ob_implicit_flush(true);
     start_scan_assignment($assignment, $time);
 } else if ($task=='check') {
     $starttime = optional_param('time', 0, PARAM_INT);
-    check_status($assignment, $starttime);
+    plagiarism_programming_check_status($assignment, $starttime);
 } else if ($task=='download') {
-    ignore_user_abort();
+    ignore_user_abort(true);
     set_time_limit(0);
-    download_assignment($assignment);
+    plagiarism_programming_download_assignment($assignment);
 }
 
 /**
@@ -96,8 +96,8 @@ function start_scan_assignment($assignment, $time) {
     $assignment->starttime = $time;
     $DB->update_record('plagiarism_programming', $assignment);
 
-    create_temporary_dir();
-    scan_assignment($assignment);
+    plagiarism_programming_create_temp_dir();
+    plagiarism_programming_scan_assignment($assignment);
 }
 
 /**
@@ -106,7 +106,7 @@ function start_scan_assignment($assignment, $time) {
  * @param $assignment: the record object of settings for the assignment
  * @param $time: a timestamp to make sure the checked status is the status of the scanning triggered
  */
-function check_status($assignment, $time=0) {
+function plagiarism_programming_check_status($assignment, $time=0) {
     global $DB, $detection_tools;
 
     $status = array();
@@ -134,7 +134,7 @@ function check_status($assignment, $time=0) {
 
         $tool_class_name = $tool_info['class_name'];
         $tool_class = new $tool_class_name();
-        check_scanning_status($assignment, $tool_class, $scan_info);
+        plagiarism_programming_check_scanning_status($assignment, $tool_class, $scan_info);
 
         $status[$tool_name] = array('stage'=>$scan_info->status, 'progress'=>$scan_info->progress);
         if ($scan_info->status=='finished') { // send back the link
@@ -150,7 +150,7 @@ function check_status($assignment, $time=0) {
  * Download the similarity report of the selected tools. This function only delegates to download_result in scan_assignment.php
  * @param $assignment: the record object of setting for the assignment
  */
-function download_assignment($assignment) {
+function plagiarism_programming_download_assignment($assignment) {
     global $DB, $detection_tools;
     foreach ($detection_tools as $tool_name => $tool_info) {
         if (!$assignment->$tool_name) {
@@ -162,7 +162,7 @@ function download_assignment($assignment) {
         if ($scan_info->status=='done') {
             $tool_class_name = $tool_info['class_name'];
             $tool_class = new $tool_class_name();
-            download_result($assignment, $tool_class, $scan_info);
+            plagiarism_programming_download_result($assignment, $tool_class, $scan_info);
         }
     }
 }

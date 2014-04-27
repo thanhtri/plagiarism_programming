@@ -33,7 +33,7 @@ class jplag_parser {
 
     public function __construct($cmid) {
         $this->cmid = $cmid;
-        $this->report = get_latest_report($cmid, 'jplag');
+        $this->report = plagiarism_programming_get_latest_report($cmid, 'jplag');
         $this->filename = jplag_tool::get_report_path($this->report).'/index.html';
     }
 
@@ -150,7 +150,7 @@ class jplag_parser {
             $font_num = 0;
             foreach ($child_nodes as $node) {
                 if ($node->nodeType==XML_TEXT_NODE) {
-                    list($lines, $chars) = count_line($node->nodeValue);
+                    list($lines, $chars) = plagiarism_programming_count_line($node->nodeValue);
                     $line_number += $lines;
                     if ($lines==0) { // start of another block is on the same line
                         $char_number += $char_number_2 + $chars;
@@ -190,7 +190,7 @@ class jplag_parser {
     private function process_font_node($node) {
         assert($node->tagName=='font');
         $text = $node->childNodes->item(1)->nodeValue;
-        list($lines_num, $char_num) = count_line($text);
+        list($lines_num, $char_num) = plagiarism_programming_count_line($text);
         return array($lines_num, $char_num);
     }
 

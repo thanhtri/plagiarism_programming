@@ -39,7 +39,7 @@ define('BAR_WIDTH', 20);
  * @param $cmid: course module id of the assignment
  * @return the html_table object
  */
-function create_table_grouping_mode(&$list, &$student_names) {
+function plagiarism_programming_create_table_grouping_mode(&$list, &$student_names) {
 
     $similarity_table = array();
     foreach ($list as $pair) {
@@ -83,7 +83,7 @@ function create_table_grouping_mode(&$list, &$student_names) {
             $cell = new html_table_cell();
             $compare_link = html_writer::link('view_compare.php?id='.$similarity['id'], round($similarity['rate'], 2).'%',
                 array('class'=>'compare_link'));
-            $cell->text = create_student_link($student_names[$s2_id], $s2_id).'<br/>'.$compare_link;
+            $cell->text = plagiarism_programming_create_student_link($student_names[$s2_id], $s2_id).'<br/>'.$compare_link;
             $mark = $similarity['mark'];
             $cell->attributes['class'] = ($mark=='Y')?'suspicious':(($mark=='N')?'normal':'');
             $cell->attributes['class'] .= ' similar_pair';
@@ -105,7 +105,7 @@ function create_table_grouping_mode(&$list, &$student_names) {
  * @param $anchor: if anchor is specified, the anchored student will always appear on the left
  * @return the html_table object
  */
-function create_table_list_mode(&$list, &$student_names, $anchor=null) {
+function plagiarism_programming_create_table_list_mode(&$list, &$student_names, $anchor=null) {
 
     $table = new html_table();
     $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
@@ -127,11 +127,11 @@ function create_table_list_mode(&$list, &$student_names, $anchor=null) {
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = create_student_link($student1, $pair->student1_id);
+        $cell->text = plagiarism_programming_create_student_link($student1, $pair->student1_id);
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
-        $cell->text = create_student_link($student2, $pair->student2_id);
+        $cell->text = plagiarism_programming_create_student_link($student2, $pair->student2_id);
         $row->cells[] = $cell;
 
         $cell = new html_table_cell();
@@ -153,7 +153,7 @@ function create_table_list_mode(&$list, &$student_names, $anchor=null) {
  * @param $similarity_type: either average (avg) or maximum (max)
  * @return the html code for the graph
  */
-function create_chart($reportid, $similarity_type) {
+function plagiarism_programming_create_chart($reportid, $similarity_type) {
     global $DB;
 
     $select = "reportid=$reportid";
@@ -210,7 +210,10 @@ function create_chart($reportid, $similarity_type) {
     return "<div class='canvas'>$div</div>";
 }
 
-function create_student_name_lookup_table(&$result_table, $is_teacher, &$student_names) {
+/**
+ * Create HTML output of the lookup table in the top left section
+ */
+function plagiarism_programming_create_student_lookup_table(&$result_table, $is_teacher, &$student_names) {
     global $USER, $DB;
 
     $student_names = array();
@@ -238,13 +241,13 @@ function create_student_name_lookup_table(&$result_table, $is_teacher, &$student
     }
 }
 
-function create_student_link($student_name, $student_id) {
+function plagiarism_programming_create_student_link($student_name, $student_id) {
     $report_url = me();
     return html_writer::link("$report_url&student=$student_id", $student_name,
         array('class'=>'plagiarism_programming_student_link'));
 }
 
-function get_suspicious_works($student_id, $cmid) {
+function plagiarism_programming_get_suspicious_works($student_id, $cmid) {
     global $DB;
     // get the latest report version
     $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid));
@@ -262,7 +265,7 @@ function get_suspicious_works($student_id, $cmid) {
     }
 }
 
-function get_students_similarity_info($cmid, $student_id=null) {
+function plagiarism_programming_get_students_similarity_info($cmid, $student_id=null) {
     global $DB, $detection_tools;
 
     // get the enabled plugins
@@ -271,7 +274,7 @@ function get_students_similarity_info($cmid, $student_id=null) {
     $reports = array();
     foreach ($detection_tools as $toolname => $toolinfo) {
         if ($setting->$toolname) {
-            $report = get_latest_report($cmid, $toolname);
+            $report = plagiarism_programming_get_latest_report($cmid, $toolname);
             if ($report) {
                 $reports[$report->id] = new stdClass();
                 $reports[$report->id]->detector = $toolname;
@@ -307,7 +310,7 @@ function get_students_similarity_info($cmid, $student_id=null) {
     return $students;
 }
 
-function get_report_link($cmid, $student_id=null, $detector=null, $threshold=null) {
+function plagiarism_programming_get_report_link($cmid, $student_id=null, $detector=null, $threshold=null) {
     global $CFG;
     $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$cmid";
     if ($student_id) {
@@ -328,7 +331,7 @@ function get_report_link($cmid, $student_id=null, $detector=null, $threshold=nul
  * @param number $detector the version of report. If null, it will return the directory of the latest report of this assignment
  * @return the report record having the latest version
  */
-function get_latest_report($cmid, $detector) {
+function plagiarism_programming_get_latest_report($cmid, $detector) {
     global $DB;
     $version = $DB->get_field('plagiarism_programming_rpt', 'max(version)', array('cmid'=>$cmid, 'detector'=>$detector));
     if ($version!==false) {
@@ -340,15 +343,15 @@ function get_latest_report($cmid, $detector) {
 }
 
 /**
- * Create the next version of the report
+ * Create the new report version
  * @param number $cmid the course module id of the assignment. If null, it will return the root directory of all the report
  * @param number $detector the version of report. If null, it will return the directory of the latest report of this assignment
  * @return the report record created
  */
-function create_next_report($cmid, $detector) {
+function plagiarism_programming_create_new_report($cmid, $detector) {
     global $DB;
     // create a new version of the report
-    $latest_report = get_latest_report($cmid, $detector);
+    $latest_report = plagiarism_programming_get_latest_report($cmid, $detector);
     if ($latest_report) {
         $version = $latest_report->version+1;
     } else {
@@ -396,18 +399,31 @@ function plagiarism_programming_transform_similarity_pair($similar_pairs) {
     return $similar_pairs;
 }
 
-function get_student_similarity_history($student1_id, $student2_id, $cmid, $detector, $time_sort='desc') {
+function plagiarism_programming_get_student_similarity_history($result, $time_sort='desc') {
     global $DB;
-    $sql = "Select result.*, time_created From {plagiarism_programming_rpt} report, {plagiarism_programming_reslt} result ".
-        " Where report.cmid=$cmid And report.detector='$detector' And report.id = result.reportid And ".
-        " ((student1_id='$student1_id' And student2_id='$student2_id') Or".
-        " (student1_id='$student2_id' And student2_id='$student1_id')) Order By time_created ".$time_sort;
-    $pairs = $DB->get_records_sql($sql);
+    $report = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result->reportid));
+    $sql = "SELECT result.*, time_created
+              FROM {plagiarism_programming_rpt} report
+              JOIN {plagiarism_programming_reslt} result
+                ON (report.id = result.reportid)
+             WHERE report.cmid=:cmid And report.detector=:detector
+               AND result.additional_codefile_name = :addtional_name
+               AND ((result.student1_id=:student1_id1 AND result.student2_id=:student2_id1)
+                OR  (result.student1_id=:student2_id2 AND result.student2_id=:student1_id2))
+          ORDER BY time_created $time_sort";
+    $pairs = $DB->get_records_sql($sql,
+                array('cmid'     => $report->cmid,
+                      'detector' => $report->detector,
+                      'addtional_name' => $result->additional_codefile_name,
+                      'student1_id1'   => $result->student1_id,
+                      'student1_id2'   => $result->student1_id,
+                      'student2_id1'   => $result->student2_id,
+                      'student2_id2'   => $result->student2_id));
     return $pairs;
 }
 
 
-function delete_assignment_scanning_config($cmid) {
+function plagiarism_programming_delete_config($cmid) {
     global $DB;
 
     $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));

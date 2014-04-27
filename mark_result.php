@@ -45,8 +45,7 @@ if ($task=='mark') {
     echo 'OK';
 } else if ($task=='get_history') {
     $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);
-    $similarity_history = get_student_similarity_history($result_record->student1_id, $result_record->student2_id,
-        $report_record->cmid, $report_record->detector, 'asc');
+    $similarity_history = plagiarism_programming_get_student_similarity_history($result_record, 'asc');
     $history = array();
     if ($rate_type=='avg') {
         $i = 0;
