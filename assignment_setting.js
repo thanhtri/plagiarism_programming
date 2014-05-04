@@ -19,15 +19,24 @@ M.plagiarism_programming.assignment_setting = {
         // put the required class for the select and checkboxes
         // the problem with the mform require rule is that they fails validation even when not enabled
         var config_block = Y.one('#programming_header');
+        if (!config_block) {
+            config_block = Y.one('#id_programming_header');
+        }
         var items = config_block.all('.fitem');
         var div = items.item(1);
         div.addClass('required');
         var label = div.one('span.helplink');
+        if (!label) {
+            label = div.one('span.helptooltip');
+        }
         label.insert(required_img.cloneNode(true), 'before');
 
         div = items.item(2);
         div.addClass('required');
         label = div.one('span.helplink');
+        if (!label) {
+            label = div.one('span.helptooltip');
+        }
         label.insert(required_img.cloneNode(true), 'before');
 
         var skipClientValidation = false;
@@ -61,6 +70,9 @@ M.plagiarism_programming.assignment_setting = {
     check_mandatory_form_field: function(Y) {
         if (this.is_plugin_enabled()) {
             var config_block = Y.one('#programming_header');
+            if (!config_block) {
+                config_block = Y.one('#id_programming_header');
+            }
             var selected_tool = config_block.one('input[name*=detection_tools]:checked');
             if (selected_tool==null) {
                 // whether exist an error message or not?
@@ -82,6 +94,9 @@ M.plagiarism_programming.assignment_setting = {
             return true;
         }
         var config_block = Y.one('#programming_header');
+        if (!config_block) {
+            config_block = Y.one('#id_programming_header');
+        }
         var all_valid = true;
         var enabled_chk = config_block.all('input[type=checkbox][name*=scan_date]');
         var size = enabled_chk.size();
@@ -125,6 +140,9 @@ M.plagiarism_programming.assignment_setting = {
 
     enable_disable_elements: function(Y, jplag_lang, moss_lang) {
         var config_block = this.Y.one('#programming_header');
+        if (!config_block) {
+            config_block = this.Y.one('#id_programming_header');
+        }
         if (!this.is_plugin_enabled()) {
             // disable both MOSS and JPlag
             config_block.all('input[name*=detection_tools]').set('disabled', true);
@@ -149,6 +167,9 @@ M.plagiarism_programming.assignment_setting = {
      **/
     is_plugin_enabled: function() {
         var config_block = this.Y.one('#programming_header');
+        if (!config_block) {
+            config_block = this.Y.one('#id_programming_header');
+        }
         return config_block.one('input[name=programmingYN]:checked').get('value')=='1';
     }
 }

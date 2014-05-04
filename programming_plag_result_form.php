@@ -46,6 +46,7 @@ class programming_plag_result_form extends moodleform {
         // similarity threshold
         $mform->addElement('header', 'option_header', get_string('option_header', 'plagiarism_programming'));
         $mform->addElement('text', 'lower_threshold', get_string('threshold', 'plagiarism_programming'));
+        $mform->setType('lower_threshold', PARAM_INT);
 
         // select the similarity type average or maximal
         $rate_type = array('max'=>'Maximum similarity', 'avg'=>'Average similarity');
@@ -84,7 +85,9 @@ class programming_plag_result_form extends moodleform {
 
         // other elements
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);
+        $mform->setType('cmid', PARAM_INT);
         $mform->addElement('hidden', 'student', $this->_customdata['student_id']);
+        $mform->setType('student', PARAM_INT);
 
         $mform->addElement('submit', 'submitbutton', get_string('submit', 'plagiarism_programming'));
 

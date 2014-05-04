@@ -158,16 +158,16 @@ function plagiarism_programming_send_scanning_notification_email($assignment, $t
     global $CFG, $DB;
 
     $context_assignment = get_context_instance(CONTEXT_MODULE, $assignment->cmid);
+    $cm = get_coursemodule_from_id('', $assignment->cmid);
 
-    $markers = get_enrolled_users($context_assignment, 'mod/assignment:grade');
+    $markers = get_enrolled_users($context_assignment, "mod/$cm->modname:grade");
     $moodle_support = generate_email_supportuser();
-    $cm = get_coursemodule_from_id('assignment', $assignment->cmid);
     $course = $DB->get_record('course', array('id' => $cm->course));
-    $assignment = $DB->get_record('assignment', array('id' => $cm->instance));
+    $assign = $DB->get_record($cm->modname, array('id' => $cm->instance));
 
     $email_params = array('course_short_name' => $course->shortname,
                           'course_name'       => $course->fullname,
-                          'assignment_name'   => $assignment->name,
+                          'assignment_name'   => $assign->name,
                           'time'              => userdate(time(), get_string('strftimerecent')),
                           'link'              => "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$assignment->cmid&detector=$toolname"
         );
@@ -180,7 +180,8 @@ function plagiarism_programming_send_scanning_notification_email($assignment, $t
         email_to_user($marker, $moodle_support,
                 get_string('scanning_complete_email_notification_subject', 'plagiarism_programming', $email_params),
                 get_string('scanning_complete_email_notification_body_txt', 'plagiarism_programming', $email_params),
-                get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming'), $email_params);
+                get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $email_params));
+        error_log(get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $email_params));
     }
 }
 

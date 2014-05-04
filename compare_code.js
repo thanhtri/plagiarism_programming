@@ -389,19 +389,22 @@ M.plagiarism_programming.compare_code = {
             table.plug(Y.Plugin.DataTableScroll, {
                 height: "93px"
             });
+            table.render('.simiarity_table_holder');
         } else {
             this.summary_table.columns[0].nodeFormatter = function(o) {
                 o.cell.setAttribute('style', 'background-color: '+o.value);
                 o.value = '';
             }
-            table = new Y.DataTable.Base({
+            this.summary_table.columns[1].allowHTML = this.summary_table.columns[2].allowHTML = true;
+            table = new Y.DataTable({
                 columnset: this.summary_table.columns,
                 recordset: this.summary_table.data,
                 scrollable: 'y',
-                height: '93px'
+                height: '120px'
             });
+            table.render('.simiarity_table_holder');
+            table.set('scrollable', (table.get('contentBox').get('clientHeight') >= table._tableNode.get('scrollHeight')) ? false : 'y');
         }
 
-        table.render('.simiarity_table_holder');
     }
 }

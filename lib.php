@@ -48,7 +48,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * @param MoodleQuickForm $mform the assignment form
      * @param stdClass $context the context record object
      */
-    public function get_form_elements_module($mform, $context) {
+    public function get_form_elements_module($mform, $context, $modulename='') {
         global $DB, $PAGE;
 
         // when updating an assignment, cmid of the assignment is passed by "update" param
@@ -503,7 +503,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         // specifically enabled for some courses
         if (!$course_id) {
-            $course_module = get_coursemodule_from_id('assignment', $cmid);
+            $course_module = get_coursemodule_from_id('', $cmid);
             $course_id = ($course_module)?$course_module->course:0;
         }
         return $DB->get_record('plagiarism_programming_cours', array('course' => $course_id))!=false;
@@ -535,6 +535,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->addElement('hidden', 'is_add_date', 0);
             $constant_vars['is_add_date'] = 0;
         }
+        $mform->setType('is_add_date', PARAM_BOOL);
 
         $i = 0;
         foreach ($scan_dates as $scan_date) {
@@ -560,6 +561,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         $mform->addElement('hidden', 'submit_date_num', $date_num);
+        $mform->setType('submit_date_num', PARAM_INT);
         $mform->setConstants(array('submit_date_num'=>$date_num));
         $mform->addElement('submit', 'add_new_date', get_string('new_scan_date', 'plagiarism_programming'));
         $mform->disabledIf('add_new_date', 'programmingYN', 'eq', 0);

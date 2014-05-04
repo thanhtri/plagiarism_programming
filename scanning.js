@@ -65,7 +65,7 @@ M.plagiarism_programming = {
         }
         if (!Y.one('#'+tool+'_tool')) {
             var node = Y.Node.create('<div id="'+tool+'_tool"></div>')
-            Y.one('#'+tool+'_tool').get('parentNode').insert(node, 'after');
+            Y.one('#'+tool+'_status').get('parentNode').insert(node, 'after');
         }
     },
 

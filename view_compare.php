@@ -204,7 +204,7 @@ function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $lis
         );
     }
     $columns = array(
-        array('key' => 'color', 'label' => ''),
+        array('key' => 'color', 'label' => ' '),
         array('key' => 'student1', 'label' => "$student1 ($rate1%)"),
         array('key' => 'student2', 'label' => "$student2 ($rate2%)"),
     );
