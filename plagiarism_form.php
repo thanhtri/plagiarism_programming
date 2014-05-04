@@ -54,7 +54,9 @@ class plagiarism_setup_form extends moodleform {
         $mform->addElement('html', html_writer::tag('div',
             get_string('jplag_account_instruction', 'plagiarism_programming'). $jplag_link));
         $mform->addElement('text', 'jplag_user', get_string('jplag_username', 'plagiarism_programming'));
+        $mform->setType('jplag_user', PARAM_TEXT);
         $mform->addElement('password', 'jplag_pass', get_string('jplag_password', 'plagiarism_programming'));
+        $mform->setType('jplag_pass', PARAM_TEXT);
 
         $mform->addElement('header', 'moss_config', get_string('moss', 'plagiarism_programming'));
         $moss_link = html_writer::link('http://theory.stanford.edu/~aiken/moss/', ' http://theory.stanford.edu/~aiken/moss/');
@@ -62,6 +64,7 @@ class plagiarism_setup_form extends moodleform {
                 html_writer::tag('div', get_string('moss_account_instruction', 'plagiarism_programming').$moss_link));
         $mform->addElement('html', html_writer::tag('div', get_string('moss_id_help', 'plagiarism_programming')));
         $mform->addElement('text', 'moss_user_id', get_string('moss_id', 'plagiarism_programming'));
+        $mform->setType('moss_user_id', PARAM_TEXT);
 
         $mform->addElement('html', html_writer::tag('div', get_string('moss_id_help_2', 'plagiarism_programming')));
         $mform->addElement('textarea', 'moss_email', '', 'wrap="virtual" rows="20" cols="80"');
