@@ -181,7 +181,6 @@ function plagiarism_programming_send_scanning_notification_email($assignment, $t
                 get_string('scanning_complete_email_notification_subject', 'plagiarism_programming', $email_params),
                 get_string('scanning_complete_email_notification_body_txt', 'plagiarism_programming', $email_params),
                 get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $email_params));
-        error_log(get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $email_params));
     }
 }
 
