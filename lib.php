@@ -63,7 +63,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $assignment_context = null;
         if ($cmid) {
             $plagiarism_config = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-            $assignment_context = get_context_instance(CONTEXT_MODULE, $cmid);
+            $assignment_context = context_module::instance($cmid);
         }
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
@@ -178,7 +178,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         global $DB, $detection_tools;
 
         $cmid = $data->coursemodule;
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
+        $context = context_module::instance($cmid);
         if (!$this->is_plugin_enabled($cmid)) {
             return;
         }
@@ -276,7 +276,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                     (isset($jplag_param) && $jplag_param->status=='finished');
             }
             if ($can_show) {
-                $context = get_context_instance(CONTEXT_MODULE, $cmid);
+                $context = context_module::instance($cmid);
                 $is_teacher = has_capability('mod/assignment:grade', $context);
                 $can_show = $is_teacher || ($setting->auto_publish && has_capability('mod/assignment:view', $context));
 
@@ -321,7 +321,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return '';
         }
         
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
+        $context = context_module::instance($cmid);
 
         // the user must be a student (or teacher)
         if (!has_capability('mod/assignment:submit', $context, $USER->id)) {
@@ -368,7 +368,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return '';
         }
 
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
+        $context = context_module::instance($cmid);
         // not a teacher
         if (!has_capability('mod/assignment:grade', $context, $USER->id)) {
             return '';

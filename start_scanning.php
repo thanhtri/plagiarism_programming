@@ -40,7 +40,7 @@ $cmid = required_param('cmid', PARAM_INT);
 $task = required_param('task', PARAM_TEXT);
 
 // user initiating the scanning must have grade right
-$context = get_context_instance(CONTEXT_MODULE, $cmid);
+$context = context_module::instance($cmid);
 require_capability('mod/assignment:grade', $context);
 
 // unblock the session to allow parallel running (if use default PHP session)

@@ -227,7 +227,7 @@ function plagiarism_programming_extract_assignment($assignment) {
     $temp_submission_dir = plagiarism_programming_get_assignment_dir($assignment, true);
 
     // select all the submitted files of this assignment
-    $context = get_context_instance(CONTEXT_MODULE, $assignment->cmid, IGNORE_MISSING);
+    $context = context_module::instance($assignment->cmid, IGNORE_MISSING);
     if (!$context) { // $context=false in case when the assignment has been deleted (checked for safety)
         return CONTEXT_NOT_EXIST;
     }

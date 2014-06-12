@@ -157,7 +157,7 @@ function plagiarism_programming_annonymise_students(&$filecontent, $student) {
 function plagiarism_programming_send_scanning_notification_email($assignment, $toolname) {
     global $CFG, $DB;
 
-    $context_assignment = get_context_instance(CONTEXT_MODULE, $assignment->cmid);
+    $context_assignment = context_module::instance($assignment->cmid);
     $cm = get_coursemodule_from_id('', $assignment->cmid);
 
     $markers = get_enrolled_users($context_assignment, "mod/$cm->modname:grade");
