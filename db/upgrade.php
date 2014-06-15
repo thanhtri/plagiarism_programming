@@ -219,7 +219,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         }
 
         // programming savepoint reached
-        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');        
+        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');
     }
 
     if ($oldversion < 2012120700) {
@@ -231,7 +231,52 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->add_field($table, $field);
         }
 
-        upgrade_plugin_savepoint(true, 2012120700, 'plagiarism', 'programming');        
+        upgrade_plugin_savepoint(true, 2012120700, 'plagiarism', 'programming');
+    }
+
+    if ($oldversion < 2014040102) {
+        $table = new xmldb_table('plagiarism_programming_rpt');
+        $index = new xmldb_index('cmid_index', XMLDB_INDEX_NOTUNIQUE, array('cmid'));
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        $index = new xmldb_index('cmiverdet_index', XMLDB_INDEX_NOTUNIQUE, array('cmid, version, detector'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $table = new xmldb_table('plagiarism_programming_jplag');
+        $index = new xmldb_index('submissionid_index', XMLDB_INDEX_NOTUNIQUE, array('submissionid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $table = new xmldb_table('plagiarism_programming_moss');
+        $index = new xmldb_index('settingid_index', XMLDB_INDEX_NOTUNIQUE, array('settingid'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $table = new xmldb_table('plagiarism_programming_reslt');
+        $index = new xmldb_index('repst1st2_index', XMLDB_INDEX_NOTUNIQUE, array('reportid, student1_id, student2_id'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        $table = new xmldb_table('plagiarism_programming_cours');
+        $index = new xmldb_index('course_index', XMLDB_INDEX_NOTUNIQUE, array('course'));
+
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $table = new xmldb_table('plagiarism_programming_date');
+        $index = new xmldb_index('setfinsca_index', XMLDB_INDEX_NOTUNIQUE, array('settingid, finished, scan_date'));
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        upgrade_plugin_savepoint(true, 2014040102, 'plagiarism', 'programming');
     }
     return true;
 }
