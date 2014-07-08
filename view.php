@@ -96,20 +96,22 @@ if ($rate_type=='max') {
 
 $select = "SELECT result.*, $similarity AS similarity
              FROM {plagiarism_programming_reslt} result
-            WHERE reportid=$report->id AND $similarity>=$lower_threshold AND $similarity<=$upper_threshold";
+            WHERE reportid=:reportid AND $similarity>=:lowerthreshold AND $similarity<=:upperthreshold";
 
+$params = array('reportid' => $report->id, 'studentid1' => $student_id, 'studentid2' => $student_id,
+                'lowerthreshold' => $lower_threshold, 'upperthreshold' => $upper_threshold);
 if ($student_id != null) { // filter by student_id
     if (ctype_digit($student_id)) {
-        $select .= " AND (student1_id=$student_id OR student2_id=$student_id)";
+        $select .= " AND (student1_id=:studentid1 OR student2_id=:studentid2)";
     } else {
-        $select .= " AND additional_codefile_name = '$student_id'";
+        $select .= " AND additional_codefile_name = ':studentid1'";
     }
 }
 if (!$include_repository) {
     $select .= " AND additional_codefile_name IS NULL ";
 }
 $select .= ' ORDER BY similarity DESC';
-$result = $DB->get_records_sql($select);
+$result = $DB->get_records_sql($select, $params);
 $result = plagiarism_programming_transform_similarity_pair($result);
 
 $student_names = null;
