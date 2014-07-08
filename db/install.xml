@@ -21,6 +21,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid_index" UNIQUE="false" FIELDS="cmid" COMMENT="Index for cmid for fast searching"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_rpt" COMMENT="containing different report versions" PREVIOUS="plagiarism_programming" NEXT="plagiarism_programming_jplag">
       <FIELDS>
@@ -34,7 +37,7 @@
         <KEY NAME="report_primary" TYPE="primary" FIELDS="id" COMMENT="Primary key of the table"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="cmid_index" UNIQUE="false" FIELDS="cmid" COMMENT="Index for cmid for fast searching"/>
+        <INDEX NAME="cmiverdet_index" UNIQUE="false" FIELDS="cmid, version, detector" COMMENT="Index for cmid, version, detector for fast searching"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_jplag" COMMENT="containing JPlag scanning status of the lastest report" PREVIOUS="plagiarism_programming_rpt" NEXT="plagiarism_programming_moss">
@@ -52,6 +55,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="submissionid_index" UNIQUE="false" FIELDS="submissionid" COMMENT="Index for submissionid for fast searching"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_moss" COMMENT="The table contains parameters and status for the last time the assignment is scanned with MOSS" PREVIOUS="plagiarism_programming_jplag" NEXT="plagiarism_programming_reslt">
       <FIELDS>
@@ -67,6 +73,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="settingid_index" UNIQUE="false" FIELDS="settingid" COMMENT="Index for settingid for fast searching"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_reslt" COMMENT="store the result of the scanning, each record contains a pair" PREVIOUS="plagiarism_programming_moss" NEXT="plagiarism_programming_cours">
       <FIELDS>
@@ -84,6 +93,9 @@
       <KEYS>
         <KEY NAME="pk_programming_result_id" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="repst1st2_index" UNIQUE="false" FIELDS="reportid, student1_id, student2_id" COMMENT="Index for reportid, student1_id, student2_id for fast searching"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_cours" COMMENT="containing the courses which is enabled when level is set to global" PREVIOUS="plagiarism_programming_reslt" NEXT="plagiarism_programming_date">
       <FIELDS>
@@ -93,6 +105,9 @@
       <KEYS>
         <KEY NAME="id" TYPE="primary" FIELDS="id" COMMENT="Primary key"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="course_index" UNIQUE="false" FIELDS="course" COMMENT="Index for course for fast searching"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="plagiarism_programming_date" COMMENT="containing the scheduled scan date of each enabled assignment. One assignment can have several scan date" PREVIOUS="plagiarism_programming_cours">
       <FIELDS>
@@ -104,6 +119,9 @@
       <KEYS>
         <KEY NAME="date_primary" TYPE="primary" FIELDS="id" COMMENT="primary key"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="setfinsca_index" UNIQUE="false" FIELDS="settingid, finished, scan_date" COMMENT="Index for settingid, finished, scan_date for fast searching"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

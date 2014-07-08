@@ -27,9 +27,10 @@ require_once(__DIR__.'/../../../config.php');
 require_once(__DIR__.'/course_selection_form.php');
 
 require_login();
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 $PAGE->set_context($context);
 require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
+require_sesskey();
 
 $task = optional_param('task', 'getcourse', PARAM_TEXT);
 

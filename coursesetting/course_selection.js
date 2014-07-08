@@ -57,6 +57,7 @@ M.plagiarism_programming.select_course = {
         Y.io('coursesetting/ajax.php?task=getcategory', {
             method: 'GET',
             data: {
+                sesskey : M.cfg.sesskey,
                 task: 'getcategory'
             },
             on: {
@@ -78,6 +79,7 @@ M.plagiarism_programming.select_course = {
         Y.io('coursesetting/ajax.php', {
             method: 'GET',
             data: {
+                sesskey : M.cfg.sesskey,
                 task: 'getcourse',
                 page: page
             },
@@ -135,6 +137,7 @@ M.plagiarism_programming.select_course = {
         Y.io('coursesetting/ajax.php', {
             method: 'POST',
             data: {
+                sesskey : M.cfg.sesskey,
                 task: task,
                 id: id
             }
@@ -146,6 +149,7 @@ M.plagiarism_programming.select_course = {
         Y.io('coursesetting/ajax.php', {
             method: 'POST',
             data: {
+                sesskey : M.cfg.sesskey,
                 task: 'setenabledlevel',
                 level: level
             }
@@ -161,6 +165,7 @@ M.plagiarism_programming.select_course = {
         Y.io('coursesetting/ajax.php', {
             method: 'GET',
             data: {
+                sesskey : M.cfg.sesskey,
                 task: 'getcourse',
                 name: name,
                 category: category

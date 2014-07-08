@@ -101,12 +101,14 @@ M.plagiarism_programming = {
         var Y = M.plagiarism_programming.Y;
 
         time = (time) ? time: 0;
+        var timestamp = new Date().getTime();
 
-        Y.io('../../plagiarism/programming/start_scanning.php', {
+        Y.io( M.cfg.wwwroot+'/plagiarism/programming/start_scanning.php', {
             method: 'GET',
             data: {
                 cmid: cmid,
                 task: 'check',
+                timestamp: timestamp,
                 time: time
             },
             arguments: [cmid, time],

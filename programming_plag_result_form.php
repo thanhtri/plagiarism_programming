@@ -75,7 +75,7 @@ class programming_plag_result_form extends moodleform {
 
         // if having repository, include a checkbox to include repository files or not
         $fs = get_file_storage();
-        $context = get_context_instance(CONTEXT_MODULE, $this->cmid);
+        $context = context_module::instance($this->cmid);
         $repo_files = $fs->get_area_files($context->id, 'plagiarism_programming', 'codeseeding', $assignment->id, '', false);
         if (!empty($repo_files)) {
             $mform->addElement('advcheckbox', 'include_repository',

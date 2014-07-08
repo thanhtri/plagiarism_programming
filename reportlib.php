@@ -286,13 +286,16 @@ function plagiarism_programming_get_students_similarity_info($cmid, $student_id=
         return array();
     }
     $ids = implode(',', array_keys($reports));
+    list($insql, $params) = $DB->get_in_or_equal($ids);
     $sql = 'Select id,student1_id,student2_id,(similarity1+similarity2)/2 as similarity,mark,reportid '.
-        "FROM {plagiarism_programming_reslt} Where reportid IN ($ids)";
+        "FROM {plagiarism_programming_reslt} Where reportid $insql";
     if ($student_id!==null) {
-        $sql .= " And (student1_id=$student_id OR student2_id=$student_id)";
+        $sql .= " And (student1_id=:student1id OR student2_id=:student2id)";
     }
 
-    $records = $DB->get_records_sql($sql);
+    $params['student1id'] = $student_id;
+    $params['student2id'] = $student_id;
+    $records = $DB->get_records_sql($sql, $params);
     $students = array();
     foreach ($records as $rec) {
         foreach (array('student1_id', 'student2_id') as $student_id) {

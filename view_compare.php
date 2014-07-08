@@ -58,7 +58,7 @@ if (!$course) {
 require_login($course, true, $course_module);
 
 //------------------------------------- authorisation: only teacher can see the names -----------------------------//
-$context = get_context_instance(CONTEXT_MODULE, $cmid);
+$context = context_module::instance($cmid);
 $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment
