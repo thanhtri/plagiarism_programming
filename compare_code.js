@@ -149,7 +149,12 @@ M.plagiarism_programming.compare_code = {
         var Y = M.plagiarism_programming.compare_code.Y;
         Y.io('mark_result.php', {
             method: 'POST',
-            data: 'task=mark&id='+M.plagiarism_programming.compare_code.id+'&action='+action,
+            data: {
+                task: 'mark',
+                id: M.plagiarism_programming.compare_code.id,
+                action: action,
+                sesskey: M.cfg.sesskey
+            },
             on: {
                 complete: function(id, res) {
                     if (res.responseText=='OK') {
@@ -324,6 +329,7 @@ M.plagiarism_programming.compare_code = {
 
         Y.io('mark_result.php?task=get_history&id='+M.plagiarism_programming.compare_code.id, {
             on: {
+                sesskey : M.cfg.sesskey,
                 success: M.plagiarism_programming.compare_code.load_overlay
             }
         });

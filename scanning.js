@@ -102,7 +102,7 @@ M.plagiarism_programming = {
 
         time = (time) ? time: 0;
 
-        Y.io('../../plagiarism/programming/start_scanning.php', {
+        Y.io(M.cfg.wwwroot+'/plagiarism/programming/start_scanning.php', {
             method: 'GET',
             data: {
                 cmid: cmid,

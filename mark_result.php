@@ -35,7 +35,8 @@ $report_record = $DB->get_record('plagiarism_programming_rpt', array('id'=>$resu
 $context = context_module::instance($report_record->cmid);
 
 // only teachers can mark the pairs
-has_capability('mod/assignment:grade', $context) || die('KO');
+require_capability('mod/assignment:grade', $context);
+require_sesskey();
 
 if ($task=='mark') {
     $action = required_param('action', PARAM_ALPHA);

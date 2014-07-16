@@ -30,6 +30,7 @@ require_login();
 $context = context_system::instance();
 $PAGE->set_context($context);
 require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
+require_sesskey();
 
 $task = optional_param('task', 'getcourse', PARAM_TEXT);
 
