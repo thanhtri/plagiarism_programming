@@ -32,7 +32,7 @@ $result_id = required_param('id', PARAM_INT);
 $task = required_param('task', PARAM_TEXT);
 $result_record = $DB->get_record('plagiarism_programming_reslt', array('id'=>$result_id));
 $report_record = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result_record->reportid));
-$context = get_context_instance(CONTEXT_MODULE, $report_record->cmid);
+$context = context_module::instance($report_record->cmid);
 
 // only teachers can mark the pairs
 has_capability('mod/assignment:grade', $context) || die('KO');

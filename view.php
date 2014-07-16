@@ -52,7 +52,7 @@ if (!$course) {
 require_login($course, true, $course_module);
 
 // if the user is a student (does not have grade capability), he can only see the report on his assignment if allowed
-$context = get_context_instance(CONTEXT_MODULE, $cmid);
+$context = context_module::instance($cmid);
 $is_teacher = has_capability('mod/assignment:grade', $context);
 if (!$is_teacher) {
     // check if he is allowed to see the assignment

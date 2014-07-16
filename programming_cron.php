@@ -44,7 +44,7 @@ foreach ($settngids as $setting_id) {
     $assignment_config = $DB->get_record('plagiarism_programming', array('id'=>$setting_id));
     
     // check whether the assignment is already deleted or not (for safety)
-    $assignment_ctx = get_context_instance(CONTEXT_MODULE, $assignment_config->cmid, IGNORE_MISSING);
+    $assignment_ctx = context_module::instance($assignment_config->cmid, IGNORE_MISSING);
     if (!$assignment_ctx) {
         plagiarism_programming_delete_config($assignment_config->cmid);
         continue;
