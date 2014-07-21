@@ -255,11 +255,14 @@ function plagiarism_programming_get_suspicious_works($student_id, $cmid) {
         return array();
     }
 
-    $ids = $DB->get_fieldset_select('plagiarism_programming_rpt', 'id', "cmid=$cmid And version=$version");
-    if (count($ids)>0) {
-        $ids = implode(',', $ids);
-        $select = "(student1_id=$student_id OR student2_id=$student_id) AND reportid IN ($ids) AND mark='Y'";
-        return $DB->get_records_select('plagiarism_programming_reslt', $select);
+    $ids = $DB->get_fieldset_select('plagiarism_programming_rpt', 'id', "cmid=$cmid AND version=$version");
+    if (!empty($ids)) {
+        list($insql, $params) = $DB->get_in_or_equal($ids);
+        $select = "reportid $insql AND (student1_id=? OR student2_id=?) AND mark=?";
+        $params[]= $student_id;
+        $params[]= $student_id;
+        $params[]= 'Y';
+        return $DB->get_records_select('plagiarism_programming_reslt', $select, $params);
     } else {
         return array();
     }
@@ -285,14 +288,18 @@ function plagiarism_programming_get_students_similarity_info($cmid, $student_id=
     if (count($reports)==0) {
         return array();
     }
-    $ids = implode(',', array_keys($reports));
-    $sql = 'Select id,student1_id,student2_id,(similarity1+similarity2)/2 as similarity,mark,reportid '.
-        "FROM {plagiarism_programming_reslt} Where reportid IN ($ids)";
+
+    list($insql, $params) = $DB->get_in_or_equal(array_keys($reports));
+    $sql = "SELECT id, student1_id, student2_id, (similarity1+similarity2)/2 as similarity, mark, reportid 
+              FROM {plagiarism_programming_reslt}
+             WHERE reportid $insql ";
     if ($student_id!==null) {
-        $sql .= " And (student1_id=$student_id OR student2_id=$student_id)";
+        $sql .= " AND (student1_id=? OR student2_id=?)";
+        $params[] = $student_id;
+        $params[] = $student_id;
     }
 
-    $records = $DB->get_records_sql($sql);
+    $records = $DB->get_records_sql($sql, $params);
     $students = array();
     foreach ($records as $rec) {
         foreach (array('student1_id', 'student2_id') as $student_id) {
@@ -440,9 +447,9 @@ function plagiarism_programming_delete_config($cmid) {
         $DB->delete_records('plagiarism_programming_jplag', array('settingid'=>$setting->id));
         $DB->delete_records('plagiarism_programming_moss', array('settingid'=>$setting->id));
         if (count($report_ids)>0) {
-            $in_clause = implode(',', array_keys($report_ids));
+            list($insql, $params) = $DB->get_in_or_equal(array_keys($report_ids));
             $DB->delete_records('plagiarism_programming_rpt', array('cmid'=>$setting->cmid));
-            $DB->delete_records_select('plagiarism_programming_reslt', "reportid IN ($in_clause)");
+            $DB->delete_records_select('plagiarism_programming_reslt', "reportid $insql", $params);
         }
         $DB->delete_records('plagiarism_programming', array('id'=>$setting->id));
     }
