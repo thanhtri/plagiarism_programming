@@ -2,7 +2,6 @@ M.plagiarism_programming = M.plagiarism_programming || {};
 M.plagiarism_programming.select_course = {
 
     init: function(Y) {
-        Yu = Y;
         this.Y = Y;
         this.init_course_panel(Y);
         this.init_radio_button(Y);
@@ -73,7 +72,7 @@ M.plagiarism_programming.select_course = {
     },
 
     show_course_panel: function(page) {
-        var Y = this.Y;
+        var Y = M.plagiarism_programming.select_course.Y;
         M.plagiarism_programming.select_course.panel.show();
 
         Y.io('coursesetting/ajax.php', {
@@ -92,11 +91,11 @@ M.plagiarism_programming.select_course = {
     },
 
     display_courses: function(o) {
-        var Y = this.Y;
+        var Y = M.plagiarism_programming.select_course.Y;
         var form_html = o.responseText;
         var wrapperDiv = Y.Node.create('<div></div>');
         wrapperDiv.addClass('plagiarsm_programming_course_selection_wrapper');
-        wrapperDiv.append(form_html);
+        wrapperDiv.setHTML(form_html);
         M.plagiarism_programming.select_course.panel.set('bodyContent', wrapperDiv);
     },
 
@@ -171,7 +170,9 @@ M.plagiarism_programming.select_course = {
                 category: category
             },
             on: {
-                success: this.display_courses
+                success: function(id, o) {
+                    M.plagiarism_programming.select_course.display_courses(o)
+                }
             }
         });
     }

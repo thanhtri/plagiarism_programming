@@ -76,7 +76,7 @@ class course_selection_form extends moodleform {
     }
 
     private function course_search(&$total_record) {
-        global $DB;
+        global $CFG, $DB;
 
         $sql = 'SELECT course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled
                   FROM {course} course
@@ -85,7 +85,8 @@ class course_selection_form extends moodleform {
         $where = ' category>0 ';
 
         if ($this->category > 0) {
-            $category_list = get_categories($this->category, null, false);
+            require_once($CFG->dirroot.'/lib/coursecatlib.php');
+            $category_list = coursecat::get($this->category, null, false)->get_children();
             $category_ids = array($this->category);
             foreach ($category_list as $category) {
                 $category_ids[]=$category->id;
