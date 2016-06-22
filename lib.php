@@ -109,12 +109,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $moss_disabled = array('disabled'=>true);
         }
 
-        // Check box for selecting the tools
-        $selected_tools = array();
-        $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'), $jplag_disabled);
-        $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'), $moss_disabled);
-        $mform->addGroup($selected_tools, 'detection_tools', get_string('detection_tools', 'plagiarism_programming'));
-
         $this->setup_multiple_scandate($mform, $plagiarism_config);
 
         $mform->addElement('checkbox', 'auto_publish', get_string('auto_publish', 'plagiarism_programming'));
@@ -133,7 +127,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
-        $mform->addHelpButton('detection_tools', 'detection_tools_hlp', 'plagiarism_programming');
         $mform->addHelpButton('auto_publish', 'auto_publish_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification', 'notification_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification_text', 'notification_text_hlp', 'plagiarism_programming');
@@ -154,8 +147,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // disable tool if it doesn't support the selected language
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
-        $jplag_support = $jplag_disabled ? false : jplag_tool::get_supported_language();
-        $moss_support = $moss_disabled ? false : moss_tool::get_supported_laguage();
         // include the javascript for doing some minor interface adjustment to improve user experience
         $js_module = array(
             'name' => 'plagiarism_programming',
@@ -166,7 +157,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 array('invalid_submit_date_error', 'plagiarism_programming')
             )
         );
-        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', array($jplag_support, $moss_support), true, $js_module);
+        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', array(), true, $js_module);
     }
 
     /**
@@ -193,8 +184,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
             $setting->language = $data->programming_language;
-            $setting->jplag = isset($data->detection_tools['jplag']) ? 1 : 0;
-            $setting->moss = isset($data->detection_tools['moss']) ? 1 : 0;
+
+            // we only use moss for now
+            $setting->moss = 1;
             $setting->auto_publish = isset($data->auto_publish) ? 1 : 0;
             if (isset($data->notification)) {
                 $setting->notification = 1;
@@ -320,7 +312,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if (!$setting) { // plagiarism scanning turned off
             return '';
         }
-        
+
         $context = context_module::instance($cmid);
 
         // the user must be a student (or teacher)
@@ -483,8 +475,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /** If the plugin is enabled or not (at Moodle level or at course level)
-     * @param $cmid: the course module id (can provide the course id instead)
-     * @param $course_id: the course id. If course_id is passed, cmid is ignored
+     * @param $cmid the course module id (can provide the course id instead)
+     * @param $course_id the course id. If course_id is passed, cmid is ignored
      * @return true: if the plugin is enabled in this course context
      *         false:if the plugin is not enabled in this course context
      */
@@ -512,7 +504,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     /**
      * This function will setup multiple scan date of the form.
      * This will be similar to the repeat group of moodle form.
-     * However, since just an instance of $mform is passed in, 
+     * However, since just an instance of $mform is passed in,
      * it is not possible to call the protected function repeat_elements
      */
     private function setup_multiple_scandate($mform, $plagiarism_config) {

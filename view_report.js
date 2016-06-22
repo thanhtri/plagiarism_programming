@@ -62,7 +62,7 @@ M.plagiarism_programming.view_report = {
 
     show_chart: function(img,Y) {
         var pair_id = Y.one(img).get('parentNode').getAttribute('pair');
-        Y.io('mark_result.php?task=get_history&id='+pair_id, {
+        Y.io('mark_result.php?task=get_history&id='+pair_id+'&sesskey='+M.cfg.sesskey, {
             on: {
                 success: function(id, response) {
                     var div = M.plagiarism_programming.view_report.load_overlay(response, Y)
