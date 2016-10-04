@@ -36,6 +36,7 @@ class jplag_tool implements plagiarism_tool {
     private $jplag_stub=null;
     private static $supported_languages = array(
         'java' => 'java15',
+        'java17' => 'java17',
         'c' => 'c/c++',
         'c#' => 'c#-1.2',
         'scheme' => 'scheme',
@@ -209,7 +210,7 @@ class jplag_tool implements plagiarism_tool {
 
         return $jplag_param;
     }
-    
+
     protected function cancel_submission($jplag_param) {
         try {
             $this->jplag_stub->cancel_submission($jplag_param->submissionid);

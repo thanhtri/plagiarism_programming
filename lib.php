@@ -32,7 +32,7 @@ global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
 require_once(__DIR__.'/detection_tools.php');
 require_once(__DIR__.'/reportlib.php');
-require_once(__DIR__.'/scan_assignment.php');
+//require_once(__DIR__.'/scan_assignment.php');
 
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
@@ -240,13 +240,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /**
-     * Called by the cron process
-     */
-    public function cron() {
-        include('programming_cron.php');
-    }
-
-    /**
      * Display similarity information beside each submission
      * @param array $linkarray contain relevant information
      */
@@ -320,7 +313,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if (!$setting) { // plagiarism scanning turned off
             return '';
         }
-        
+
         $context = context_module::instance($cmid);
 
         // the user must be a student (or teacher)
@@ -512,7 +505,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     /**
      * This function will setup multiple scan date of the form.
      * This will be similar to the repeat group of moodle form.
-     * However, since just an instance of $mform is passed in, 
+     * However, since just an instance of $mform is passed in,
      * it is not possible to call the protected function repeat_elements
      */
     private function setup_multiple_scandate($mform, $plagiarism_config) {

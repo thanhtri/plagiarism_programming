@@ -25,6 +25,5 @@
 
 $plugin->version =  2014040101;
 $plugin->requires = 2010112400; // Moodle 2.0 or above
+$plugin->component = 'plagiarism_programming';
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = '1.3';
-$plugin->cron     = 7200;

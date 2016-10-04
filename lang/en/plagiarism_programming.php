@@ -26,8 +26,8 @@ defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 // settings
 $string['pluginname'] = 'Source-code Plagiarism Plugin';
 $string['programming'] = 'Programming Assignment';
-$string['programmingexplain'] = 'This is the configuration for Programming Plagiarism Detection plugin';
-$string['use_programming'] = 'Use source code plagiarism detection';
+$string['settingdesc'] = 'Settings in this page will affect the behaviour of plagiarism programming for the whole site';
+$string['programming_use'] = 'Enable';
 $string['jplag'] = 'JPlag global config';
 $string['jplag_username'] = 'JPlag Username';
 $string['jplag_password'] = 'JPlag Password';
@@ -57,8 +57,10 @@ $string['save_config_success'] = 'Configuration saved';
 $string['username_missing'] = 'Please provide JPlag username';
 $string['password_missing'] = 'Please provide JPlag password';
 $string['moss_userid_missing'] = 'Please provide MOSS user id or email';
-$string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the background. An account is required to use these engines';
-$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at '; // + jplag_link
+$string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the background. Please configure at least one engine properly';
+$string['jplag_instruction'] = 'JPlag requires Java installed to run. Please install Java and input the path to JVM below. Make sure apache or CGI process can run it';
+$string['pathtoJVM'] = 'Path to JVM';
+$string['invalidjavapath'] = 'Cannot execute java. Output shows: {$a}';
 $string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
 $string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
 $string['proxy_port_missing'] = 'Proxy port must be provided along with the host';
