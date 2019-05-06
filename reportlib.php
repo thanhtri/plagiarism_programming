@@ -25,6 +25,8 @@
  */
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
+require_once($CFG->dirroot.'/user/lib.php');
+
 define('CHART_WITH', 800);
 define('CHART_HEIGHT', 240);
 define('BAR_WIDTH', 20);
@@ -182,25 +184,30 @@ function plagiarism_programming_create_chart($reportid, $similarity_type) {
 
     $div = '';
     $report_url = new moodle_url(qualified_me());
+    
     foreach ($histogram as $key => $val) {
         $upper = $key*10+10;
         $lower = $key*10;
         $range = $lower.'-'.$upper;
         $pos_y = (9-$key)*(BAR_WIDTH+5).'px'; // 2 is the space between bars
         $width = ($val*$length_ratio).'px';
-        // legend of the bar
+        // Legend of the bar.
         $div .= html_writer::tag('div', $range, array('class'=>'legend', 'style'=>"top:$pos_y;width:40px"));
-        // the bar itself
+        // The bar itself.
         $report_url->remove_params(array('upper_threshold', 'lower_threshold'));
         $report_url->params(array('upper_threshold'=>$upper, 'lower_threshold'=>$lower));
-        // number of pairs
+        
+        // Number of pairs.
+        $left = "0px";
         if ($val>0) {
             $div .= html_writer::link($report_url->out(false), '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width"));
-            $left = ($width+5).'px';
+            $left = (rtrim($width, "px") + 5).'px';
+
             $div .= html_writer::tag('div', $val,
                     array('class'=>'legend', 'style'=>"top:$pos_y;left:$left"));
         }
     }
+    
     $pos_y = (10*(BAR_WIDTH+5)-5).'px';
     $width = CHART_WITH.'px';
     //$div .= html_writer::tag('div', '', array('class'=>'bar', 'style'=>"top:$pos_y;width:$width;height:1px"));
@@ -213,7 +220,7 @@ function plagiarism_programming_create_chart($reportid, $similarity_type) {
 /**
  * Create HTML output of the lookup table in the top left section
  */
-function plagiarism_programming_create_student_lookup_table(&$result_table, $is_teacher, &$student_names) {
+function plagiarism_programming_create_student_lookup_table(&$result_table, $is_teacher, &$student_names, $courseid) {
     global $USER, $DB;
 
     $student_names = array();
@@ -232,7 +239,9 @@ function plagiarism_programming_create_student_lookup_table(&$result_table, $is_
     // find students' name if he is the lecturer
     if ($is_teacher) {
         $ids = array_keys($student_names);
-        $students = $DB->get_records_list('user', 'id', $ids, null, 'id,firstname,lastname');
+        //$students = $DB->get_records_list('user', 'id', $ids, null, 'id,firstname,lastname'); // Old call which is not suitable anymore and gets all the students in moodle.
+        // Gets all the users of the course with standard settings.
+        $students = user_get_participants($courseid, 0, 0, 0, 0, -1, '');
         foreach ($students as $student) {
             $student_names[$student->id] = fullname($student);
         }
