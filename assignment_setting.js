@@ -22,6 +22,8 @@ M.plagiarism_programming.assignment_setting = {
         if (!config_block) {
             config_block = Y.one('#id_programming_header');
         }
+        
+         /* Uncomment code because label is null and it's usage is unknown. Probably old YUI stuff.
         var items = config_block.all('.fitem');
         var div = items.item(1);
         div.addClass('required');
@@ -29,16 +31,15 @@ M.plagiarism_programming.assignment_setting = {
         if (!label) {
             label = div.one('span.helptooltip');
         }
-        label.insert(required_img.cloneNode(true), 'before');
-
-        div = items.item(2);
+        //label.insert(required_img.cloneNode(true), 'before'); // Bug: label is null
         div.addClass('required');
         label = div.one('span.helplink');
         if (!label) {
             label = div.one('span.helptooltip');
         }
-        label.insert(required_img.cloneNode(true), 'before');
-
+        //label.insert(required_img.cloneNode(true), 'before'); // Bug: label is null
+        */
+        
         var skipClientValidation = false;
         Y.one('#mform1').on('submit', function(e) {
             if (skipClientValidation) {

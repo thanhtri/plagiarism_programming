@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Respond to ajax call related to the plagiarism report. Parameters are
+ * Responds to ajax call related to the plagiarism report.
  *
  * @package    plagiarism
  * @subpackage programming
@@ -34,9 +34,8 @@ $result_record = $DB->get_record('plagiarism_programming_reslt', array('id'=>$re
 $report_record = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result_record->reportid));
 $context = context_module::instance($report_record->cmid);
 
-// only teachers can mark the pairs
+// Only teachers can mark a pair in the comparison view.
 require_capability('mod/assignment:grade', $context);
-require_sesskey();
 
 if ($task=='mark') {
     $action = required_param('action', PARAM_ALPHA);
