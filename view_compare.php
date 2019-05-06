@@ -88,7 +88,7 @@ if (!$is_teacher) {
         fullname($users[$result_record->student2_id]) :
         $result_record->student2_id;
 }
-//---------------------------------end autorisation--------------------------------------------------------------------//
+//---------------------------------end authorisation--------------------------------------------------------------------//
 
 $title = get_string('comparison_title', 'plagiarism_programming');
 $heading = get_string('comparison', 'plagiarism_programming');
@@ -117,7 +117,7 @@ echo html_writer::tag('div', $content."<div class='simiarity_table_holder'></div
         'class'=>'programming_result_comparison_top_left'));
 
 $content='';
-if ($is_teacher) { // only teachers can mark the suspicious pairs, so add the select box
+if ($is_teacher) { // If the user is a teacher, add the box to mark as suspicious or normal.
     $actions = array(
         'Y'=>get_string('mark_suspicious', 'plagiarism_programming'),
         'N'=>get_string('mark_nonsuspicious', 'plagiarism_programming')
@@ -160,7 +160,7 @@ $result_select = "reportid=$report_rec->id ".
 $result = $DB->get_records_select('plagiarism_programming_reslt', $result_select);
 
 $all_names = null;
-plagiarism_programming_create_student_lookup_table($result, $is_teacher, $all_names);
+plagiarism_programming_create_student_lookup_table($result, $is_teacher, $all_names, $course->id);
 
 //----------id lookup table for javascript-----------------------
 $result_id_table = array();

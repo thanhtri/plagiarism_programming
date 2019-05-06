@@ -121,9 +121,8 @@ $result = $DB->get_records_sql($select, $params);
 $result = plagiarism_programming_transform_similarity_pair($result);
 
 $student_names = null;
-
-// TODO: Get course id of course module
-plagiarism_programming_create_student_lookup_table($result, $is_teacher, $student_names, $course_module->course); // this will create the array id=>name in $student_names
+// This will create the array id=>name in $student_names.
+plagiarism_programming_create_student_lookup_table($result, $is_teacher, $student_names, $course_module->course);
 
 if ($display_mode=='group') {
     $table = plagiarism_programming_create_table_grouping_mode($result, $student_names);
