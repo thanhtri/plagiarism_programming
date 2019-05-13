@@ -51,8 +51,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     public function get_form_elements_module($mform, $context, $modulename='') {
         global $DB, $PAGE;
 
-        // when updating an assignment, cmid of the assignment is passed by "update" param
-        // when creating an assignment, cmid does not exist, but course id is provided via "course" param
+        // When updating an assignment, cmid of the assignment is passed by "update" param.
+        // When creating an assignment, cmid does not exist, but course id is provided via "course" param.
         $cmid = optional_param('update', 0, PARAM_INT);
         $course_id = optional_param('course', 0, PARAM_INT);
         if (!$this->is_plugin_enabled($cmid, $course_id)) {
@@ -68,14 +68,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
 
-        // Enable or disable plagiarism checking
+        // Enable or disable plagiarism checking.
         $enable_checking = array();
         $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('disable'), 0);
         $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('enable'), 1);
         $mform->addGroup($enable_checking, 'similarity_checking',
             get_string('programmingYN', 'plagiarism_programming'), array(' '), false);
 
-        // Select the language used
+        // Select the used programming language.
         $programming_languages = array(
             'java' => 'Java',
             'c' => 'C/C++',
@@ -98,18 +98,18 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addElement('select', 'programming_language',
             get_string('programming_language', 'plagiarism_programming'), $programming_languages);
 
-        // Disable the tools when no credentials provided
+        // Disable the tools when no credentials are provided.
         $settings = get_config('plagiarism_programming');
         $jplag_disabled = null;
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
             $jplag_disabled = array('disabled'=>true);
-        }
+        } 
         $moss_disabled = null;
         if (empty($settings->moss_user_id)) {
             $moss_disabled = array('disabled'=>true);
         }
 
-        // Check box for selecting the tools
+        // Check box for selecting the tools.
         $selected_tools = array();
         $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'), $jplag_disabled);
         $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'), $moss_disabled);
@@ -151,12 +151,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
-        // disable tool if it doesn't support the selected language
+        // Disable tool if it doesn't support the selected language.
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
         $jplag_support = $jplag_disabled ? false : jplag_tool::get_supported_language();
         $moss_support = $moss_disabled ? false : moss_tool::get_supported_laguage();
-        // include the javascript for doing some minor interface adjustment to improve user experience
+        // Include the javascript for doing some minor interface adjustment to improve user experience.
         $js_module = array(
             'name' => 'plagiarism_programming',
             'fullpath' => '/plagiarism/programming/assignment_setting.js',
@@ -175,6 +175,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * @return void
      */
     public function save_form_elements($data) {
+        
         global $DB, $detection_tools;
 
         $cmid = $data->coursemodule;
@@ -212,19 +213,22 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             file_postupdate_standard_filemanager($data, 'code', $this->filemanager_option, $context, 'plagiarism_programming', 'codeseeding', $setting->id);
 
             $date_num = $data->submit_date_num;
+            // Delete all unfinished records. They will be added again later when they are still enabled.
             $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0));
 
+            // Save dates.
             for ($i=0; $i<$date_num; $i++) {
-                $element_name = "scan_date[$i]";
-                if (isset($data->$element_name) && isset($data->$element_name) && $data->$element_name > 0) {
+                if (isset($data->scan_date[$i]) && $data->scan_date[$i] > 0) {
                     $scan_date_obj = new stdClass();
-                    $scan_date_obj->scan_date = $data->$element_name;
+                    $scan_date_obj->scan_date = $data->scan_date[$i];
                     $scan_date_obj->finished = 0;
                     $scan_date_obj->settingid = $setting->id;
 
                     $DB->insert_record('plagiarism_programming_date', $scan_date_obj);
                 }
             }
+            
+            // Either save in *_jplag or *_moss table.
             foreach ($detection_tools as $toolname => $info) {
                 if ($setting->$toolname && !$DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$setting->id))) {
                     $jplag_rec = new stdClass();
@@ -259,7 +263,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $cmid = $linkarray['cmid'];
         $student_id = $linkarray['userid'];
-        if ($can_show==null) { //those computed values are cached in static variables and reused
+        if ($can_show==null) { // Those computed values are cached in static variables and reused.
             $can_show = $this->is_plugin_enabled($cmid);
             if ($can_show) {
                 $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
@@ -483,8 +487,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /** If the plugin is enabled or not (at Moodle level or at course level)
-     * @param $cmid: the course module id (can provide the course id instead)
-     * @param $course_id: the course id. If course_id is passed, cmid is ignored
+     * @param $cmid {number} the course module id (can provide the course id instead)
+     * @param $course_id {number} the course id. If course_id is passed, cmid is ignored
      * @return true: if the plugin is enabled in this course context
      *         false:if the plugin is not enabled in this course context
      */
@@ -492,7 +496,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         global $DB;
 
         $settings = (array) get_config('plagiarism');
-        if (!$settings['programming_use']) { // globaly disabled
+        if (!$settings['programming_use']) { // Globaly disabled.
             return false;
         }
 
@@ -526,12 +530,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $db_scandate = count($scan_dates);
 
         $date_num = optional_param('submit_date_num', max($db_scandate, 1), PARAM_INT);
-        $is_add_date = optional_param('add_new_date', '', PARAM_TEXT);
-        if (!empty($is_add_date)) { // the hidden element, combined with javascript, makes the form jump to the date position
+        $is_add_date = optional_param('add_new_date', '', PARAM_TEXT); // Add another form element if new date button was pushed.
+        if (!empty($is_add_date)) { // The hidden element, combined with javascript, makes the form jump to the date position.
+            // Add another date picker.
             $date_num++;
             $mform->addElement('hidden', 'is_add_date', 1);
             $constant_vars['is_add_date'] = 1;
         } else {
+            // Add first date picker if this is the first time the settings page is called.
             $mform->addElement('hidden', 'is_add_date', 0);
             $constant_vars['is_add_date'] = 0;
         }
