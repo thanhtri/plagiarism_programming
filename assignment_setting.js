@@ -16,14 +16,14 @@ M.plagiarism_programming.assignment_setting = {
         var Y = this.Y;
         var required_img = Y.one('.req');
 
-        // put the required class for the select and checkboxes
-        // the problem with the mform require rule is that they fails validation even when not enabled
+        // Put the required class for the select and checkboxes.
+        // The problem with the mform require rule is that they fail validation even when not enabled.
         var config_block = Y.one('#programming_header');
         if (!config_block) {
             config_block = Y.one('#id_programming_header');
         }
         
-         /* Uncomment code because label is null and it's usage is unknown. Probably old YUI stuff.
+        /* Uncomment code because label is null and it's usage is unknown. Probably old YUI stuff.
         var items = config_block.all('.fitem');
         var div = items.item(1);
         div.addClass('required');
@@ -52,7 +52,7 @@ M.plagiarism_programming.assignment_setting = {
             }
         }, this);
 
-        // do not need to validate when clicking no submit button
+        // Do not need to validate when clicking no submit button.
         var new_date_button = config_block.one('input[name=add_new_date]');
         new_date_button.on('click', function(e) {
             skipClientValidation = true;
@@ -120,7 +120,12 @@ M.plagiarism_programming.assignment_setting = {
     },
     
     display_error_message : function(Y, node, error_msg) {
-        while (node!=null && node.get('tagName')!='FIELDSET') {
+    	window.scrollTo(0, node.getY()-100);
+    	alert("Plagiarism Plugin: At least one date is older than today's date. Please disable it or change the date.");
+    	
+        /* Fieldset does not work because dataset is used differently now
+         * TODO: Find a better solution
+    	while (node!=null && node.get('tagName')!='FIELDSET') {
             node = node.get('parentNode');
         }
         if (node!=null && node.get('tagName')=='FIELDSET' && node.all('.error').isEmpty()) { // insert the message
@@ -128,6 +133,7 @@ M.plagiarism_programming.assignment_setting = {
             node.get('children').item(0).insert(msg_node,'before');
             window.scrollTo(0, msg_node.getY()-40);
         }
+        */
     },
 
     init_disable_unsupported_tool: function(Y, jplag_lang, moss_lang) {
@@ -145,9 +151,9 @@ M.plagiarism_programming.assignment_setting = {
             config_block = this.Y.one('#id_programming_header');
         }
         if (!this.is_plugin_enabled()) {
-            // disable both MOSS and JPlag
+            // Disable both MOSS and JPlag.
             config_block.all('input[name*=detection_tools]').set('disabled', true);
-        } else { // disable each one of them
+        } else { // Disable each one of them.
             var value = Y.one('select[name=programming_language]').get('value');
             var jplag_disabled = true;
             var moss_disabled = true;

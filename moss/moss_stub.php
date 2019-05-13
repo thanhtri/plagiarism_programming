@@ -32,7 +32,7 @@ class moss_stub {
     private $proxy_login;
     private $proxy_pass;
 
-    const TIMEOUT = 3; // maximum time to open socket or download result
+    const TIMEOUT = 3; // Maximum time to open socket or download result in seconds.
     const MOSS_HOST = 'moss.stanford.edu';
     const MOSS_PORT = 7690;
 
@@ -169,6 +169,7 @@ class moss_stub {
 
         // download other comparison files
         $link_pattern = '/<A HREF=\"(match[0-9]*\.html)\"/'; // (extract the links to other files)
+        $matches = array();
         preg_match_all($link_pattern, $main_page, $matches);
         $matches = array_unique($matches[1]);
 

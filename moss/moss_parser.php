@@ -114,10 +114,10 @@ class moss_parser {
     /**
      * This function extract the similar blocks of one student with another. The block is recorded in the $similarity_array
      * passed into the function.
-     * @param $student_id: id of the student whose similarity blocks with another is going to be extracted
-     * @param $other_student_id: id of the other student
-     * @param $filename: the comparison file of the report of the pair
-     * @param $similarity_array: contain the recorded blocks and blocks that will be recorded in this call,
+     * @param $student_id {number} id of the student whose similarity blocks with another is going to be extracted
+     * @param $other_student_id {number} id of the other student
+     * @param $filename {string} the comparison file of the report of the pair
+     * @param $similarity_array {array} contain the recorded blocks and blocks that will be recorded in this call,
      *        which is a multidimensional array $similarity_array[$student][0,1...] = array('begin_line'=>?,'end_line'=>?,
      *        'student'=>?,'color'=>?,'anchor'=>?)
      */
@@ -206,8 +206,8 @@ class moss_parser {
     /**
      * Save the code of a student into one file having studentid as filename. This function is called many times for one student
      * but the file will be saved only once.
-     * @param $filename: the name of the file
-     * @param $student_id: id of the file
+     * @param $filename {string} the name of the file
+     * @param $student_id {number} id of the file
      */
     private function save_code_file($filename, $student_id) {
         static $file_array = array();

@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 /**
  * Return an array containing the possible extensions
  * of source code file of the provided language
- * @param $language: either java, c, csharp
+ * @param $language {string} Either java, c, csharp
  * @return array of extensions of the language
  */
 function plagiarism_programming_get_file_extension($language) {
@@ -72,13 +72,13 @@ function plagiarism_programming_get_file_extension($language) {
 
 /**
  * Check if the file has the appropriate extension
- * @param $filename: name of the file
- * @param $extension: an array of possible extensions
+ * @param $filename {string} name of the file
+ * @param $extension {array} an array of possible extensions
  * @return true if the file has the extension in the array
  */
 function plagiarism_programming_check_extension($filename, $extensions) {
 
-    if ($extensions==null) { // if extensions array is null, accept all extension
+    if ($extensions==null) { // If extensions array is null, accept all extension.
         return true;
     }
     $dot_index = strrpos($filename, '.');
@@ -92,8 +92,8 @@ function plagiarism_programming_check_extension($filename, $extensions) {
 }
 
 /** Create a file for write. This function will create a directory along the file path if it doesn't exist
- * @param $fullpath: the path of the file
- * @return the write file handle. fclose have to be called when finishing with it
+ * @param $fullpath {string} The path of the file
+ * @return {object} the write file handle. fclose have to be called when finishing with it
  */
 function plagiarism_programming_create_file($fullpath) {
     $dir_path = dirname($fullpath);
@@ -115,21 +115,23 @@ function plagiarism_programming_create_file($fullpath) {
 /**
  * Search the file to clear the students' name and clear them
  * @param $filecontent: the content of a file
- * @param $student: the user record object of the students. Name and id occurrences will be cleared
+ * @param $student {object} the user record object of the students. Name and id occurrences will be cleared
  */
 function plagiarism_programming_annonymise_students(&$filecontent, $student) {
 
-    if ($student==null) { // do not have information to clear
+    if ($student==null) { // Do not have information to clear.
         return;
     }
-    // find all the comments. First version just support C++ style comments
+    // Dind all the comments. First version just support C++ style comments.
     $pattern = '/\/\*.*?\*\//s'; // C style
+    $comments1 = array();
     preg_match_all($pattern, $filecontent, $comments1);
     $pattern = '/\/\/.*/';       // C++ style
+    $comments2 = array();
     preg_match_all($pattern, $filecontent, $comments2);
     $allcomments = array_merge($comments1[0], $comments2[0]);
 
-    // get student name
+    // Get student name.
     $fname = $student->firstname;
     $lname = $student->lastname;
     $idnumber = $student->idnumber;
@@ -399,7 +401,7 @@ class progress_handler {
 
     /**
      * Construct the object
-     * @param $tool_name: the tool need progress update (either JPlag or MOSS)
+     * @param $tool_name {string} The tool need progress update (either JPlag or MOSS)
      * @param $tool_param: the record object of MOSS param status
      */
     public function __construct($tool_name, $tool_param) {
@@ -409,8 +411,8 @@ class progress_handler {
 
     /**
      * Update the progress of the tool indicated in the constructor
-     * @param $stage: the stage the scanning is in (upload, download, scanning...)
-     * @param $progress: the percentage finished (between 0 and 100)
+     * @param $stage {string} The stage the scanning is in (upload, download, scanning...)
+     * @param $progress {number} The percentage finished (between 0 and 100)
      */
     public function update_progress($stage, $progress) {
         global $DB;

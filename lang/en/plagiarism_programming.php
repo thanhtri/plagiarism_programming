@@ -35,7 +35,7 @@ $string['jplag_modify_account'] = 'Change JPlag account';
 $string['moss'] = 'MOSS global config';
 $string['moss_id'] = 'User id';
 $string['moss_id_help'] = 'Locate the line $userid=some number in the reply email from MOSS and put that number in the box below';
-$string['moss_id_help_2'] = 'Or copy and paste the email content in the box below';
+$string['moss_id_help_2'] = 'Copy and paste the email content in the box below';
 $string['enable_global'] = 'Enable this plugin for the whole Moodle';
 $string['enable_course'] = 'Enable this plugin at course level';
 
