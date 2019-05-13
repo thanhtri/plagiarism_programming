@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-global $CFG, $PAGE, $OUTPUT;
+global $CFG, $PAGE, $OUTPUT, $USER;
 require_once(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
@@ -43,15 +43,17 @@ $notification = '';
 if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot);
 } else if (($data = $mform->get_data()) && confirm_sesskey()) {
-    // update programming_use variable
-    $programming_use = (isset($data->programming_use))?$data->programming_use:0;
+    // Update programming_use variable.
+    $programming_use = (isset($data->programming_use)) ? $data->programming_use : 0;
     set_config('programming_use', $programming_use, 'plagiarism');
 
-    $variables = array('level_enabled', 'moss_user_id', 'jplag_user', 'jplag_pass', 'moss_user_id');
+    //$variables = array('level_enabled', 'moss_user_id', 'jplag_user', 'jplag_pass', 'moss_user_id');
+    $variables = array('level_enabled', 'moss_user_id', 'moss_user_id');
 
     $email = $data->moss_email;
     if ($email) {
         $pattern = '/\$userid=([0-9]+);/';
+        $match = array();
         preg_match($pattern, $email, $match);
         $data->moss_user_id = $match[1];
     }
@@ -71,7 +73,7 @@ $mform->set_data($plagiarism_programming_setting);
 
 echo $OUTPUT->header();
 
-// include the javascript
+// Include the javascript if the plugin is only activated for specific courses.
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/coursesetting/course_selection.js',
