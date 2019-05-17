@@ -30,6 +30,7 @@ require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
 
 require_login();
+defined('MOODLE_INTERNAL') || die();
 admin_externalpage_setup('plagiarismprogramming');
 
 $context = context_system::instance();
@@ -44,10 +45,10 @@ if ($mform->is_cancelled()) {
     redirect($CFG->wwwroot);
 } else if (($data = $mform->get_data()) && confirm_sesskey()) {
     // Update programming_use variable.
-    $programming_use = (isset($data->programming_use)) ? $data->programming_use : 0;
-    set_config('programming_use', $programming_use, 'plagiarism');
+    $programminguse = (isset($data->programming_use)) ? $data->programming_use : 0;
+    set_config('programming_use', $programminguse, 'plagiarism');
 
-    //$variables = array('level_enabled', 'moss_user_id', 'jplag_user', 'jplag_pass', 'moss_user_id');
+    // Add variables 'jplag_user', 'jplag_pass' for jplag support again.
     $variables = array('level_enabled', 'moss_user_id', 'moss_user_id');
 
     $email = $data->moss_email;
@@ -63,13 +64,13 @@ if ($mform->is_cancelled()) {
     $notification = $OUTPUT->notification(get_string('save_config_success', 'plagiarism_programming'), 'notifysuccess');
 }
 
-$plagiarism_programming_setting = (array) get_config('plagiarism_programming');
+$plagiarismprogrammingsetting = (array) get_config('plagiarism_programming');
 $plagiarismsettings = (array) get_config('plagiarism');
 if (isset($plagiarismsettings['programming_use'])) {
-    $plagiarism_programming_setting['programming_use'] = $plagiarismsettings['programming_use'];
+    $plagiarismprogrammingsetting['programming_use'] = $plagiarismsettings['programming_use'];
 }
 
-$mform->set_data($plagiarism_programming_setting);
+$mform->set_data($plagiarismprogrammingsetting);
 
 echo $OUTPUT->header();
 

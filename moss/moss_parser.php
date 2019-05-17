@@ -48,7 +48,7 @@ class moss_parser {
         global $DB;
 
         $content = file_get_contents($this->filename);
-        // this pattern extract the link
+        // This pattern extract the link.
         $pattern = '/<A HREF=\"(match[0-9]*\.html)\">([^\/]*)\/\s\(([0-9]*)%\)<\/A>/';
         $matches = null;
         preg_match_all($pattern, $content, $matches);
@@ -59,13 +59,13 @@ class moss_parser {
 
         $record = new stdClass();
         $record->reportid = $this->report->id;
-        for ($i=0; $i<$num; $i+=2) {
-            // we only need to save pairs in which there is at least one real student
-            if (ctype_digit($studentids[$i]) || ctype_digit($studentids[$i+1])) {
+        for ($i = 0; $i < $num; $i += 2) {
+            // We only need to save pairs in which there is at least one real student.
+            if (ctype_digit($studentids[$i]) || ctype_digit($studentids[$i + 1])) {
                 $record->student1_id = $studentids[$i];
-                $record->student2_id = $studentids[$i+1];
+                $record->student2_id = $studentids[$i + 1];
                 $record->similarity1 = $similarity[$i];
-                $record->similarity2 = $similarity[$i+1];
+                $record->similarity2 = $similarity[$i + 1];
                 $record->comparison = $filenames[$i];
                 plagiarism_programming_save_similarity_pair($record);
             }
@@ -77,7 +77,7 @@ class moss_parser {
     /**
      * Extract the similarities of each student with all the others. This function will read through all comparison files
      * in the report, extract the marked similar blocks and produce the marked file.
-     * 
+     *
      * Input: the similarity report in the report directory (dataroot/temp/plagiarism_report/moss<cmid>/* and the record in
      * plagiarism_programming_reslt table
      * Output: output one file for each student, with the file name is the student id, which include all the codes
@@ -86,45 +86,45 @@ class moss_parser {
      */
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('plagiarism_programming_reslt', array('reportid'=>$this->report->id));
-        // uniformise the pairs where 1 is external code
+        $pairs = $DB->get_records('plagiarism_programming_reslt', array('reportid' => $this->report->id));
+        // Uniformise the pairs where 1 is external code.
         $pairs = plagiarism_programming_transform_similarity_pair($pairs);
         $path = dirname($this->filename);
 
-        $similarity_array = array();
+        $similarityarray = array();
 
         foreach ($pairs as $pair) {
             $file = $pair->comparison;
-            $file_0 = $path.'/'.substr($file, 0, -5).'-0.html';
-            $file_1 = $path.'/'.substr($file, 0, -5).'-1.html';
+            $file0 = $path.'/'.substr($file, 0, -5).'-0.html';
+            $file1 = $path.'/'.substr($file, 0, -5).'-1.html';
             $file = $path.'/'.$file;
 
-            $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file_0, $similarity_array);
-            $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file_1, $similarity_array);
+            $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file0, $similarityarray);
+            $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file1, $similarityarray);
 
-            // TODO: uncomment to delete these files after debugging
+            // TODO: Uncomment to delete these files after debugging.
             if (!debugging()) {
-                unlink($file_0);
-                unlink($file_1);
+                unlink($file0);
+                unlink($file1);
             }
         }
-        $this->save_similarity($similarity_array);
+        $this->save_similarity($similarityarray);
     }
 
     /**
      * This function extract the similar blocks of one student with another. The block is recorded in the $similarity_array
      * passed into the function.
-     * @param $student_id {number} id of the student whose similarity blocks with another is going to be extracted
-     * @param $other_student_id {number} id of the other student
+     * @param $studentid {number} id of the student whose similarity blocks with another is going to be extracted
+     * @param $otherstudentid {number} id of the other student
      * @param $filename {string} the comparison file of the report of the pair
-     * @param $similarity_array {array} contain the recorded blocks and blocks that will be recorded in this call,
+     * @param $similarityarray {array} contain the recorded blocks and blocks that will be recorded in this call,
      *        which is a multidimensional array $similarity_array[$student][0,1...] = array('begin_line'=>?,'end_line'=>?,
      *        'student'=>?,'color'=>?,'anchor'=>?)
      */
-    private function parse_similar_parts($student_id, $other_student_id, $filename, &$similarity_array) {
+    private function parse_similar_parts($studentid, $otherstudentid, $filename, &$similarityarray) {
 
-        if (!isset($similarity_array[$student_id])) {
-            $similarity_array[$student_id] = array();
+        if (!isset($similarityarray[$studentid])) {
+            $similarityarray[$studentid] = array();
         }
 
         /* Since the whole code (every file) is encapsulated in only one pre tag (not like JPlag in many)
@@ -137,109 +137,109 @@ class moss_parser {
             trigger_error("File $filename does not exist", E_USER_ERROR);
         }
 
-        $this->save_code_file($filename, $student_id);
-        $comparison_file = fopen($filename, 'r');
-        if (!$comparison_file) {
+        $this->save_code_file($filename, $studentid);
+        $comparisonfile = fopen($filename, 'r');
+        if (!$comparisonfile) {
             trigger_error("Cannot open file $filename", E_USER_ERROR);
         }
 
-        // We extract the pre block first, bypassing lines not ending with <PRE>
+        // We extract the pre block first, bypassing lines not ending with <PRE>.
         $line = '';
         do {
-            $line = fgets($comparison_file);
-        } while ($line!=='' && substr(trim($line), -5)!='<PRE>');
+            $line = fgets($comparisonfile);
+        } while ($line !== '' && substr(trim($line), -5) != '<PRE>');
 
-        if (feof($comparison_file)) {
+        if (feof($comparisonfile)) {
             trigger_error("File $filename corrupted", E_USER_ERROR);
         }
 
-        $line_no = 1;
-        $line=trim(fgets($comparison_file));
-        // loop until end of pre-block encountered
-        while (!feof($comparison_file) && substr($line, -6)!='</PRE>') {
+        $linenumber = 1;
+        $line = trim(fgets($comparisonfile));
+        // Loop until end of pre-block encountered.
+        while (!feof($comparisonfile) && substr($line, -6) != '</PRE>') {
 
-            $start_block=$this->is_start_block($line);
-            if ($start_block) { // start a similarity block
-                $anchor = $start_block[0];
-                $color = $start_block[1];
-                assert(trim(fgets($comparison_file))==''); // swallow one blank line after the start block
+            $startblock = $this->is_start_block($line);
+            if ($startblock) { // Start a similarity block.
+                $anchor = $startblock[0];
+                $color = $startblock[1];
+                assert(trim(fgets($comparisonfile)) == ''); // Swallow one blank line after the start block.
 
-                // seek the end block line
-                $num_line = 0;
-                $line = fgets($comparison_file);
-                while (!feof($comparison_file) && !$this->is_end_block($line)) { //go until the end of this similarity block
-                    $num_line++;
-                    $line = fgets($comparison_file);
+                // Seek the end block line.
+                $numline = 0;
+                $line = fgets($comparisonfile);
+                while (!feof($comparisonfile) && !$this->is_end_block($line)) { // Go until the end of this similarity block.
+                    $numline++;
+                    $line = fgets($comparisonfile);
                 }
 
-                if (feof($comparison_file)) {
+                if (feof($comparisonfile)) {
                     trigger_error("File $filename corrupted", E_USER_ERROR);
                 }
 
-                $similarity_array[$student_id][] = array(
-                    'begin_line' => $line_no,
-                    'end_line' => $line_no+$num_line,
-                    'student' => $other_student_id,
+                $similarityarray[$studentid][] = array(
+                    'begin_line' => $linenumber,
+                    'end_line' => $linenumber + $numline,
+                    'student' => $otherstudentid,
                     'color' => $color,
                     'anchor' => $anchor
                 );
-                $line_no += $num_line; // include the additional line at the end line
+                $linenumber += $numline; // Include the additional line at the end line.
 
-                // since a line end block may also start another block. If such a line encountered, don't read another line
+                // Since a line end block may also start another block. If such a line encountered, don't read another line.
                 if (!$this->is_start_block($line)) {
-                    $line=trim(fgets($comparison_file));
-                    $line_no++;
+                    $line = trim(fgets($comparisonfile));
+                    $linenumber++;
                 }
-            } else { // not a start of a block line - read another line
-                $line=trim(fgets($comparison_file));
-                $line_no++;
+            } else { // Not a start of a block line - read another line.
+                $line = trim(fgets($comparisonfile));
+                $linenumber++;
             }
         }
 
-        if (substr($line, -6)!='</PRE>') {
+        if (substr($line, -6) != '</PRE>') {
             trigger_error("File $filename corrupted", E_USER_ERROR);
         }
 
-        fclose($comparison_file);
+        fclose($comparisonfile);
     }
 
     /**
      * Save the code of a student into one file having studentid as filename. This function is called many times for one student
      * but the file will be saved only once.
      * @param $filename {string} the name of the file
-     * @param $student_id {number} id of the file
+     * @param $studentid {number} id of the file
      */
-    private function save_code_file($filename, $student_id) {
-        static $file_array = array();
-        if (isset($file_array[$student_id])) { // already saved?
+    private function save_code_file($filename, $studentid) {
+        static $filearray = array();
+        if (isset($filearray[$studentid])) { // Already saved?
             return;
         }
-        // if not saved!
-        $comparison_file = fopen($filename, 'r');
-        $code_file = fopen(dirname($this->filename).'/'.$student_id, 'w');
+        // If not saved!
+        $comparisonfile = fopen($filename, 'r');
+        $codefile = fopen(dirname($this->filename).'/'.$studentid, 'w');
 
-        // skip all the html header lines
+        // Skip all the html header lines.
         do {
-            $line = rtrim(fgets($comparison_file));
-        } while (!feof($comparison_file) && substr($line, -5)!='<PRE>');
+            $line = rtrim(fgets($comparisonfile));
+        } while (!feof($comparisonfile) && substr($line, -5) != '<PRE>');
 
-        // write the code lines to the code file
-        $line = rtrim(fgets($comparison_file));
-        while (!feof($comparison_file) && substr($line, -6)!='</PRE>' || $line===false) {
-            if ($this->is_start_block($line)) { // start of a block, skip this line
-                fgets($comparison_file); // skip another blank line
+        // Write the code lines to the code file.
+        $line = rtrim(fgets($comparisonfile));
+        while (!feof($comparisonfile) && substr($line, -6) != '</PRE>' || $line === false) {
+            if ($this->is_start_block($line)) { // Start of a block, skip this line.
+                fgets($comparisonfile); // Skip another blank line.
             } else if ($this->is_end_block($line)) {
-                fwrite($code_file, substr($line, 7)."\n"); //skip the </FONT> tag
+                fwrite($codefile, substr($line, 7)."\n"); // Skip the </FONT> tag.
             } else {
-                fwrite($code_file, $line."\n");
+                fwrite($codefile, $line."\n");
             }
-            $line = rtrim(fgets($comparison_file));
+            $line = rtrim(fgets($comparisonfile));
         }
-        fwrite($code_file, substr($line, 0, -6));
+        fwrite($codefile, substr($line, 0, -6));
 
-        $file_array[$student_id] = true;
-        fclose($comparison_file);
-        fclose($code_file);
+        $filearray[$studentid] = true;
+        fclose($comparisonfile);
+        fclose($codefile);
     }
 
     /**
@@ -251,8 +251,8 @@ class moss_parser {
     private function is_start_block($line) {
         static $pattern = '/<A NAME=\"([0-9]+)\"><\/A><FONT color = #([0-9A-F]+)>/';
         $match = null;
-        $match_num = preg_match($pattern, $line, $match);
-        if ($match_num>0) {
+        $matchnum = preg_match($pattern, $line, $match);
+        if ($matchnum > 0) {
             return array($match[1], $match[2]);
         } else {
             return false;
@@ -265,23 +265,23 @@ class moss_parser {
      * @return true if the line is the end of a similarity block, otherwise false
      */
     private function is_end_block($line) {
-        return substr($line, 0, 7)=='</FONT>';
+        return substr($line, 0, 7) == '</FONT>';
     }
 
     /**
      * Mark the code file with the similarities for all students
      * @param $similarity_array: array of blocks output by parse_similar_parts function
      */
-    private function save_similarity(&$similarity_array) {
+    private function save_similarity(&$similarityarray) {
         $directory = dirname($this->filename);
 
-        foreach ($similarity_array as $student_id => $similar_blocks) {
-            $this->merge_and_sort_blocks($similar_blocks);
+        foreach ($similarityarray as $studentid => $similarblocks) {
+            $this->merge_and_sort_blocks($similarblocks);
 
-            $filename = $directory.'/'.$student_id;
+            $filename = $directory.'/'.$studentid;
 
             $content = file_get_contents($filename);
-            $this->mark_similarities($content, $similar_blocks);
+            $this->mark_similarities($content, $similarblocks);
             file_put_contents($filename, $content);
         }
     }
@@ -292,23 +292,23 @@ class moss_parser {
      * @param $similarities: the array of blocks of just one student
      */
     private function merge_and_sort_blocks(&$similarities) {
-        $merged_array = array(); // this is used as a hash table: (begin_line.end_line)=>similarity info
+        $mergedarray = array(); // This is used as a hash table: (begin_line.end_line)=>similarity info.
         foreach ($similarities as $block) {
             $key = $block['begin_line'].'.'.$block['end_line'];
-            if (!isset($merged_array[$key])) {
+            if (!isset($mergedarray[$key])) {
                 $block['student'] = array($block['student']);
                 $block['anchor']  = array($block['anchor']);
                 $block['color']   = array($block['color']);
 
-                $merged_array[$key] = $block;
+                $mergedarray[$key] = $block;
             } else {
-                $merged_array[$key]['student'][] = $block['student'];
-                $merged_array[$key]['anchor'][] = $block['anchor'];
-                $merged_array[$key]['color'][] = $block['color'];
+                $mergedarray[$key]['student'][] = $block['student'];
+                $mergedarray[$key]['anchor'][] = $block['anchor'];
+                $mergedarray[$key]['color'][] = $block['color'];
             }
         }
-        usort($merged_array, array('moss_parser', 'position_compare'));
-        $similarities = $merged_array;
+        usort($mergedarray, array('moss_parser', 'position_compare'));
+        $similarities = $mergedarray;
     }
 
     /** Compare the position of two blocks*/
@@ -331,10 +331,10 @@ class moss_parser {
             $student = implode(',', $block['student']);
             $color = implode(',', $block['color']);
 
-            $lines[$block['begin_line']-1] =
-                "<span sid='$student' anchor='$anchor' type='begin' color='$color'></span>".$lines[$block['begin_line']-1];
-            $lines[$block['end_line']-1] =
-                "<span sid='$student' anchor='$anchor' type='end' color='$color'></span>".$lines[$block['end_line']-1];
+            $lines[$block['begin_line'] - 1] =
+                "<span sid='$student' anchor='$anchor' type='begin' color='$color'></span>".$lines[$block['begin_line'] - 1];
+            $lines[$block['end_line'] - 1] =
+                "<span sid='$student' anchor='$anchor' type='end' color='$color'></span>".$lines[$block['end_line'] - 1];
         }
 
         $content = implode("\n", $lines);

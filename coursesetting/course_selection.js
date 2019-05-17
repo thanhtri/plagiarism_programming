@@ -9,7 +9,7 @@ M.plagiarism_programming.select_course = {
 
     init_course_panel: function(Y) {
         var coursepanel = Y.Node.create('<div></div>');
-        // delegate events to course panel
+        // Delegate events to course panel.
         coursepanel.delegate('click', function(ev) {
             ev.preventDefault();
             var page = ev.target.getAttribute('page');
@@ -29,11 +29,9 @@ M.plagiarism_programming.select_course = {
             visible: false,
             centered: true,
             zIndex: 2,
-            hideOn: [
-                {
-                    eventName: 'clickoutside'
-                }
-            ]
+            hideOn: [{
+                eventName: 'clickoutside'
+            }]
         }).render();
         panel.set('headerContent', M.str.plagiarism_programming.course_select);
         panel.set('bodyContent', '<div></div>');
@@ -42,11 +40,11 @@ M.plagiarism_programming.select_course = {
     },
 
     init_radio_button: function(Y) {
-        // initialize the radio button
+        // Initialize the radio button.
         var select_level = Y.all('.plagiarism_programming_enable_level');
         select_level.on('click', function(ev) {
             this.update_level(ev.target.get('value'));
-            if (ev.target.get('value')=='course') {
+            if (ev.target.get('value') == 'course') {
                 this.show_course_panel(1);
             }
         }, this);
@@ -116,7 +114,7 @@ M.plagiarism_programming.select_course = {
         label_name.setContent(M.str.plagiarism_programming.by_name);
         label_name.set('for', 'course_search_name');
         var text = Y.Node.create('<input id="course_search_name" type="text"/>');
-        var button = Y.Node.create('<input type="button" value="'+M.str.plagiarism_programming.search+'"/>');
+        var button = Y.Node.create('<input type="button" value="' + M.str.plagiarism_programming.search + '"/>');
         button.on('click', M.plagiarism_programming.select_course.search_course, this);
 
         footer.append(label_category);

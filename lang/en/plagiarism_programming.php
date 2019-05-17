@@ -23,7 +23,7 @@
 
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
-// settings
+// Settings.
 $string['pluginname'] = 'Source-code Plagiarism Plugin';
 $string['programming'] = 'Programming Assignment';
 $string['programmingexplain'] = 'This is the configuration for Programming Plagiarism Detection plugin';
@@ -47,7 +47,7 @@ $string['proxy_pass'] = 'Proxy password';
 $string['jplag_account_error'] = 'Invalid JPlag account - Please provide the correct username and password';
 $string['jplag_account_expired'] = 'Your account has expired!';
 $string['jplag_connection_error'] = 'Cannot connect to JPlag server - Please check the connection';
-$string['moss_connection_error'] =  'Cannot connect to MOSS server on port 7690 - Please check the connection';
+$string['moss_connection_error'] = 'Cannot connect to MOSS server on port 7690 - Please check the connection';
 $string['proxy_connection_error'] = 'Cannot connect to MOSS through the specified proxy server';
 $string['moss_account_error'] = 'MOSS credential is invalid. Please provide a valid MOSS userid in '
     .'Plugins -> Plagiarism Prevention -> Programming page';
@@ -58,7 +58,7 @@ $string['username_missing'] = 'Please provide JPlag username';
 $string['password_missing'] = 'Please provide JPlag password';
 $string['moss_userid_missing'] = 'Please provide MOSS user id or email';
 $string['account_instruction'] = 'The plugin uses MOSS and JPlag engine in the background. An account is required to use these engines';
-$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at '; // + jplag_link
+$string['jplag_account_instruction'] = 'If you do not have a JPlag account, you can register at https://jplag.ipd.kit.edu/';
 $string['moss_account_instruction'] = 'MOSS userid could be obtained by emailing moss@moss.stanford.edu. Instructions are provided at MOSS site: ';
 $string['moss_userid_notfound'] = 'Cannot find userid in the provided email';
 $string['proxy_port_missing'] = 'Proxy port must be provided along with the host';
@@ -66,7 +66,7 @@ $string['proxy_host_missing'] = 'Proxy host must be provided along with the port
 $string['proxy_user_missing'] = 'Proxy login must be provided along with the password';
 $string['proxy_pass_missing'] = 'Proxy password must be provided along with the login';
 
-// form
+// Form.
 $string['plagiarism_header'] = 'Source code plagiarism detection';
 $string['programmingYN'] = 'Code similarity checking';
 $string['programming_language'] = 'Language';
@@ -108,7 +108,7 @@ $string['additional_code_hlp_help'] = 'Upload other codes to compare against (e.
     .'Only zip and rar files are supported. A compressed file must contain a number of directories or compressed files, each correspond to an assignment';
 
 $string['jplag_credential_missing'] = "Attention: JPlag account hasn't been provided";
-$string['moss_credential_missing'] =  "Attention: MOSS account hasn't been provided";
+$string['moss_credential_missing'] = "Attention: MOSS account hasn't been provided";
 $string['credential_missing_instruction'] = 'Please enter the required credential in Administrator -> Plugin -> Plagiarism -> Programming assignment';
 $string['no_tool_selected_error'] = 'You must select at least one tool!';
 $string['invalid_submit_date_error'] = 'Submit date must not be in the past';
@@ -148,7 +148,7 @@ $string['scanning_in_progress'] = 'Scanning may take a longtime depending on ser
 $string['unexpected_error'] = 'An unexpected error has occurred! Please contact administrator!';
 $string['invalid_file_type'] = 'Submissions must have file extensions: ';
 
-// options for displaying results
+// Options for displaying results.
 $string['option_header'] = 'Options';
 $string['threshold'] = 'Similarity filter (%)';
 $string['similarity_type'] = 'Similarity type';
@@ -165,7 +165,7 @@ $string['report_not_available'] = 'No reports available';
 $string['lower_threshold_hlp'] = '';
 $string['lower_threshold_hlp_help'] = 'Display only the pairs having similarity rate above this value';
 
-$string['rate_type_hlp'] ='';
+$string['rate_type_hlp'] = '';
 $string['rate_type_hlp_help'] = 'Since two assignments can have substantially different lengths, the ratio of the similar parts '
     .'over each one is different. "Average similarity" takes the average rate of the two as the similarity rate of the pair, '
     .'while "Maximum similarity" takes the maximum one';
@@ -179,7 +179,7 @@ $string['version_hlp'] = '';
 $string['version_hlp_help'] = 'See the report of previous scans';
 $string['pair'] = 'number of pairs';
 
-// in the report
+// In the report.
 $string['yours'] = 'Yours';
 $string['another'] = "Someone's";
 $string['chart_legend'] = 'Similarity rate distribution of the whole course';
@@ -189,12 +189,12 @@ $string['comparison'] = 'Comparison';
 
 $string['plagiarism_action'] = 'Action';
 $string['mark_select_title'] = 'Mark this pair as';
-$string['mark_suspicious'] =  'suspicious';
+$string['mark_suspicious'] = 'suspicious';
 $string['mark_nonsuspicious'] = 'normal';
 $string['show_similarity_to_others'] = 'Show similarity of {student} with other students';
 $string['history_char'] = 'Show similarity history';
 
-// notification
+// Notification.
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';
 $string['report'] = 'Report';
 $string['max_similarity'] = 'max similarity';

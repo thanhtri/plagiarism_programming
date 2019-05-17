@@ -25,51 +25,52 @@
 define('AJAX_SCRIPT', true);
 
 require_once(__DIR__.'/../../config.php');
+require_login();
 require_once(__DIR__.'/reportlib.php');
 global $DB;
 
-$result_id = required_param('id', PARAM_INT);
+$resultid = required_param('id', PARAM_INT);
 $task = required_param('task', PARAM_TEXT);
-$result_record = $DB->get_record('plagiarism_programming_reslt', array('id'=>$result_id));
-$report_record = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result_record->reportid));
-$context = context_module::instance($report_record->cmid);
+$resultrecord = $DB->get_record('plagiarism_programming_reslt', array('id' => $resultid));
+$reportrecord = $DB->get_record('plagiarism_programming_rpt', array('id' => $resultrecord->reportid));
+$context = context_module::instance($reportrecord->cmid);
 
 // Only teachers can mark a pair in the comparison view.
 require_capability('mod/assignment:grade', $context);
 
-if ($task=='mark') {
+if ($task == 'mark') {
     $action = required_param('action', PARAM_ALPHA);
-    assert($action=='Y' || $action=='N' || $action=='');
-    $result_record->mark = $action;
-    $DB->update_record('plagiarism_programming_reslt', $result_record);
+    assert($action == 'Y' || $action == 'N' || $action == '');
+    $resultrecord->mark = $action;
+    $DB->update_record('plagiarism_programming_reslt', $resultrecord);
     echo 'OK';
-} else if ($task=='get_history') {
-    $rate_type = optional_param('rate_type', 'avg', PARAM_TEXT);
-    $similarity_history = plagiarism_programming_get_student_similarity_history($result_record, 'asc');
+} else if ($task == 'get_history') {
+    $ratetype = optional_param('rate_type', 'avg', PARAM_TEXT);
+    $similarityhistory = plagiarism_programming_get_student_similarity_history($resultrecord, 'asc');
     $history = array();
-    if ($rate_type=='avg') {
+    if ($ratetype == 'avg') {
         $i = 0;
-        foreach ($similarity_history as $pair) {
+        foreach ($similarityhistory as $pair) {
             $history[$pair->id] = array(
-                'time'=>$pair->time_created,
-                'similarity'=>($pair->similarity1+$pair->similarity2)/2,
-                'time_text'=>date('d M', $pair->time_created)
+                'time' => $pair->time_created,
+                'similarity' => ($pair->similarity1 + $pair->similarity2) / 2,
+                'time_text' => date('d M', $pair->time_created)
             );
             $i++;
-            if ($i==6) {
+            if ($i == 6) {
                 break;
             }
         }
     } else {
         $i = 0;
-        foreach ($similarity_history as $pair) {
+        foreach ($similarityhistory as $pair) {
             $history[$pair->id] = array(
-                'time'=>$pair->time_created,
-                'similarity'=>max($pair->similarity1, $pair->similarity2),
-                'time_text'=>date('d M', $pair->time_created)
+                'time' => $pair->time_created,
+                'similarity' => max($pair->similarity1, $pair->similarity2),
+                'time_text' => date('d M', $pair->time_created)
             );
             $i++;
-            if ($i==6) {
+            if ($i == 6) {
                 break;
             }
         }

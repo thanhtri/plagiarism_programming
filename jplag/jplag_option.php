@@ -17,50 +17,46 @@
 /**
  * The option class defined by JPlag wsdl file - see jplag.wsdl
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 define('INVALID_LANGUAGE_EXCEPTION', 2);
 
-require_once(dirname(__FILE__).'/../utils.php');
+require_once(dirname(__FILE__) . '/../utils.php');
 
-class jplag_option {
-
-    public $language;   //programming language
-    public $comparisonMode = self::NORMAL_PAIRWISE_COMPARISON;
-    public $minimumMatchLength = 8;         //number of similar contiguos tokens to be considered a match
-    public $suffixes = array();             //file suffixes to scan, depending on language
-    public $readSubdirs = true;             // true or false
-    public $pathToFiles = '';               // specific directory in the zip file to look for
-    public $baseCodeDir = '';               // directory containing the base code (the code provided to all students
-    public $storeMatches= '1%';               // the number of matches displayed
-    public $clustertype = '';               // the type of cluster
-    public $countryLang = 'en';             // language used
-    public $title = '';                     // title of the assignment
-    public $originalDir = '';               // original directory
-
+class jplag_option{
+    public $language; // Programming language.
+    public $comparisonmode = self::NORMAL_PAIRWISE_COMPARISON;
+    public $minimummatchlength = 8; // Number of similar contiguos tokens to be considered a match.
+    public $suffixes = array(); // File suffixes to scan, depending on language.
+    public $readsubdirs = true;
+    public $pathtofiles = ''; // Specific directory in the zip file to look for.
+    public $basecodedir = ''; // Directory containing the base code (the code provided to all students.
+    public $storematches = '1%'; // The number of matches displayed.
+    public $clustertype = ''; // The type of cluster.
+    public $countrylang = 'en'; // Language used.
+    public $title = ''; // Title of the assignment.
+    public $originaldir = ''; // Original directory.
     const JAVA = 'java';
-    const C_CPLUS ='c';
+    const C_CPLUS = 'c';
     const TEXT = 'text';
     const CSHARP = 'c#';
+    const NORMAL_PAIRWISE_COMPARISON = 0; // Comparison mode value.
+    const REVISION_ADJACENT_COMPARISON = 1; // Comparison mode value.
+    const CLUSTER_NULL = 'null'; // Cluster type.
+    const CLUSTER_MIN = 'min'; // Cluster type.
+    const CLUSTER_MAX = 'max'; // Cluster type.
+    const CLUSTER_AVG = 'avg';
 
-    const NORMAL_PAIRWISE_COMPARISON = 0;     //comparison mode value
-    const REVISION_ADJACENT_COMPARISON = 1;   //comparison mode value
-
-    const CLUSTER_NULL = 'null';    // cluster type
-    const CLUSTER_MIN  = 'min';    // cluster type
-    const CLUSTER_MAX = 'max';    // cluster type
-    const CLUSTER_AVG = 'avg';     // cluster type
-
+    // Cluster type.
     public function set_language($language) {
-        $supported_languages = jplag_tool::get_supported_language();
-        if (isset($supported_languages[$language])) {
-            $this->language = $supported_languages[$language];
+        $supportedlanguages = jplag_tool::get_supported_language();
+        if (isset($supportedlanguages[$language])) {
+            $this->language = $supportedlanguages[$language];
             $this->suffixes = plagiarism_programming_get_file_extension($language);
         } else {
             throw new Exception('Invalid language', INVALID_LANGUAGE_EXCEPTION);

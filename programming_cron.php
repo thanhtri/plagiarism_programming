@@ -18,82 +18,90 @@
  * Implement the automatic similarity scanning according to the specified dates in {plagiarism_programming_date}.
  * This script is called periodically, by moodle's cron script
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-require_once(__DIR__.'/utils.php');
-require_once(__DIR__.'/scan_assignment.php');
-require_once(__DIR__.'/detection_tools.php');
+require_once(__DIR__ . '/utils.php');
+require_once(__DIR__ . '/scan_assignment.php');
+require_once(__DIR__ . '/detection_tools.php');
 
-// select the assignments needed to be scanned
-global $DB, $CFG, $detection_tools;
+// Select the assignments needed to be scanned.
+global $DB, $CFG, $detectiontools;
 
 plagiarism_programming_create_temp_dir();
 
-$current_time = time();
-$settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<=$current_time");
+$currenttime = time();
+$settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<=$currenttime");
 $settngids = array_unique($settngids);
 
 echo "Start sending submissions to plagiarism tools\n";
-foreach ($settngids as $setting_id) {
-    $assignment_config = $DB->get_record('plagiarism_programming', array('id'=>$setting_id));
-    
-    // check whether the assignment is already deleted or not (for safety)
-    $assignment_ctx = context_module::instance($assignment_config->cmid, IGNORE_MISSING);
-    if (!$assignment_ctx) {
-        plagiarism_programming_delete_config($assignment_config->cmid);
+foreach ($settngids as $settingid) {
+    $assignmentconfig = $DB->get_record('plagiarism_programming', array(
+        'id' => $settingid
+    ));
+
+    // Check whether the assignment is already deleted or not (for safety).
+    $assignmentctx = context_module::instance($assignmentconfig->cmid, IGNORE_MISSING);
+    if (! $assignmentctx) {
+        plagiarism_programming_delete_config($assignmentconfig->cmid);
         continue;
     }
 
-    if (!scanning_in_progress($assignment_config)) { // reset the scanning
-        foreach ($detection_tools as $toolname => $toolinfo) {
-            if ($assignment_config->$toolname) {
-                $tool_status = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment_config->id));
-                $tool_status->status = 'pending';
-                $tool_status->message = '';
-                $tool_status->error_detail = '';
-                $DB->update_record('plagiarism_programming_'.$toolname, $tool_status);
+    if (! scanning_in_progress($assignmentconfig)) { // Reset the scanning.
+        foreach ($detectiontools as $toolname => $toolinfo) {
+            if ($assignmentconfig->$toolname) {
+                $toolstatus = $DB->get_record('plagiarism_programming_' . $toolname, array(
+                    'settingid' => $assignmentconfig->id
+                ));
+                $toolstatus->status = 'pending';
+                $toolstatus->message = '';
+                $toolstatus->error_detail = '';
+                $DB->update_record('plagiarism_programming_' . $toolname, $toolstatus);
             }
         }
     }
-    // do not wait for result, the next cron script will check the status and download the result
-    // send an email when scanning complete
-    plagiarism_programming_scan_assignment($assignment_config, false, true);
 
-    $all_tools_finished = true;
+    // Do not wait for result, the next cron script will check the status and download the result.
+    // Send an email when scanning complete.
+    plagiarism_programming_scan_assignment($assignmentconfig, false, true);
 
-    // check if the scanning has been done to mark the date as finished
-    foreach ($detection_tools as $toolname => $toolinfo) {
-        if ($assignment_config->$toolname) {
-            $tool_status = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment_config->id));
-            if ($tool_status->status!='finished' && $tool_status->status!='error') {
-                $all_tools_finished = false;
+    $alltoolsfinished = true;
+
+    // Check if the scanning has been done to mark the date as finished.
+    foreach ($detectiontools as $toolname => $toolinfo) {
+        if ($assignmentconfig->$toolname) {
+            $toolstatus = $DB->get_record('plagiarism_programming_' . $toolname, array(
+                'settingid' => $assignmentconfig->id
+            ));
+            if ($toolstatus->status != 'finished' && $toolstatus->status != 'error') {
+                $alltoolsfinished = false;
                 break;
             }
         }
     }
-    if ($all_tools_finished) {
-        $scan_dates = $DB->get_records_select('plagiarism_programming_date',
-            "settingid=$assignment_config->id AND finished=0 AND scan_date<$current_time", null, 'scan_date ASC');
-        $scan_date = array_shift($scan_dates);
-        $scan_date->finished=1;
-        $DB->update_record('plagiarism_programming_date', $scan_date);
-    }
 
+    if ($alltoolsfinished) {
+        $scandates = $DB->get_records_select('plagiarism_programming_date',
+            "settingid=$assignmentconfig->id AND finished=0 AND scan_date<$currenttime", null, 'scan_date ASC');
+        $scandate = array_shift($scandates);
+        $scandate->finished = 1;
+        $DB->update_record('plagiarism_programming_date', $scandate);
+    }
 }
 echo "Finished sending submissions to plagiarism tools\n";
 
-function scanning_in_progress($assignment_config) {
-    global $DB, $detection_tools;
-    foreach ($detection_tools as $toolname => $toolinfo) {
-        if ($assignment_config->$toolname) {
-            $tool_status = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment_config->id));
-            if ($tool_status->status!='pending' && $tool_status->status!='finished' && $tool_status->status!='error') {
+function scanning_in_progress($assignmentconfig) {
+    global $DB, $detectiontools;
+    foreach ($detectiontools as $toolname => $toolinfo) {
+        if ($assignmentconfig->$toolname) {
+            $toolstatus = $DB->get_record('plagiarism_programming_' . $toolname, array(
+                'settingid' => $assignmentconfig->id
+            ));
+            if ($toolstatus->status != 'pending' && $toolstatus->status != 'finished' && $toolstatus->status != 'error') {
                 return true;
             }
         }

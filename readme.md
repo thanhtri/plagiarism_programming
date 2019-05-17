@@ -7,7 +7,7 @@ This plugin was forked from @thantri and last updated 5 years ago.
 In the meantime, the jplag-service was discontinued.
 As such, there will be legacy code left behind.
 
-## 1. Registration and MOSS account
+## 1. Registering a MOSS account
 The plugin relies on MOSS engine in the background to carry out the scanning for similarity.
 
 Create MOSS account: email to moss@moss.stanford.edu a message containing 2 lines (without a header!)
@@ -15,7 +15,9 @@ Create MOSS account: email to moss@moss.stanford.edu a message containing 2 line
   registeruser
   mail username@domain
   ```
-in which username@domain is your email address. You will receive back a reply containing a perl script to use MOSS. Visit http://theory.stanford.edu/~aiken/moss/ for more information.
+in which username@domain is your email address. You will receive back a reply containing a perl script to use MOSS. 
+
+Visit http://theory.stanford.edu/~aiken/moss/ for more information.
 
 ## 2. Installation
 Extract the zip file to `MOODLEROOT/plagiarism/programming`.
@@ -35,14 +37,16 @@ Login to Moodle as an administrator and visit the notification page to trigger t
 Click the upgrade button to install the plugin and update the database. An installation successful page should appear.
 
 ## 5.1 Moodle configuration
-Go to Site Administrator → Advanced Features (or url http://<server_url>/admin/settings.php?section=optionalsubsystems). Tick the “Enable Plagiarism plugins” checkbox at the end of the page. Then, click “Save Changes”
+Go to Site Administrator → Advanced Features (or url http://<server_url>/admin/settings.php?section=optionalsubsystems). 
+
+Tick the “Enable Plagiarism plugins” checkbox at the end of the page. Then, click “Save Changes”
 
 ## 5.2 Plugin configuration
 Go to Site Administrator → Plugin → Plagiarism Prevention → Programming Assignment to configure the plugin. The following options are provided:
 * Enable this plugin globally or for specific courses.
 * MOSS Userid: the userid emailed to you when registered for MOSS. If you find it difficult to locate the userid in that email. Just copy the entire email to the textbox below (you need either find the user id or copy the email. You don't need to do both)
 
-## 6. Assignment configuration
+## 6. Assignment settings
 Once the plugin is enabled, users will see the 'Source code plagiarism detection' block when creating or editing an assignment.
 
 This block offers the following parameters:
@@ -73,4 +77,5 @@ The report consists of a graph of similarity rate distribution of every pairs, a
 
 ## 8. Usage tip: Dummy user
 It can be helpful to have a dummy user upload the template/framework of the assignment. This way similarities can be seen much easier.
+
 This is especially useful when there are little submissions as moss is pretty restrictive on it's own: http://moss.stanford.edu/general/tips.html

@@ -19,15 +19,14 @@
  * scanning date already passed
  * Called by the cron script
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-//used in extract_assignment
+// Used in extract_assignment.
 define('NOT_SUFFICIENT_SUBMISSION', 1);
 define('CONTEXT_NOT_EXIST', 2);
 define('NOT_CORRECT_FILE_TYPE', 3);
@@ -38,11 +37,11 @@ define('CODE_FILE_SINGLE_SUBMISSION_FORMAT', 'code_file_single_submission_format
 
 global $CFG;
 
-require_once(__DIR__.'/utils.php');
-require_once(__DIR__.'/plagiarism_tool.php');
-require_once(__DIR__.'/jplag_tool.php');
-require_once(__DIR__.'/moss_tool.php');
-require_once(__DIR__.'/utils.php');
+require_once(__DIR__ . '/utils.php');
+require_once(__DIR__ . '/plagiarism_tool.php');
+require_once(__DIR__ . '/jplag_tool.php');
+require_once(__DIR__ . '/moss_tool.php');
+require_once(__DIR__ . '/utils.php');
 
 define('PLAGIARISM_TEMP_DIR', "{$CFG->tempdir}/plagiarism_programming/");
 
@@ -55,15 +54,16 @@ function plagiarism_programming_create_temp_dir() {
     }
 }
 
-/** 
+/**
  * Create the temporary directory (if doesn't exist) for the assignment.
  * Students' code will be extracted here
+ *
  * @param: $assignment: the record object of setting for the assignment
  * @return a temporary directory that all files of this assignment will be stored
  */
-function plagiarism_programming_get_assignment_dir($assignment, $empty_dir=false) {
-    $dir = PLAGIARISM_TEMP_DIR.$assignment->cmid.'/';
-    if ($empty_dir) {
+function plagiarism_programming_get_assignment_dir($assignment, $emptydir = false) {
+    $dir = PLAGIARISM_TEMP_DIR . $assignment->cmid . '/';
+    if ($emptydir) {
         plagiarism_programming_rrmdir($dir);
         mkdir($dir);
     } else if (!is_dir($dir)) {
@@ -76,84 +76,85 @@ function plagiarism_programming_get_assignment_dir($assignment, $empty_dir=false
  * Get the submitted files for the assignment
  * This function will take into account the difference of component and
  * file area between Moodle 2.3 and previous version
- * @param context_module $assignment_context The context of the assignment
+ *
+ * @param context_module $assignmentcontext
+ *            The context of the assignment
  */
-function plagiarism_programming_get_submitted_files($assignment_context) {
+function plagiarism_programming_get_submitted_files($assignmentcontext) {
     global $CFG;
 
-    $cm = get_coursemodule_from_id('', $assignment_context->instanceid);
-    if ($cm->modname =='assign') {
+    $cm = get_coursemodule_from_id('', $assignmentcontext->instanceid);
+    if ($cm->modname == 'assign') {
         $component = 'assignsubmission_file';
-        $file_area = 'submission_files';
+        $filearea = 'submission_files';
     } else {
         $component = 'mod_assignment';
-        $file_area = 'submission';
+        $filearea = 'submission';
     }
     $fs = get_file_storage();
-    $file_records = $fs->get_area_files($assignment_context->id, $component, $file_area, false, 'userid', false);
-    return $file_records;
+    $filerecords = $fs->get_area_files($assignmentcontext->id, $component, $filearea, false, 'userid', false);
+    return $filerecords;
 }
 
 /**
  * Extract a compressed file, either zip or rar
  */
-function plagiarism_programming_extract_file($file, $extensions, $location, $user=null, $textfile_only=true) {
-
+function plagiarism_programming_extract_file($file, $extensions, $location, $user = null, $textfileonly = true) {
     if ($file instanceof stored_file) {
-        $temp_file_path = dirname($location).'/'.$file->get_filename();
-        $file->copy_content_to($temp_file_path);
+        $tempfilepath = dirname($location) . '/' . $file->get_filename();
+        $file->copy_content_to($tempfilepath);
         $filename = $file->get_filename();
-        $file_ext = substr($filename, -4, 4);
-    } else { // file is a string
-        $temp_file_path = $file;
-        $filename = basename($temp_file_path);
-        $file_ext = substr($filename, -4, 4);
+        $fileextension = substr($filename, -4, 4);
+    } else { // File is a string.
+        $tempfilepath = $file;
+        $filename = basename($tempfilepath);
+        $fileextension = substr($filename, -4, 4);
     }
-    if ($file_ext == '.zip') {
-        $valid_file = plagiarism_programming_extract_zip($temp_file_path, $extensions, $location, $user, $textfile_only);
-    } else if ($file_ext == '.rar') {
-        $valid_file = plagiarism_programming_extract_rar($temp_file_path, $extensions, $location, $user, $textfile_only);
+    if ($fileextension == '.zip') {
+        $validfile = plagiarism_programming_extract_zip($tempfilepath, $extensions, $location, $user, $textfileonly);
+    } else if ($fileextension == '.rar') {
+        $validfile = plagiarism_programming_extract_rar($tempfilepath, $extensions, $location, $user, $textfileonly);
     } else {
-        debugging("Error extracting file: ".$filename.' is not a compressed file');
+        debugging("Error extracting file: " . $filename . ' is not a compressed file');
     }
 
     if ($file instanceof stored_file) {
-        unlink($temp_file_path);
+        unlink($tempfilepath);
     }
-    return $valid_file;
+    return $validfile;
 }
 
 /**
- * Determine the validity of the structure of the additional code file (the file submitted in the addtional code section when creating/editing an assignment).
+ * Determine the validity of the structure of the additional code file (submitted when editing an assignment).
  * The zip file could contain:
- *  + an assignment as a whole (in this case, there must be at least 1 file
- *    at the top most directory level
- *  + a number of directories, each contains an assignment
- *  + a number zip files, each contains an assignment
+ * + an assignment as a whole (in this case, there must be at least 1 file
+ * at the top most directory level
+ * + a number of directories, each contains an assignment
+ * + a number zip files, each contains an assignment
  */
-function plagiarism_programming_check_additional_code_structure($decompressed_dir) {
-    if (!is_dir($decompressed_dir)) {
-        debugging("$decompressed_dir is not a directory to decompress");
-        return NULL;
+function plagiarism_programming_check_additional_code_structure($decompresseddir) {
+    if (!is_dir($decompresseddir)) {
+        debugging("$decompresseddir is not a directory to decompress");
+        return null;
     }
 
-    $not_all_dir = false;
-    $not_all_compressed = false;
-    $file_list = scandir($decompressed_dir);
-    foreach ($file_list as $file) {
-        if (!is_dir($decompressed_dir.'/'.$file)) {
-            $not_all_dir = true;
+    $notalldir = false;
+    $notallcompressed = false;
+    $filelist = scandir($decompresseddir);
+    foreach ($filelist as $file) {
+        if (!is_dir($decompresseddir . '/' . $file)) {
+            $notalldir = true;
             if (!plagiarism_programming_is_compressed_file($file)) {
-                $not_all_compressed = true;
+                $notallcompressed = true;
             }
         }
-        if ($not_all_dir && $not_all_compressed) {
+        if ($notalldir && $notallcompressed) {
             break;
         }
     }
-    if (!$not_all_dir) { // all directory, should be 
+    if (!$notalldir) { // All directory, should be.
         return CODE_FILE_DIRECTORY_FORMAT;
-    } else if (!$not_all_compressed) {
+    } else if (!$notallcompressed) {
         return CODE_FILE_ARCHIVE_FORMAT;
     } else {
         return CODE_FILE_SINGLE_SUBMISSION_FORMAT;
@@ -163,49 +164,49 @@ function plagiarism_programming_check_additional_code_structure($decompressed_di
 /**
  * Extract the additional code file
  */
-function process_code_file_archive_format($decompressed_dir, array $extensions, $location) {
-    if (!is_dir($decompressed_dir)) {
-        debugging("$decompressed_dir is not a directory!");
+function process_code_file_archive_format($decompresseddir, array $extensions, $location) {
+    if (!is_dir($decompresseddir)) {
+        debugging("$decompresseddir is not a directory!");
         return null;
     }
 
-    $files = scandir($decompressed_dir);
+    $files = scandir($decompresseddir);
     foreach ($files as $file) {
 
-        if ($file=='.' || $file=='..') {
+        if ($file == '.' || $file == '..') {
             continue;
         }
 
-        $file_fullpath = "$decompressed_dir/$file";
-        // it is assumed that file must all be zip or rar
-        if (!plagiarism_programming_is_compressed_file($file_fullpath)) {
+        $filefullpath = "$decompresseddir/$file";
+        // It is assumed that file must all be zip or rar.
+        if (!plagiarism_programming_is_compressed_file($filefullpath)) {
             debugging("File $file is not a compressed file");
             continue;
         }
 
-        plagiarism_programming_extract_file($file_fullpath, $extensions, "$location/ext_$file/");
+        plagiarism_programming_extract_file($filefullpath, $extensions, "$location/ext_$file/");
     }
 }
 
-function process_code_file_directory_format($decompressed_dir, array $extensions, $location) {
-    if (!is_dir($decompressed_dir)) {
-        debugging("$decompressed_dir is not a directory");
+function process_code_file_directory_format($decompresseddir, array $extensions, $location) {
+    if (!is_dir($decompresseddir)) {
+        debugging("$decompresseddir is not a directory");
         return null;
     }
 
-    $files = scandir($decompressed_dir);
+    $files = scandir($decompresseddir);
     foreach ($files as $file) {
-        if ($file=='.' || $file=='..') {
+        if ($file == '.' || $file == '..') {
             continue;
         }
 
-        $fullpath = "$decompressed_dir/$file";
+        $fullpath = "$decompresseddir/$file";
 
         if (is_dir($fullpath)) {
             mkdir("$location/$file");
             process_code_file_directory_format($fullpath, $extensions, "$location/$file");
-        } else { // is a file
-            if (plagiarism_programming_check_extension($file, $extensions)) { // move the file (faster than copy)
+        } else { // Is a file.
+            if (plagiarism_programming_check_extension($file, $extensions)) { // Move the file (faster than copy).
                 rename($fullpath, "$location/$file");
             }
         }
@@ -213,9 +214,12 @@ function process_code_file_directory_format($decompressed_dir, array $extensions
 }
 
 /**
- * Extract students' assignments. This function will extract the students' compressed files and save them temporarily.
+ * Extract students' assignments.
+ * This function will extract the students' compressed files and save them temporarily.
  * The directory is $CFG->tempdir/plagiarism_programming/student_id/files
- * @param $assignment: the record object of setting for the assignment
+ *
+ * @param $assignment: the
+ *            record object of setting for the assignment
  * @return boolean true if extraction is successful and there are at least 2 students submitted their assignments
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
  */
@@ -223,83 +227,85 @@ function plagiarism_programming_extract_assignment($assignment) {
     global $DB;
 
     echo get_string('extract', 'plagiarism_programming');
-    // make a subdir for this assignment in the plugin subdir and emptying it
-    $temp_submission_dir = plagiarism_programming_get_assignment_dir($assignment, true);
+    // Make a subdir for this assignment in the plugin subdir and emptying it.
+    $tempsubmissiondir = plagiarism_programming_get_assignment_dir($assignment, true);
 
-    // select all the submitted files of this assignment
+    // Select all the submitted files of this assignment.
     $context = context_module::instance($assignment->cmid, IGNORE_MISSING);
-    if (!$context) { // $context=false in case when the assignment has been deleted (checked for safety)
+    if (!$context) { // It is $context=false when the assignment has been deleted (checked for safety).
         return CONTEXT_NOT_EXIST;
     }
-    $file_records = plagiarism_programming_get_submitted_files($context);
+    $filerecords = plagiarism_programming_get_submitted_files($context);
 
-    if (count($file_records) < 2) {
+    if (count($filerecords) < 2) {
         return NOT_SUFFICIENT_SUBMISSION;
     }
 
     $extensions = plagiarism_programming_get_file_extension($assignment->language);
-    $valid_submission = 0;
+    $validsubmissions = 0;
 
-    foreach ($file_records as $file) {
-        $valid_file = false;
+    foreach ($filerecords as $file) {
+        $validfile = false;
         $userid = $file->get_userid();
-        $userdir = $temp_submission_dir.$userid.'/';
+        $userdir = $tempsubmissiondir . $userid . '/';
         if (!is_dir($userdir)) {
             mkdir($userdir);
         }
 
-        $student = $DB->get_record('user', array('id' => $file->get_userid()));
-        // check if the file is zipped files
-        mtrace("File ".$file->get_filename()." has mime type: ".$file->get_mimetype());
+        $student = $DB->get_record('user', array(
+            'id' => $file->get_userid()
+        ));
+        // Check if the file is zipped files.
+        mtrace("File " . $file->get_filename() . " has mime type: " . $file->get_mimetype());
 
-        if (plagiarism_programming_is_compressed_file($file->get_filename())) { // decompress file
-            $valid_file = plagiarism_programming_extract_file($file, $extensions, $userdir, $student);
-        } else if (plagiarism_programming_check_extension($file->get_filename(), $extensions)) { // if it is an uncompressed code file
-            $file->copy_content_to($userdir.$file->get_filename());
-            $valid_file = true;
+        if (plagiarism_programming_is_compressed_file($file->get_filename())) { // Decompress file.
+            $validfile = plagiarism_programming_extract_file($file, $extensions, $userdir, $student);
+        } else if (plagiarism_programming_check_extension($file->get_filename(), $extensions)) {
+            // If it is an uncompressed code file.
+            $file->copy_content_to($userdir . $file->get_filename());
+            $validfile = true;
         }
-        // TODO: support other types of compression files: 7z, tar.gz
 
-        if ($valid_file) {
-            $valid_submission++;
+        // TODO Support other types of compression files: 7z, tar.gz.
+        if ($validfile) {
+            $validsubmissions++;
         }
     }
 
-    // include the code teacher upload
+    // Include the code teacher upload.
     $fs = get_file_storage();
-    $additional_code_files = $fs->get_area_files($context->id, 'plagiarism_programming',
-            'codeseeding', $assignment->id, '', false);
+    $additionalcodefiles = $fs->get_area_files($context->id, 'plagiarism_programming', 'codeseeding', $assignment->id, '', false);
 
     $count = 1;
-    foreach ($additional_code_files as $code_file) {
+    foreach ($additionalcodefiles as $codefile) {
 
-        $filename = $code_file->get_filename();
+        $filename = $codefile->get_filename();
         if (!plagiarism_programming_is_compressed_file($filename)) {
             mtrace("Invalid code seeding file");
             return NOT_CORRECT_FILE_TYPE;
         }
 
-        // create a temporary directory to store the extracted files
-        $temp_dir = $temp_submission_dir.'tmp_code'.($count++).'/';
-        if (!is_dir($temp_dir)) {
-            mkdir($temp_dir);
+        // Create a temporary directory to store the extracted files.
+        $tempdir = $tempsubmissiondir . 'tmp_code' . ($count++ ) . '/';
+        if (!is_dir($tempdir)) {
+            mkdir($tempdir);
         }
 
-        // extract all files to this directory
-        plagiarism_programming_extract_file($code_file, null, $temp_dir, null, false);
-        $code_file_type = plagiarism_programming_check_additional_code_structure($temp_dir);
-        switch ($code_file_type) {
+        // Extract all files to this directory.
+        plagiarism_programming_extract_file($codefile, null, $tempdir, null, false);
+        $codefiletype = plagiarism_programming_check_additional_code_structure($tempdir);
+        switch ($codefiletype) {
             case CODE_FILE_ARCHIVE_FORMAT:
-                process_code_file_archive_format($temp_dir, $extensions, $temp_submission_dir);
+                process_code_file_archive_format($tempdir, $extensions, $tempsubmissiondir);
                 break;
             case CODE_FILE_DIRECTORY_FORMAT:
-                process_code_file_directory_format($temp_dir, $extensions, $temp_submission_dir);
+                process_code_file_directory_format($tempdir, $extensions, $tempsubmissiondir);
                 break;
         }
-        plagiarism_programming_rrmdir($temp_dir);
+        plagiarism_programming_rrmdir($tempdir);
     }
 
-    if ($valid_submission >= 2) {
+    if ($validsubmissions >= 2) {
         return true;
     } else {
         return NOT_CORRECT_FILE_TYPE;
@@ -307,104 +313,122 @@ function plagiarism_programming_extract_assignment($assignment) {
 }
 
 /**
- * Submit an assignment to a specified tool. This method must be call after extracting the assignments
- * @param $assignment: the record object of setting for the assignment
- * @param $tool: the tool object (either of type moss_tool or jplag_tool)
- * @param $scan_info: the status record object of that tool
+ * Submit an assignment to a specified tool.
+ * This method must be call after extracting the assignments
+ *
+ * @param $assignment: the
+ *            record object of setting for the assignment
+ * @param $tool: the
+ *            tool object (either of type moss_tool or jplag_tool)
+ * @param $scan_info: the
+ *            status record object of that tool
  * @return the updated scan_info object
  */
-function plagiarism_programming_submit_assignment($assignment, $tool, $scan_info) {
+function plagiarism_programming_submit_assignment($assignment, $tool, $scaninfo) {
     global $DB;
-    $tool_name = $tool->get_name();
+    $toolname = $tool->get_name();
 
-    // status must be pending or error
-    if ($scan_info->status!='pending' && $scan_info->status!='error') {
-        // don't need to submit
-        return $scan_info;
+    // Status must be pending or error.
+    if ($scaninfo->status != 'pending' && $scaninfo->status != 'error') {
+        // Don't need to submit.
+        return $scaninfo;
     }
-    // update the status to uploading
-    $scan_info->status = 'uploading';
-    $scan_info->progress = 0;
-    $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
+    // Update the status to uploading.
+    $scaninfo->status = 'uploading';
+    $scaninfo->progress = 0;
+    $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
 
-    mtrace("Start sending to $tool_name");
-    $temp_submission_dir = plagiarism_programming_get_assignment_dir($assignment);
+    mtrace("Start sending to $toolname");
+    $tempsubmissiondir = plagiarism_programming_get_assignment_dir($assignment);
 
-    // submit the assignment
-    $scan_info = $tool->submit_assignment($temp_submission_dir, $assignment, $scan_info);
-    $DB->update_record('plagiarism_programming_'.$tool_name, $scan_info);
-    mtrace("Finish sending to $tool_name. Status: $scan_info->status");
+    // Submit the assignment.
+    $scaninfo = $tool->submit_assignment($tempsubmissiondir, $assignment, $scaninfo);
+    $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
+    mtrace("Finish sending to $toolname. Status: $scaninfo->status");
 
-    // note that scan_info is the object containing
-    // the corresponding record in table plagiarism_programming_jplag
-    return $scan_info;
+    // Note that scan_info is the object containing the corresponding record in table plagiarism_programming_jplag.
+    return $scaninfo;
 }
 
 /**
- * Return the updated status of the assignment. Use this function to check whether the scanning has been done.
+ * Return the updated status of the assignment.
+ * Use this function to check whether the scanning has been done.
  * This function also update the status record of the tool in the database
- * @param $assignment: the record object of setting for the assignment
- * @param $tool: the tool object (either of type moss_tool or jplag_tool)
- * @param $scan_info: the status record object of that tool
+ *
+ * @param $assignment: the
+ *            record object of setting for the assignment
+ * @param $tool: the
+ *            tool object (either of type moss_tool or jplag_tool)
+ * @param $scan_info: the
+ *            status record object of that tool
  * @return the updated scan_info object.
  */
-function plagiarism_programming_check_scanning_status($assignment, $tool, $scan_info) {
+function plagiarism_programming_check_scanning_status($assignment, $tool, $scaninfo) {
     global $DB;
-    // if the assignment is processed by the server, ask the server to update the status
-    // for every other stages, just return the assignment status since it is updated in parallel
-    if ($scan_info->status=='scanning') {
-        $scan_info = $tool->check_status($assignment, $scan_info);
-        $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
+    // If the assignment is processed by the server, ask the server to update the status.
+    // For every other stages, just return the assignment status since it is updated in parallel.
+    if ($scaninfo->status == 'scanning') {
+        $scaninfo = $tool->check_status($assignment, $scaninfo);
+        $DB->update_record('plagiarism_programming_' . $tool->get_name(), $scaninfo);
     }
-    return $scan_info;
+    return $scaninfo;
 }
 
 /**
- * Download the similarity report. The scanning must be finished and its status must be 'done'
+ * Download the similarity report.
+ * The scanning must be finished and its status must be 'done'
  * after calling plagiarism_programming_check_scanning_status function
- * @param $assignment: the record object of setting for the assignment
- * @param $tool: the tool need to check (either moss or jplag)
- * @param $scan_info: the status record object of that tool
+ *
+ * @param $assignment: the
+ *            record object of setting for the assignment
+ * @param $tool: the
+ *            tool need to check (either moss or jplag)
+ * @param $scan_info: the
+ *            status record object of that tool
  * @return the $scan_info record object with status updated to 'finished' if download has been successful
  */
-function plagiarism_programming_download_result($assignment, $tool, $scan_info) {
+function plagiarism_programming_download_result($assignment, $tool, $scaninfo) {
     global $DB;
 
-    // check and update the status first
-    if ($scan_info->status!='done') {
+    // Check and update the status first.
+    if ($scaninfo->status != 'done') {
         return;
     }
-    $scan_info->status = 'downloading';
-    $scan_info->progress = 0;
-    $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
+    $scaninfo->status = 'downloading';
+    $scaninfo->progress = 0;
+    $DB->update_record('plagiarism_programming_' . $tool->get_name(), $scaninfo);
 
     mtrace("Download begin!");
-    $scan_info = $tool->download_result($assignment, $scan_info);
+    $scaninfo = $tool->download_result($assignment, $scaninfo);
     mtrace("Download finish!");
 
     mtrace("Parse begin");
-    $scan_info = $tool->parse_result($assignment, $scan_info);
+    $scaninfo = $tool->parse_result($assignment, $scaninfo);
     mtrace("Parse end");
-    $DB->update_record('plagiarism_programming_'.$tool->get_name(), $scan_info);
-    return $scan_info;
+    $DB->update_record('plagiarism_programming_' . $tool->get_name(), $scaninfo);
+    return $scaninfo;
 }
 
 /**
  * Check whether the assignment was sent to all the tools or not.
- * @param  $assignment: the object record of the plagiarism setting for the assignment
- * @return true  if the assignment has been sent to all the selected tools
+ *
+ * @param $assignment: the
+ *            object record of the plagiarism setting for the assignment
+ * @return true if the assignment has been sent to all the selected tools
  *         false if there is one tool to which the assignment hasn't been sent
  */
 function plagiarism_programming_is_uploaded($assignment) {
-    global $DB, $detection_tools;
+    global $DB, $detectiontools;
 
     $uploaded = true;
-    foreach ($detection_tools as $tool_name => $tool_info) {
-        if (!$assignment->$tool_name) {
+    foreach ($detectiontools as $toolname => $toolinfo) {
+        if (!$assignment->$toolname) {
             continue;
         }
-        $scan_info = $DB->get_record('plagiarism_programming_'.$tool_name, array('settingid'=>$assignment->id));
-        if (!$scan_info || $scan_info->status=='pending' || $scan_info->status=='finished' || $scan_info->status=='error') {
+        $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
+            'settingid' => $assignment->id
+        ));
+        if (!$scaninfo || $scaninfo->status == 'pending' || $scaninfo->status == 'finished' || $scaninfo->status == 'error') {
             $uploaded = false;
         }
     }
@@ -412,66 +436,75 @@ function plagiarism_programming_is_uploaded($assignment) {
 }
 
 /**
- * The entry call to scan an assignment. First, students' assignments are extracted (if it is a compressed files),
+ * The entry call to scan an assignment.
+ * First, students' assignments are extracted (if it is a compressed files),
  * then this function forks separate processes to scan the report
- * 
- * @param $assignment: the object record of the plagiarism setting for the assignment
- * @param $wait_for_result wait for the scanning to finish to get the result (default true)
+ *
+ * @param $assignment: the
+ *            object record of the plagiarism setting for the assignment
+ * @param $waitforresult wait
+ *            for the scanning to finish to get the result (default true)
  * @return void
  */
-function plagiarism_programming_scan_assignment($assignment, $wait_for_result=true, $notification_mail=false) {
-    global $DB, $CFG, $detection_tools;
+function plagiarism_programming_scan_assignment($assignment, $waitforresult = true, $notificationmail = false) {
+    global $DB, $CFG, $detectiontools;
 
-    // if the assignment is not submitted, extract them into a temporary directory first
-    // this if prevent unnecessary extraction, since another cron can run over when the scanning hasn't finished
+    // If the assignment is not submitted, extract them into a temporary directory first.
+    // This if prevent unnecessary extraction, since another cron can run over when the scanning hasn't finished.
     if (!plagiarism_programming_is_uploaded($assignment)) {
-        $extract_result = plagiarism_programming_extract_assignment($assignment);
-        if ($extract_result===true) {
-        } else if ($extract_result==NOT_SUFFICIENT_SUBMISSION || $extract_result==CONTEXT_NOT_EXIST) {
+        $extractresult = plagiarism_programming_extract_assignment($assignment);
+        if ($extractresult === true) {
+            // TODO: What should be done here? It was empty...
+        } else if ($extractresult == NOT_SUFFICIENT_SUBMISSION || $extractresult == CONTEXT_NOT_EXIST) {
             return;
-        } else if ($extract_result==NOT_CORRECT_FILE_TYPE) {
-            $message = get_string('invalid_file_type', 'plagiarism_programming')
-                .implode(', ', plagiarism_programming_get_file_extension($assignment->language));
-            foreach ($detection_tools as $toolname => $tool) {
-                if (!$assignment->$toolname) {    // this detector is not selected
+        } else if ($extractresult == NOT_CORRECT_FILE_TYPE) {
+            $message = get_string('invalid_file_type', 'plagiarism_programming').implode(', ', plagiarism_programming_get_file_extension($assignment->language));
+            foreach ($detectiontools as $toolname => $tool) {
+                if (!$assignment->$toolname) { // This detector is not selected.
                     continue;
                 }
-                $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
-                $scan_info->message = $message;
-                $scan_info->status = 'error';
-                $DB->update_record('plagiarism_programming_'.$toolname, $scan_info);
+                $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
+                    'settingid' => $assignment->id
+                ));
+                $scaninfo->message = $message;
+                $scaninfo->status = 'error';
+                $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
             }
             return;
         }
     }
 
-    // send the data
+    // Send the data.
     $links = array();
     $logfiles = array();
 
-    $wait = ($wait_for_result)?1:0;
-    $mail = ($notification_mail)?1:0;
-    // generating the token
-    $token = md5(time()+  rand(1000000, 9999999));
-    foreach ($detection_tools as $toolname => $tool) {
-        if (!$assignment->$toolname) {    // this detector is not selected
+    $wait = ($waitforresult) ? 1 : 0;
+    $mail = ($notificationmail) ? 1 : 0;
+    // Generating the token.
+    $token = md5(time() + rand(1000000, 9999999));
+    foreach ($detectiontools as $toolname => $tool) {
+        if (!$assignment->$toolname) { // This detector is not selected.
             continue;
         }
-        $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
-        $scan_info->token = $token;
-        $DB->update_record('plagiarism_programming_'.$toolname, $scan_info);
+        $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
+            'settingid' => $assignment->id
+        ));
+        $scaninfo->token = $token;
+        $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
-            ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait&mail=$mail";
+        ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait&mail=$mail";
 
-        if ($toolname=='jplag_') {
-            $logfiles[] = jplag_tool::get_report_path()."/script_log_$assignment->id-$toolname.html";
+        if ($toolname == 'jplag_') {
+            $logfiles[] = jplag_tool::get_report_path() . "/script_log_$assignment->id-$toolname.html";
         } else {
-            $logfiles[] = moss_tool::get_report_path()."/script_log_$assignment->id-$toolname.html";
+            $logfiles[] = moss_tool::get_report_path() . "/script_log_$assignment->id-$toolname.html";
         }
     }
 
-    // register the start scanning time
-    $assignment = $DB->get_record('plagiarism_programming', array('id'=>$assignment->id));
+    // Register the start scanning time.
+    $assignment = $DB->get_record('plagiarism_programming', array(
+        'id' => $assignment->id
+    ));
     $assignment->latestscan = time();
     $DB->update_record('plagiarism_programming', $assignment);
 
@@ -484,45 +517,50 @@ function plagiarism_programming_scan_assignment($assignment, $wait_for_result=tr
 }
 
 /**
- * This function is used by scan_assignment to send an assignment to a specific tool. The assignment is first sent to the tool,
+ * This function is used by scan_assignment to send an assignment to a specific tool.
+ * The assignment is first sent to the tool,
  * then either wait until the scanning finished to download or download it latter. In the second case, calling the function another
  * time will check the scanning status and, if finished, download it again.
- * @param $assignment: the object record of the plagiarism setting for the assignment
- * @param $toolname: the name of the tool
- * @param $wait_to_download: if set to true, the scanning will wait and periodically check the status until it finish and download
- * 
+ *
+ * @param $assignment: the
+ *            object record of the plagiarism setting for the assignment
+ * @param $toolname: the
+ *            name of the tool
+ * @param $wait_to_download: if
+ *            set to true, the scanning will wait and periodically check the status until it finish and download
  */
-function scan_after_extract_assignment($assignment, $toolname, $wait_to_download=true, $notification_mail=false) {
-    global $detection_tools, $DB, $PROCESSING_INFO;
-    $tool = $detection_tools[$toolname];
-    $tool_class_name = $tool['class_name'];
-    $tool_class = new $tool_class_name();
-    $scan_info = $DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$assignment->id));
-    assert($scan_info!=null);
+function scan_after_extract_assignment($assignment, $toolname, $waittodownload = true, $notificationmail = false) {
+    global $detectiontools, $DB, $processinginfo;
+    $tool = $detectiontools[$toolname];
+    $toolclassname = $tool['class_name'];
+    $toolclass = new $toolclassname();
+    $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
+        'settingid' => $assignment->id
+    ));
+    assert($scaninfo != null);
 
-    if ($scan_info->status=='pending' || $scan_info->status=='error') {
-        // not processed by this tool yet
-        $scan_info = plagiarism_programming_submit_assignment($assignment, $tool_class, $scan_info);
+    if ($scaninfo->status == 'pending' || $scaninfo->status == 'error') {
+        // Not processed by this tool yet.
+        $scaninfo = plagiarism_programming_submit_assignment($assignment, $toolclass, $scaninfo);
     }
 
-    plagiarism_programming_check_scanning_status($assignment, $tool_class, $scan_info);
-    if ($wait_to_download && $scan_info->status=='scanning') {
-        // waiting for the detectors to process
-        // check if the result is available
-        while ($scan_info->status!='done') {
+    plagiarism_programming_check_scanning_status($assignment, $toolclass, $scaninfo);
+    if ($waittodownload && $scaninfo->status == 'scanning') {
+        // Waiting for the detectors to process check if the result is available.
+        while ($scaninfo->status != 'done') {
             sleep(5);
-            plagiarism_programming_check_scanning_status($assignment, $tool_class, $scan_info);
+            plagiarism_programming_check_scanning_status($assignment, $toolclass, $scaninfo);
         }
-    } else if ($scan_info->status=='scanning'){
-        $PROCESSING_INFO['scanning_not_wait'] = 1;
+    } else if ($scaninfo->status == 'scanning') {
+        $processinginfo['scanning_not_wait'] = 1;
     }
 
-    if ($scan_info->status=='done') {
+    if ($scaninfo->status == 'done') {
         debugging("Start downloading with $toolname \n");
-        plagiarism_programming_download_result($assignment, $tool_class, $scan_info);
-        debugging("Finish downloading with $toolname. Status: $scan_info->status \n");
+        plagiarism_programming_download_result($assignment, $toolclass, $scaninfo);
+        debugging("Finish downloading with $toolname. Status: $scaninfo->status \n");
 
-        if ($notification_mail) {
+        if ($notificationmail) {
             plagiarism_programming_send_scanning_notification_email($assignment, $toolname);
         }
     }
@@ -534,55 +572,65 @@ function scan_after_extract_assignment($assignment, $toolname, $wait_to_download
  * Should never be called in code.
  */
 function plagiarism_programming_handle_shutdown() {
-    global $DB, $CFG, $detection_tools;
-    global $PROCESSING_INFO;  // this global is an array consisting of stage and cmid
+    global $DB, $CFG, $detectiontools;
+    global $processinginfo; // This global is an array consisting of stage and cmid.
 
     $error = error_get_last();
-    if ($PROCESSING_INFO && $error && ($error['type']==E_ERROR)) {
-        // the value is one of "extract" (extraction of files before MOSS and JPlag), "jplag" or "moss"
-        $stage = $PROCESSING_INFO['stage'];
-        $cmid = $PROCESSING_INFO['cmid'];
+    if ($processinginfo && $error && ($error['type'] == E_ERROR)) {
+        // The value is one of "extract" (extraction of files before MOSS and JPlag), "jplag" or "moss".
+        $stage = $processinginfo['stage'];
+        $cmid = $processinginfo['cmid'];
 
-        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+        $assignment = $DB->get_record('plagiarism_programming', array(
+            'cmid' => $cmid
+        ));
 
-        /** If extract, set all statuses  */
-        if ($stage=='extract') {
-            $tools = array_keys($detection_tools);
+        // If extract, set all statuses.
+        if ($stage == 'extract') {
+            $tools = array_keys($detectiontools);
         } else {
-            $tools = array($stage);
+            $tools = array(
+                $stage
+            );
         }
 
         foreach ($tools as $tool) {
             if ($assignment->$tool) {
-                $scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
-                $scan_info->status = 'error';
+                $scaninfo = $DB->get_record('plagiarism_programming_' . $tool, array(
+                    'settingid' => $assignment->id
+                ));
+                $scaninfo->status = 'error';
                 $message = get_string('unexpected_error', 'plagiarism_programming');
-                if ($stage=='extract') {
+                if ($stage == 'extract') {
                     $message = get_string('unexpected_error_extract', 'plagiarism_programming');
-                } else if ($scan_info->status=='uploading') {
+                } else if ($scaninfo->status == 'uploading') {
                     $message = get_string('unexpected_error_upload', 'plagiarism_programming');
-                } else if ($scan_info->status=='downloading') {
+                } else if ($scaninfo->status == 'downloading') {
                     $message = get_string('unexpected_error_download', 'plagiarism_programming');
                 }
-                $scan_info->message = $message;
-                $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
+                $scaninfo->message = $message;
+                $DB->update_record('plagiarism_programming_' . $tool, $scaninfo);
             }
         }
     }
 
-    if ($PROCESSING_INFO && $PROCESSING_INFO['stage']!='extract' && !isset($PROCESSING_INFO['scanning_not_wait'])) {
-        $cmid = $PROCESSING_INFO['cmid'];
-        $tool = $PROCESSING_INFO['stage'];
-        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-        $scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
-        echo 'Before shutdown: status: '.$scan_info->status;
-        if ($scan_info->status!='error' && $scan_info->status!='finished') {
-            $scan_info->status = 'error';
-            $scan_info->message = 'An unknown error has occurred!';
-            $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
+    if ($processinginfo && $processinginfo['stage'] != 'extract' && !isset($processinginfo['scanning_not_wait'])) {
+        $cmid = $processinginfo['cmid'];
+        $tool = $processinginfo['stage'];
+        $assignment = $DB->get_record('plagiarism_programming', array(
+            'cmid' => $cmid
+        ));
+        $scaninfo = $DB->get_record('plagiarism_programming_' . $tool, array(
+            'settingid' => $assignment->id
+        ));
+        echo 'Before shutdown: status: ' . $scaninfo->status;
+        if ($scaninfo->status != 'error' && $scaninfo->status != 'finished') {
+            $scaninfo->status = 'error';
+            $scaninfo->message = 'An unknown error has occurred!';
+            $DB->update_record('plagiarism_programming_' . $tool, $scaninfo);
         }
     }
-    $file = "{$CFG->tempdir}/plagiarism_report/".$PROCESSING_INFO['stage'].'.txt';
+    $file = "{$CFG->tempdir}/plagiarism_report/" . $processinginfo['stage'] . '.txt';
     $content = ob_get_contents();
     file_put_contents($file, $content);
 }

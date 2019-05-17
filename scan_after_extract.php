@@ -32,50 +32,53 @@ require_once(__DIR__.'/scan_assignment.php');
 require_once(__DIR__.'/detection_tools.php');
 global $DB, $CFG;
 
-// this global is used to store the assignment currently processed
-// to record status if an unexpected error occurs.
-// It is an array containing stage (which is extract,moss,jplag) and cmid
-global $PROCESSING_INFO;
+/*
+ * This global is used to store the assignment currently processed
+ * to record status if an unexpected error occurs.
+ * It is an array containing stage (which is extract,moss,jplag) and cmid.
+ * It is also used in "scan_assignment.php".
+ */
+global $processinginfo;
 ignore_user_abort(true);
 set_time_limit(DAYSECS);
 ob_start();
 $tool = required_param('tool', PARAM_TEXT);
 $cmid = required_param('cmid', PARAM_INT);
 $token = required_param('token', PARAM_TEXT);
-$wait_to_finish = optional_param('wait', 1, PARAM_INT);
-$notification_mail = optional_param('mail', 0, PARAM_INT);
+$waittofinish = optional_param('wait', 1, PARAM_INT);
+$notificationmail = optional_param('mail', 0, PARAM_INT);
 
-// verify the token
-$assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-$scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
-if ($scan_info->token!=$token) {
+// Verify the token.
+$assignment = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
+$scaninfo = $DB->get_record('plagiarism_programming_'.$tool, array('settingid' => $assignment->id));
+if ($scaninfo->token != $token) {
     die ('Forbidden');
 }
 
-// unlock the session to allow parallel running
+// Unlock the session to allow parallel running.
 session_write_close();
 
-// this is for error handling
-$PROCESSING_INFO = array('stage'=>$tool, 'cmid'=>$cmid);
+// This is for error handling.
+$processinginfo = array('stage' => $tool, 'cmid' => $cmid);
 set_error_handler('plagiarism_programming_error_handler');
 register_shutdown_function('plagiarism_programming_handle_shutdown');
-scan_after_extract_assignment($assignment, $tool, $wait_to_finish, $notification_mail);
+scan_after_extract_assignment($assignment, $tool, $waittofinish, $notificationmail);
 
 
-function plagiarism_programming_error_handler($error_no, $error_message) {
+function plagiarism_programming_error_handler($errornumber, $errormessage) {
 
-    if ($error_no==E_ERROR) {
-        global $DB, $PROCESSING_INFO;
-        $tool = $PROCESSING_INFO['stage'];
-        $cmid = $PROCESSING_INFO['cmid'];
+    if ($errornumber == E_ERROR) {
+        global $DB, $processinginfo;
+        $tool = $processinginfo['stage'];
+        $cmid = $processinginfo['cmid'];
 
-        $assignment = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-        $scan_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid'=>$assignment->id));
-        $scan_info->status = 'error';
-        $scan_info->message = get_string('general_user_error', 'plagiarism_programming');
-        $scan_info->error_detail = $error_message;
+        $assignment = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
+        $scaninfo = $DB->get_record('plagiarism_programming_'.$tool, array('settingid' => $assignment->id));
+        $scaninfo->status = 'error';
+        $scaninfo->message = get_string('general_user_error', 'plagiarism_programming');
+        $scaninfo->error_detail = $errormessage;
 
-        $DB->update_record('plagiarism_programming_'.$tool, $scan_info);
+        $DB->update_record('plagiarism_programming_'.$tool, $scaninfo);
     }
     return false;
 }

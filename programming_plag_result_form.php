@@ -15,19 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    plagiarism
+ *
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-require_once($CFG->dirroot.'/lib/formslib.php');
-require_once(dirname(__FILE__).'/detection_tools.php');
+require_once($CFG->dirroot . '/lib/formslib.php');
+require_once(dirname(__FILE__) . '/detection_tools.php');
 
 class programming_plag_result_form extends moodleform {
-
     private $cmid;
     private $detector;
 
@@ -38,52 +37,62 @@ class programming_plag_result_form extends moodleform {
     }
 
     protected function definition() {
-        global $DB, $detection_tools;
+        global $DB, $detectiontools;
 
-        $assignment = $DB->get_record('plagiarism_programming', array('cmid' => $this->cmid));
+        $assignment = $DB->get_record('plagiarism_programming', array(
+            'cmid' => $this->cmid
+        ));
         $mform = $this->_form;
 
-        // similarity threshold
+        // Similarity threshold.
         $mform->addElement('header', 'option_header', get_string('option_header', 'plagiarism_programming'));
         $mform->addElement('text', 'lower_threshold', get_string('threshold', 'plagiarism_programming'));
         $mform->setType('lower_threshold', PARAM_INT);
 
-        // select the similarity type average or maximal
-        $rate_type = array('max'=>'Maximum similarity', 'avg'=>'Average similarity');
-        $mform->addElement('select', 'rate_type', get_string('similarity_type', 'plagiarism_programming'), $rate_type);
+        // Select the similarity type average or maximal.
+        $ratetype = array(
+            'max' => 'Maximum similarity',
+            'avg' => 'Average similarity'
+        );
+        $mform->addElement('select', 'rate_type', get_string('similarity_type', 'plagiarism_programming'), $ratetype);
 
-        // select the tool to display
+        // Select the tool to display.
         $tools = array();
-        foreach ($detection_tools as $tool => $info) {
+        foreach ($detectiontools as $tool => $info) {
             if ($assignment->$tool) {
                 $tools[$tool] = $info['name'];
             }
         }
         $mform->addElement('select', 'tool', get_string('detection_tool', 'plagiarism_programming'), $tools);
 
-        // select the mode of display
-        $display_modes = array('group'=>'Grouping students', 'table'=>'Ordered table');
-        $mform->addElement('select', 'display_mode', get_string('display_mode', 'plagiarism_programming'), $display_modes);
+        // Select the mode of display.
+        $displaymodes = array(
+            'group' => 'Grouping students',
+            'table' => 'Ordered table'
+        );
+        $mform->addElement('select', 'display_mode', get_string('display_mode', 'plagiarism_programming'), $displaymodes);
 
-        // select the version history
-        $reports = $DB->get_records('plagiarism_programming_rpt', array('cmid'=>$this->cmid, 'detector'=>$this->detector), 'time_created DESC');
-        $report_select = array();
+        // Select the version history.
+        $reports = $DB->get_records('plagiarism_programming_rpt', array(
+            'cmid' => $this->cmid,
+            'detector' => $this->detector
+        ), 'time_created DESC');
+        $reportselect = array();
         foreach ($reports as $report) {
-            $report_select[$report->version] = date('d M h.i A', $report->time_created);
+            $reportselect[$report->version] = date('d M h.i A', $report->time_created);
         }
-        $mform->addElement('select', 'version', get_string('version', 'plagiarism_programming'), $report_select);
+        $mform->addElement('select', 'version', get_string('version', 'plagiarism_programming'), $reportselect);
 
-        // if having repository, include a checkbox to include repository files or not
+        // If having repository, include a checkbox to include repository files or not.
         $fs = get_file_storage();
         $context = context_module::instance($this->cmid);
-        $repo_files = $fs->get_area_files($context->id, 'plagiarism_programming', 'codeseeding', $assignment->id, '', false);
-        if (!empty($repo_files)) {
-            $mform->addElement('advcheckbox', 'include_repository',
-                    get_string('include_repository', 'plagiarism_programming'),
-                    '', array('group' => 0), array(0, 1));
+        $repofiles = $fs->get_area_files($context->id, 'plagiarism_programming', 'codeseeding', $assignment->id, '', false);
+        if (! empty($repofiles)) {
+            $mform->addElement('advcheckbox', 'include_repository', get_string('include_repository', 'plagiarism_programming'),
+                '', array('group' => 0), array(0, 1));
         }
 
-        // other elements
+        // Other elements.
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);
         $mform->setType('cmid', PARAM_INT);
         $mform->addElement('hidden', 'student', $this->_customdata['student_id']);
@@ -91,12 +100,11 @@ class programming_plag_result_form extends moodleform {
 
         $mform->addElement('submit', 'submitbutton', get_string('submit', 'plagiarism_programming'));
 
-        // help button
+        // Help buttons.
         $mform->addHelpButton('lower_threshold', 'lower_threshold_hlp', 'plagiarism_programming');
         $mform->addHelpButton('rate_type', 'rate_type_hlp', 'plagiarism_programming');
         $mform->addHelpButton('tool', 'tool_hlp', 'plagiarism_programming');
         $mform->addHelpButton('display_mode', 'display_mode_hlp', 'plagiarism_programming');
         $mform->addHelpButton('version', 'version_hlp', 'plagiarism_programming');
     }
-
 }

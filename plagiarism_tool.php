@@ -42,7 +42,7 @@ interface plagiarism_tool {
      * @param $assignment_param: containing the information of the assignment
      * @param $tool_param: containing the information of the configuration for that tool of the assignment
      */
-    public function check_status($assignment_param, $tool_param);
+    public function check_status($assignmentparam, $toolparam);
 
     /**
      * Display the link to the report. This function return html <a> tag of the link
@@ -50,9 +50,9 @@ interface plagiarism_tool {
      */
     public function display_link($param);
 
-    public function download_result($assignment_param, $jplag_param);
+    public function download_result($assignmentparam, $jplagparam);
 
-    public function parse_result($assignment, $moss_info);
+    public function parse_result($assignment, $mossinfo);
 
     public function get_name();
 }

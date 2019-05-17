@@ -45,14 +45,14 @@ class course_selection_form extends moodleform {
     protected function definition() {
         global $DB;
 
-        $courses = $this->course_search($total_num);
+        $courses = $this->course_search($totalnum);
         $mform = $this->_form;
 
         foreach ($courses as $course) {
-            $element_name = "course_$course->id";
-            $mform->addElement('checkbox', $element_name, '', $course->fullname.' '.$course->idnumber);
+            $elementname = "course_$course->id";
+            $mform->addElement('checkbox', $elementname, '', $course->fullname.' '.$course->idnumber);
             if ($course->is_enabled) {
-                $mform->setDefault($element_name, 1);
+                $mform->setDefault($elementname, 1);
             }
         }
 
@@ -60,22 +60,22 @@ class course_selection_form extends moodleform {
             return;
         }
 
-        $is_first_page = $this->page > 1;
-        $back_link = '';
-        if ($is_first_page) {
-            $back_link = html_writer::link('', get_string('back'), array('class'=>'changepagelink', 'page'=>  $this->page-1));
+        $isfirstpage = $this->page > 1;
+        $backlink = '';
+        if ($isfirstpage) {
+            $backlink = html_writer::link('', get_string('back'), array('class' => 'changepagelink', 'page' => $this->page - 1));
         }
 
-        $next_link = '';
-        $is_last_page = ($this->page*PAGE_SIZE)>=$total_num;
+        $nextlink = '';
+        $islastpage = ($this->page * PAGE_SIZE) >= $totalnum;
         $page = $this->page;
-        if (!$is_last_page) {
-            $next_link = html_writer::link('', get_string('next'), array('class'=>'changepagelink', 'page'=>  $this->page+1));
+        if (!$islastpage) {
+            $nextlink = html_writer::link('', get_string('next'), array('class' => 'changepagelink', 'page' => $this->page + 1));
         }
-        $mform->addElement('html', html_writer::tag('div', $back_link.' '.$next_link, array('style'=>'text-align:center')));
+        $mform->addElement('html', html_writer::tag('div', $backlink.' '.$nextlink, array('style' => 'text-align:center')));
     }
 
-    private function course_search(&$total_record) {
+    private function course_search(&$totalrecord) {
         global $CFG, $DB;
 
         $sql = 'SELECT course.id, course.fullname, course.idnumber, course.shortname, enabled_course.course is_enabled
@@ -86,23 +86,23 @@ class course_selection_form extends moodleform {
 
         if ($this->category > 0) {
             require_once($CFG->dirroot.'/lib/coursecatlib.php');
-            $category_list = coursecat::get($this->category, null, false)->get_children();
-            $category_ids = array($this->category);
-            foreach ($category_list as $category) {
-                $category_ids[]=$category->id;
+            $categorylist = coursecat::get($this->category, null, false)->get_children();
+            $categoryids = array($this->category);
+            foreach ($categorylist as $category) {
+                $categoryids[] = $category->id;
             }
-            $id_list = implode(',', $category_ids);
-            $where .= " AND category IN ($id_list)";
+            $idlist = implode(',', $categoryids);
+            $where .= " AND category IN ($idlist)";
         }
 
         if (!empty($this->name)) {
             $where .= " AND (fullname Like '%$this->name%' Or idnumber Like '%$this->name%')";
         }
         $sql .= " WHERE $where ORDER BY fullname ASC ";
-        if ($this->category == 0 && empty($this->name)) { // only limit with ordinary browsing, not in search mode
-            $limit_from = ($this->page-1)*PAGE_SIZE;
-            $courses = $DB->get_records_sql($sql, null, $limit_from, PAGE_SIZE);
-            $total_record = $DB->count_records_select('course', $where);
+        if ($this->category == 0 && empty($this->name)) { // Only limit with ordinary browsing, not in search mode.
+            $limitfrom = ($this->page - 1) * PAGE_SIZE;
+            $courses = $DB->get_records_sql($sql, null, $limitfrom, PAGE_SIZE);
+            $totalrecord = $DB->count_records_select('course', $where);
         } else {
             $courses = $DB->get_records_sql($sql);
         }

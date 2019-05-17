@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 
-//get global class
+// Get global class.
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
 require_once(__DIR__.'/detection_tools.php');
@@ -36,10 +36,11 @@ require_once(__DIR__.'/scan_assignment.php');
 
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
-    private $filemanager_option;
+    private $filemanageroption;
 
     public function __construct() {
-        $this->filemanager_option = array('subdir'=>0, 'maxbytes'=> 20*1024*1024, 'maxfiles'=>50, 'accepted_type' => array('*.zip', '*.rar'));
+        $this->filemanageroption = array('subdir' => 0, 'maxbytes' => 20 * 1024 * 1024, 'maxfiles' => 50,
+            'accepted_type' => array('*.zip', '*.rar'));
     }
 
     /**
@@ -54,33 +55,33 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // When updating an assignment, cmid of the assignment is passed by "update" param.
         // When creating an assignment, cmid does not exist, but course id is provided via "course" param.
         $cmid = optional_param('update', 0, PARAM_INT);
-        $course_id = optional_param('course', 0, PARAM_INT);
-        if (!$this->is_plugin_enabled($cmid, $course_id)) {
+        $courseid = optional_param('course', 0, PARAM_INT);
+        if (!$this->is_plugin_enabled($cmid, $courseid)) {
             return;
         }
 
-        $plagiarism_config = null;
-        $assignment_context = null;
+        $plagiarismconfig = null;
+        $assignmentcontext = null;
         if ($cmid) {
-            $plagiarism_config = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-            $assignment_context = context_module::instance($cmid);
+            $plagiarismconfig = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
+            $assignmentcontext = context_module::instance($cmid);
         }
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
 
         // Enable or disable plagiarism checking.
-        $enable_checking = array();
-        $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('disable'), 0);
-        $enable_checking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('enable'), 1);
-        $mform->addGroup($enable_checking, 'similarity_checking',
+        $enablechecking = array();
+        $enablechecking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('disable'), 0);
+        $enablechecking[] = &$mform->createElement('radio', 'programmingYN', '', get_string('enable'), 1);
+        $mform->addGroup($enablechecking, 'similarity_checking',
             get_string('programmingYN', 'plagiarism_programming'), array(' '), false);
 
         // Select the used programming language.
-        $programming_languages = array(
+        $programminglanguages = array(
             'java' => 'Java',
             'c' => 'C/C++',
             'c#' => 'C#',
-            'scheme'=>'Scheme',
+            'scheme' => 'Scheme',
             'text' => 'Plain text',
             'python' => 'Python',
             'vb' => 'Visual Basic',
@@ -96,32 +97,34 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             'fortran' => 'Fortran'
         );
         $mform->addElement('select', 'programming_language',
-            get_string('programming_language', 'plagiarism_programming'), $programming_languages);
+            get_string('programming_language', 'plagiarism_programming'), $programminglanguages);
 
         // Disable the tools when no credentials are provided.
         $settings = get_config('plagiarism_programming');
-        $jplag_disabled = null;
+        $jplagdisabled = null;
         if (empty($settings->jplag_user) || empty($settings->jplag_pass)) {
-            $jplag_disabled = array('disabled'=>true);
-        } 
-        $moss_disabled = null;
+            $jplagdisabled = array('disabled' => true);
+        }
+        $mossdisabled = null;
         if (empty($settings->moss_user_id)) {
-            $moss_disabled = array('disabled'=>true);
+            $mossdisabled = array('disabled' => true);
         }
 
         // Check box for selecting the tools.
-        $selected_tools = array();
-        $selected_tools[] = &$mform->createElement('checkbox', 'jplag', '', get_string('jplag', 'plagiarism_programming'), $jplag_disabled);
-        $selected_tools[] = &$mform->createElement('checkbox', 'moss', '', get_string('moss', 'plagiarism_programming'), $moss_disabled);
-        $mform->addGroup($selected_tools, 'detection_tools', get_string('detection_tools', 'plagiarism_programming'));
+        $selectedtools = array();
+        $selectedtools[] = &$mform->createElement('checkbox', 'jplag', '',
+            get_string('jplag', 'plagiarism_programming'), $jplagdisabled);
+        $selectedtools[] = &$mform->createElement('checkbox', 'moss', '',
+            get_string('moss', 'plagiarism_programming'), $mossdisabled);
+        $mform->addGroup($selectedtools, 'detection_tools', get_string('detection_tools', 'plagiarism_programming'));
 
-        $this->setup_multiple_scandate($mform, $plagiarism_config);
+        $this->setup_multiple_scandate($mform, $plagiarismconfig);
 
         $mform->addElement('checkbox', 'auto_publish', get_string('auto_publish', 'plagiarism_programming'));
         $mform->addElement('checkbox', 'notification', get_string('notification', 'plagiarism_programming'));
         $mform->addElement('textarea', 'notification_text', get_string('notification_text', 'plagiarism_programming'),
             'wrap="virtual" rows="4" cols="50"');
-        $this->setup_code_seeding_filemanager($mform, $plagiarism_config, $assignment_context);
+        $this->setup_code_seeding_filemanager($mform, $plagiarismconfig, $assignmentcontext);
 
         $mform->disabledIf('programming_language', 'programmingYN', 'eq', 0);
         $mform->disabledIf('auto_publish', 'programmingYN', 'eq', 0);
@@ -129,7 +132,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->disabledIf('notification', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification_text', 'programmingYN', 'eq', 0);
         $mform->disabledIf('notification_text', 'notification', 'notchecked');
-        /* jplag and moss checkbox is enabled and disabled by custom javascript*/
+        /* jplag and moss checkbox is enabled and disabled by custom javascript */
 
         $mform->addHelpButton('similarity_checking', 'programmingYN_hlp', 'plagiarism_programming');
         $mform->addHelpButton('programming_language', 'programmingLanguage_hlp', 'plagiarism_programming');
@@ -138,26 +141,26 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->addHelpButton('notification', 'notification_hlp', 'plagiarism_programming');
         $mform->addHelpButton('notification_text', 'notification_text_hlp', 'plagiarism_programming');
 
-        if ($plagiarism_config) { // update mode, populate the form with current values
+        if ($plagiarismconfig) { // Update mode, populate the form with current values.
             $mform->setDefault('programmingYN', 1);
-            $mform->setDefault('programming_language', $plagiarism_config->language);
-            $mform->setDefault('detection_tools[jplag]', $plagiarism_config->jplag);
-            $mform->setDefault('detection_tools[moss]', $plagiarism_config->moss);
-            $mform->setDefault('auto_publish', $plagiarism_config->auto_publish);
-            $mform->setDefault('notification', $plagiarism_config->notification);
-            $mform->setDefault('notification_text', $plagiarism_config->notification_text);
+            $mform->setDefault('programming_language', $plagiarismconfig->language);
+            $mform->setDefault('detection_tools[jplag]', $plagiarismconfig->jplag);
+            $mform->setDefault('detection_tools[moss]', $plagiarismconfig->moss);
+            $mform->setDefault('auto_publish', $plagiarismconfig->auto_publish);
+            $mform->setDefault('notification', $plagiarismconfig->notification);
+            $mform->setDefault('notification_text', $plagiarismconfig->notification_text);
         }
-        if (empty($plagiarism_config->notification_text)) {
+        if (empty($plagiarismconfig->notification_text)) {
             $mform->setDefault('notification_text',  get_string('notification_text_default', 'plagiarism_programming'));
         }
 
         // Disable tool if it doesn't support the selected language.
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
-        $jplag_support = $jplag_disabled ? false : jplag_tool::get_supported_language();
-        $moss_support = $moss_disabled ? false : moss_tool::get_supported_laguage();
+        $jplagsupport = $jplagdisabled ? false : jplag_tool::get_supported_language();
+        $mosssupport = $mossdisabled ? false : moss_tool::get_supported_laguage();
         // Include the javascript for doing some minor interface adjustment to improve user experience.
-        $js_module = array(
+        $jsmodule = array(
             'name' => 'plagiarism_programming',
             'fullpath' => '/plagiarism/programming/assignment_setting.js',
             'requires' => array('base', 'node'),
@@ -166,7 +169,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
                 array('invalid_submit_date_error', 'plagiarism_programming')
             )
         );
-        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init', array($jplag_support, $moss_support), true, $js_module);
+        $PAGE->requires->js_init_call('M.plagiarism_programming.assignment_setting.init',
+            array($jplagsupport, $mosssupport), true, $jsmodule);
     }
 
     /**
@@ -175,8 +179,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * @return void
      */
     public function save_form_elements($data) {
-        
-        global $DB, $detection_tools;
+
+        global $DB, $detectiontools;
 
         $cmid = $data->coursemodule;
         $context = context_module::instance($cmid);
@@ -184,8 +188,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return;
         }
 
-        if (!empty($data->programmingYN)) { // the plugin is enabled for this assignment
-            $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+        if (!empty($data->programmingYN)) { // The plugin is enabled for this assignment.
+            $setting = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
             $new = false;
             if (!$setting) {
                 $new = true;
@@ -210,35 +214,38 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             } else {
                 $DB->update_record('plagiarism_programming', $setting);
             }
-            file_postupdate_standard_filemanager($data, 'code', $this->filemanager_option, $context, 'plagiarism_programming', 'codeseeding', $setting->id);
+            file_postupdate_standard_filemanager($data, 'code', $this->filemanageroption,
+                $context, 'plagiarism_programming', 'codeseeding', $setting->id);
 
-            $date_num = $data->submit_date_num;
+            $datenum = $data->submit_date_num;
             // Delete all unfinished records. They will be added again later when they are still enabled.
-            $DB->delete_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0));
+            $DB->delete_records('plagiarism_programming_date', array('settingid' => $setting->id, 'finished' => 0));
 
             // Save dates.
-            for ($i=0; $i<$date_num; $i++) {
+            for ($i = 0; $i < $datenum; $i++) {
                 if (isset($data->scan_date[$i]) && $data->scan_date[$i] > 0) {
-                    $scan_date_obj = new stdClass();
-                    $scan_date_obj->scan_date = $data->scan_date[$i];
-                    $scan_date_obj->finished = 0;
-                    $scan_date_obj->settingid = $setting->id;
+                    $scandateobj = new stdClass();
+                    $scandateobj->scan_date = $data->scan_date[$i];
+                    $scandateobj->finished = 0;
+                    $scandateobj->settingid = $setting->id;
 
-                    $DB->insert_record('plagiarism_programming_date', $scan_date_obj);
+                    $DB->insert_record('plagiarism_programming_date', $scandateobj);
                 }
             }
-            
+
             // Either save in *_jplag or *_moss table.
-            foreach ($detection_tools as $toolname => $info) {
-                if ($setting->$toolname && !$DB->get_record('plagiarism_programming_'.$toolname, array('settingid'=>$setting->id))) {
-                    $jplag_rec = new stdClass();
-                    $jplag_rec->settingid = $setting->id;
-                    $jplag_rec->status = 'pending';
-                    $DB->insert_record('plagiarism_programming_'.$toolname, $jplag_rec);
+            foreach ($detectiontools as $toolname => $info) {
+                if ($setting->$toolname && !$DB->get_record('plagiarism_programming_'.$toolname,
+                    array('settingid' => $setting->id))) {
+
+                    $jplagrec = new stdClass();
+                    $jplagrec->settingid = $setting->id;
+                    $jplagrec->status = 'pending';
+                    $DB->insert_record('plagiarism_programming_'.$toolname, $jplagrec);
                 }
             }
 
-        } else { // plugin not enabled, delete the records if there are
+        } else { // Plugin not enabled, delete the records if there are.
             plagiarism_programming_delete_config($cmid);
         }
     }
@@ -257,48 +264,48 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     public function get_links($linkarray) {
         global $DB;
 
-        // these static variables for are for caching,
-        // as this function will be called a lot of time in grade listing
-        static $students=null, $context=null, $can_show=null;
+        // These static variables are for caching.
+        // As this function will be called a lot of time in grade listing.
+        static $students = null, $context = null, $canshow = null;
 
         $cmid = $linkarray['cmid'];
-        $student_id = $linkarray['userid'];
-        if ($can_show==null) { // Those computed values are cached in static variables and reused.
-            $can_show = $this->is_plugin_enabled($cmid);
-            if ($can_show) {
-                $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
-                $can_show = $setting!=null;
+        $studentid = $linkarray['userid'];
+        if ($canshow == null) { // Those computed values are cached in static variables and reused.
+            $canshow = $this->is_plugin_enabled($cmid);
+            if ($canshow) {
+                $setting = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
+                $canshow = $setting != null;
             }
-            if ($can_show) {
+            if ($canshow) {
                 if ($setting->moss) {
-                    $moss_param = $DB->get_record('plagiarism_programming_moss', array('settingid'=>$setting->id));
+                    $mossparam = $DB->get_record('plagiarism_programming_moss', array('settingid' => $setting->id));
                 }
                 if ($setting->jplag) {
-                    $jplag_param = $DB->get_record('plagiarism_programming_jplag', array('settingid'=>$setting->id));
+                    $jplagparam = $DB->get_record('plagiarism_programming_jplag', array('settingid' => $setting->id));
                 }
-                $can_show = (isset($moss_param) && $moss_param->status=='finished') ||
-                    (isset($jplag_param) && $jplag_param->status=='finished');
+                $canshow = (isset($mossparam) && $mossparam->status == 'finished') ||
+                    (isset($jplagparam) && $jplagparam->status == 'finished');
             }
-            if ($can_show) {
+            if ($canshow) {
                 $context = context_module::instance($cmid);
-                $is_teacher = has_capability('mod/assignment:grade', $context);
-                $can_show = $is_teacher || ($setting->auto_publish && has_capability('mod/assignment:view', $context));
+                $isteacher = has_capability('mod/assignment:grade', $context);
+                $canshow = $isteacher || ($setting->auto_publish && has_capability('mod/assignment:view', $context));
 
-                if ($is_teacher) {
+                if ($isteacher) {
                     $students = plagiarism_programming_get_students_similarity_info($cmid);
                 } else {
-                    $students = plagiarism_programming_get_students_similarity_info($cmid, $student_id);
+                    $students = plagiarism_programming_get_students_similarity_info($cmid, $studentid);
                 }
             }
         }
 
         $output = '';
-        if ($can_show) {
-            if (isset($students[$student_id])) {
-                $link = plagiarism_programming_get_report_link($cmid, $student_id, $students[$student_id]['detector'], 0);
-                $max_rate = round($students[$student_id]['max'], 2);
-                $output = get_string('max_similarity', 'plagiarism_programming').': '.html_writer::link($link, "$max_rate%");
-                if ($students[$student_id]['mark']=='Y') {
+        if ($canshow) {
+            if (isset($students[$studentid])) {
+                $link = plagiarism_programming_get_report_link($cmid, $studentid, $students[$studentid]['detector'], 0);
+                $maxrate = round($students[$studentid]['max'], 2);
+                $output = get_string('max_similarity', 'plagiarism_programming').': '.html_writer::link($link, "$maxrate%");
+                if ($students[$studentid]['mark'] == 'Y') {
                     $output .= ' '.html_writer::tag('span', get_string('suspicious', 'plagiarism_programming'),
                         array('class' => 'programming_result_warning'));
                 }
@@ -314,20 +321,20 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      */
     public function print_disclosure($cmid) {
         global $OUTPUT, $DB, $USER;
-        $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+        $setting = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
 
-        // the plugin is enabled for this course ?
+        // Is the plugin enabled for this course?
         if (!$this->is_plugin_enabled($cmid)) {
             return '';
         }
 
-        if (!$setting) { // plagiarism scanning turned off
+        if (!$setting) { // Plagiarism scanning turned off.
             return '';
         }
-        
+
         $context = context_module::instance($cmid);
 
-        // the user must be a student (or teacher)
+        // The user must be a student (or teacher).
         if (!has_capability('mod/assignment:submit', $context, $USER->id)) {
             return '';
         }
@@ -335,18 +342,18 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $content = '';
         if ($setting->notification) {
             $content = format_text($setting->notification_text, FORMAT_MOODLE);
-            $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0),
+            $scandates = $DB->get_records('plagiarism_programming_date', array('settingid' => $setting->id, 'finished' => 0),
                     'scan_date ASC');
-            if (count($scan_dates)>0) {
-                // get the first scan date
-                $scan_date = array_shift($scan_dates);
+            if (count($scandates) > 0) {
+                // Get the first scan date.
+                $scandate = array_shift($scandates);
                 $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
-                    date('D j M', $scan_date->scan_date));
+                    date('D j M', $scandate->scan_date));
             }
         }
-        if ($setting->auto_publish && count(plagiarism_programming_get_suspicious_works($USER->id, $cmid))>0) {
+        if ($setting->auto_publish && count(plagiarism_programming_get_suspicious_works($USER->id, $cmid)) > 0) {
             $warning = get_string('high_similarity_warning', 'plagiarism_programming');
-            $content .= html_writer::tag('span', $warning, array('class'=>'programming_result_warning'));
+            $content .= html_writer::tag('span', $warning, array('class' => 'programming_result_warning'));
         }
 
         if ($content) {
@@ -359,113 +366,114 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     public function update_status($course, $cm) {
-        global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detection_tools;
+        global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detectiontools;
         $cmid = $cm->id;
-        $setting = $DB->get_record('plagiarism_programming', array('cmid'=>$cmid));
+        $setting = $DB->get_record('plagiarism_programming', array('cmid' => $cmid));
 
-        // the plugin is enabled for this course ?
+        // Is the plugin enabled for this course?
         if (!$this->is_plugin_enabled($cmid)) {
             return '';
         }
 
-        if (!$setting) { // plagiarism scanning turned off for this assignment
+        if (!$setting) { // Plagiarism scanning turned off for this assignment.
             return '';
         }
 
         $context = context_module::instance($cmid);
-        // not a teacher
+        // Not a teacher.
         if (!has_capability('mod/assignment:grade', $context, $USER->id)) {
             return '';
         }
         $content = '';
 
-        $already_scanned = false;
+        $alreadyscanned = false;
 
-        $button_disabled = false;
-        // check at least one detector is selected
+        $buttondisabled = false;
+        // Check at least one detector is selected.
         if (!$setting->moss && !$setting->jplag) {
             $content .= $OUTPUT->notification(get_string('no_tool_selected', 'plagiarism_programming'), 'notifyproblem');
-            $button_disabled = true;
+            $buttondisabled = true;
         }
 
         $check = array();
-        foreach ($detection_tools as $tool => $tool_info) {
-            // if the tool is selected
+        foreach ($detectiontools as $tool => $toolinfo) {
+            // If the tool is selected.
             if (!$setting->$tool) {
                 continue;
             }
 
-            $toolname = $tool_info['name'];
-            $scanning_info = $DB->get_record('plagiarism_programming_'.$tool, array('settingid' => $setting->id));
+            $toolname = $toolinfo['name'];
+            $scanninginfo = $DB->get_record('plagiarism_programming_'.$tool, array('settingid' => $setting->id));
 
-            $info = $scanning_info->status;
-            switch ($scanning_info->status) {
-                case null: case 'pending':
-                    $info = get_string('pending', 'plagiarism_programming');
+            $info = $scanninginfo->status;
+            switch ($scanninginfo->status) {
+                case null:
+                case 'pending':
+                        $info = get_string('pending', 'plagiarism_programming');
                     break;
                 case 'finished':
-                    include_once($tool_info['code_file']);
-                    $class_name = $tool_info['class_name'];
-                    $tool_class = new $class_name();
-                    $info = $tool_class->display_link($setting);
+                    include_once($toolinfo['code_file']);
+                    $classname = $toolinfo['class_name'];
+                    $toolclass = new $classname();
+                    $info = $toolclass->display_link($setting);
                     break;
                 case 'error':
-                    $info = "Error: $scanning_info->message";
+                    $info = "Error: $scanninginfo->message";
                     break;
             }
 
-            $info_tag=html_writer::tag('span', $info, array('id' => $tool.'_status'));
-            $content .= html_writer::tag('div', "<span style='font-weight: bold'>$toolname</span>: $info_tag",
+            $infotag = html_writer::tag('span', $info, array('id' => $tool.'_status'));
+            $content .= html_writer::tag('div', "<span style='font-weight: bold'>$toolname</span>: $infotag",
                     array('class' => 'text_to_html'));
             $content .= html_writer::tag('div', '', array('id' => $tool.'_tool', 'class' => 'yui-skin-sam'));
-            $need_checking = (
-                    $scanning_info->status!='pending'  &&
-                    $scanning_info->status!='finished' &&
-                    $scanning_info->status!='error');
-            $check[$tool] = $need_checking;
-            $already_scanned |= $scanning_info->status=='finished'||$scanning_info->status=='error';
+            $needchecking = (
+                    $scanninginfo->status != 'pending'  &&
+                    $scanninginfo->status != 'finished' &&
+                    $scanninginfo->status != 'error');
+            $check[$tool] = $needchecking;
+            $alreadyscanned |= $scanninginfo->status == 'finished'||$scanninginfo->status == 'error';
         }
 
         if ($setting->latestscan) {
             $content .= get_string('latestscan', 'plagiarism_programming').' '.  date('h.i A D j M', $setting->latestscan);
         }
-        $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$setting->id, 'finished'=>0),
+        $scandates = $DB->get_records('plagiarism_programming_date', array('settingid' => $setting->id, 'finished' => 0),
                 'scan_date ASC');
-        if (count($scan_dates) > 0) {
-            // get the first scan date
-            $scan_date = array_shift($scan_dates);
+        if (count($scandates) > 0) {
+            // Get the first scan date.
+            $scandate = array_shift($scandates);
             $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
-                date('D j M', $scan_date->scan_date));
+                date('D j M', $scandate->scan_date));
         } else {
             $content .= html_writer::tag('div', get_string('no_scheduled_scanning', 'plagiarism_programming'));
         }
 
         $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
-            array('style'=>'margin-top:5px'));
-        // check at least two assignments submitted
+            array('style' => 'margin-top:5px'));
+        // Check at least two assignments submitted.
 
-        $file_records = plagiarism_programming_get_submitted_files($context);
-        if (count($file_records) < 2) {
+        $filerecords = plagiarism_programming_get_submitted_files($context);
+        if (count($filerecords) < 2) {
             $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
-            $button_disabled = true;
+            $buttondisabled = true;
         }
-        // write the rescan button
-        $button_label = ($already_scanned)?
-                get_string('rescanning', 'plagiarism_programming'):
+        // Write the rescan button.
+        $buttonlabel = ($alreadyscanned) ?
+                get_string('rescanning', 'plagiarism_programming') :
                 get_string('start_scanning', 'plagiarism_programming');
-        $button_attr = array('type' => 'submit',
+        $buttonattr = array('type' => 'submit',
                 'id' => 'plagiarism_programming_scan',
-                'value' => $button_label);
-        if ($button_disabled) {
-            $button_attr['disabled'] = 'disabled';
+                'value' => $buttonlabel);
+        if ($buttondisabled) {
+            $buttonattr['disabled'] = 'disabled';
         }
-        $scan_button = html_writer::empty_tag('input', $button_attr);
-        $content .= html_writer::tag('form', $scan_button, array('method'=>'post',
-            'action'=>"$CFG->wwwroot/plagiarism/programming/start_scanning.php?task=scan&cmid=$cmid"));
+        $scanbutton = html_writer::empty_tag('input', $buttonattr);
+        $content .= html_writer::tag('form', $scanbutton, array('method' => 'post',
+            'action' => "$CFG->wwwroot/plagiarism/programming/start_scanning.php?task=scan&cmid=$cmid"));
         $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
-            array('style'=>'display:none', 'id'=>'scan_message'));
+            array('style' => 'display:none', 'id' => 'scan_message'));
 
-        // include the javascript
+        // Include the javascript.
         $PAGE->requires->js('/plagiarism/programming/progressbar.js');
         $jsmodule = array(
             'name' => 'plagiarism_programming',
@@ -488,11 +496,11 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
     /** If the plugin is enabled or not (at Moodle level or at course level)
      * @param $cmid {number} the course module id (can provide the course id instead)
-     * @param $course_id {number} the course id. If course_id is passed, cmid is ignored
+     * @param $courseid {number} the course id. If course_id is passed, cmid is ignored
      * @return true: if the plugin is enabled in this course context
      *         false:if the plugin is not enabled in this course context
      */
-    public function is_plugin_enabled($cmid, $course_id=null) {
+    public function is_plugin_enabled($cmid, $courseid=null) {
         global $DB;
 
         $settings = (array) get_config('plagiarism');
@@ -500,89 +508,91 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return false;
         }
 
-        $plagiarism_programming_setting = (array) get_config('plagiarism_programming');
-        if ($plagiarism_programming_setting['level_enabled']=='global') { // globally enabled
+        $plagiarismprogrammingsetting = (array) get_config('plagiarism_programming');
+        if ($plagiarismprogrammingsetting['level_enabled'] == 'global') { // Globally enabled.
             return true;
         }
 
-        // specifically enabled for some courses
-        if (!$course_id) {
-            $course_module = get_coursemodule_from_id('', $cmid);
-            $course_id = ($course_module)?$course_module->course:0;
+        // Specifically enabled for some courses.
+        if (!$courseid) {
+            $coursemodule = get_coursemodule_from_id('', $cmid);
+            $courseid = ($coursemodule) ? $coursemodule->course : 0;
         }
-        return $DB->get_record('plagiarism_programming_cours', array('course' => $course_id))!=false;
+        return $DB->get_record('plagiarism_programming_cours', array('course' => $courseid)) != false;
     }
 
     /**
      * This function will setup multiple scan date of the form.
      * This will be similar to the repeat group of moodle form.
-     * However, since just an instance of $mform is passed in, 
+     * However, since just an instance of $mform is passed in,
      * it is not possible to call the protected function repeat_elements
      */
-    private function setup_multiple_scandate($mform, $plagiarism_config) {
+    private function setup_multiple_scandate($mform, $plagiarismconfig) {
         global $DB;
 
-        $scan_dates = array();
-        $constant_vars = array();
-        if ($plagiarism_config) {
-            $scan_dates = $DB->get_records('plagiarism_programming_date', array('settingid'=>$plagiarism_config->id), 'scan_date ASC');
+        $scandates = array();
+        $constantvars = array();
+        if ($plagiarismconfig) {
+            $scandates = $DB->get_records('plagiarism_programming_date',
+                array('settingid' => $plagiarismconfig->id), 'scan_date ASC');
         }
-        $db_scandate = count($scan_dates);
+        $dbscandate = count($scandates);
 
-        $date_num = optional_param('submit_date_num', max($db_scandate, 1), PARAM_INT);
-        $is_add_date = optional_param('add_new_date', '', PARAM_TEXT); // Add another form element if new date button was pushed.
-        if (!empty($is_add_date)) { // The hidden element, combined with javascript, makes the form jump to the date position.
+        $datenum = optional_param('submit_date_num', max($dbscandate, 1), PARAM_INT);
+        $isadddate = optional_param('add_new_date', '', PARAM_TEXT); // Add another form element if new date button was pushed.
+        if (!empty($isadddate)) { // The hidden element, combined with javascript, makes the form jump to the date position.
             // Add another date picker.
-            $date_num++;
+            $datenum++;
             $mform->addElement('hidden', 'is_add_date', 1);
-            $constant_vars['is_add_date'] = 1;
+            $constantvars['is_add_date'] = 1;
         } else {
             // Add first date picker if this is the first time the settings page is called.
             $mform->addElement('hidden', 'is_add_date', 0);
-            $constant_vars['is_add_date'] = 0;
+            $constantvars['is_add_date'] = 0;
         }
         $mform->setType('is_add_date', PARAM_BOOL);
 
         $i = 0;
-        foreach ($scan_dates as $scan_date) {
-            if ($scan_date->finished) {
+        foreach ($scandates as $scandate) {
+            if ($scandate->finished) {
                 $name = "scan_date_finished[$i]";
                 $mform->addElement('date_selector', $name, get_string('scan_date_finished', 'plagiarism_programming'),
-                        null, array('disabled'=>'disabled'));
-                $constant_vars[$name]=$scan_date->scan_date;
+                        null, array('disabled' => 'disabled'));
+                $constantvars[$name] = $scandate->scan_date;
             } else {
                 $name = "scan_date[$i]";
                 $mform->addElement('date_selector', "scan_date[$i]", get_string('scan_date', 'plagiarism_programming'),
-                    array('optional'=>true));
+                    array('optional' => true));
                 $mform->disabledIf($name, 'programmingYN', 'eq', 0);
             }
-            $mform->setDefault($name, $scan_date->scan_date);
+            $mform->setDefault($name, $scandate->scan_date);
             $mform->addHelpButton($name, 'date_selector_hlp', 'plagiarism_programming');
             $i++;
         }
-        for ($i=$db_scandate; $i<$date_num; $i++) {
+        for ($i = $dbscandate; $i < $datenum; $i++) {
             $mform->addElement('date_selector', "scan_date[$i]", get_string('scan_date', 'plagiarism_programming'),
-                array('optional'=>true));
+                array('optional' => true));
             $mform->addHelpButton("scan_date[$i]", 'date_selector_hlp', 'plagiarism_programming');
         }
 
-        $mform->addElement('hidden', 'submit_date_num', $date_num);
+        $mform->addElement('hidden', 'submit_date_num', $datenum);
         $mform->setType('submit_date_num', PARAM_INT);
-        $mform->setConstants(array('submit_date_num'=>$date_num));
+        $mform->setConstants(array('submit_date_num' => $datenum));
         $mform->addElement('submit', 'add_new_date', get_string('new_scan_date', 'plagiarism_programming'));
         $mform->disabledIf('add_new_date', 'programmingYN', 'eq', 0);
         $mform->registerNoSubmitButton('add_new_date');
-        $mform->setConstants($constant_vars);
+        $mform->setConstants($constantvars);
     }
 
-    private function setup_code_seeding_filemanager($mform, $plagiarism_config, $assignment_context) {
+    private function setup_code_seeding_filemanager($mform, $plagiarismconfig, $assignmentcontext) {
 
-        $mform->addElement('filemanager', 'code_filemanager', get_string('additional_code', 'plagiarism_programming'), null, $this->filemanager_option);
+        $mform->addElement('filemanager', 'code_filemanager', get_string('additional_code', 'plagiarism_programming'),
+            null, $this->filemanageroption);
         $mform->addHelpButton('code_filemanager', 'additional_code_hlp', 'plagiarism_programming');
         $data = new stdClass();
-        file_prepare_standard_filemanager($data, 'code', $this->filemanager_option,
-                $assignment_context, 'plagiarism_programming', 'codeseeding',
-                ($plagiarism_config)? $plagiarism_config->id : null);
+        file_prepare_standard_filemanager($data, 'code', $this->filemanageroption,
+                $assignmentcontext, 'plagiarism_programming', 'codeseeding',
+                ($plagiarismconfig) ? $plagiarismconfig->id : null);
         $mform->setDefault('code_filemanager', $data->code_filemanager);
     }
 }

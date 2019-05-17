@@ -17,177 +17,235 @@
 /**
  * Page to compare two assignment, when the user click on the similarity percentage
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-require_once(__DIR__.'/../../config.php');
-require_once(__DIR__.'/reportlib.php');
+require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/reportlib.php');
+require_login();
 
 global $OUTPUT, $PAGE, $DB, $USER, $CFG;
 
-//----------------------------------------Processing of parameters----------------------------------------------//
-$result_id = required_param('id', PARAM_INT); //id in the plagiarism_programming_reslt table
+// Processing of parameters.
+$resultid = required_param('id', PARAM_INT); // ID in the plagiarism_programming_reslt table.
 $anchor = optional_param('anchor', -1, PARAM_INT);
-$result_record = $DB->get_record('plagiarism_programming_reslt', array('id'=>$result_id));
-$report_rec = $DB->get_record('plagiarism_programming_rpt', array('id'=>$result_record->reportid));
+$resultrecord = $DB->get_record('plagiarism_programming_reslt', array(
+    'id' => $resultid
+));
+$reportrec = $DB->get_record('plagiarism_programming_rpt', array(
+    'id' => $resultrecord->reportid
+));
 
-$result_record = plagiarism_programming_transform_similarity_pair($result_record);
+$resultrecord = plagiarism_programming_transform_similarity_pair($resultrecord);
 
-// get the report directory
-$cmid = $report_rec->cmid;
-$detector = $report_rec->detector;
-require_once(__DIR__.'/'.$detector.'_tool.php');
-if ($detector=='jplag') {
-    $directory = jplag_tool::get_report_path($report_rec);
+// Get the report directory.
+$cmid = $reportrec->cmid;
+$detector = $reportrec->detector;
+
+require_once(__DIR__ . '/' . $detector . '_tool.php');
+
+if ($detector == 'jplag') {
+    $directory = jplag_tool::get_report_path($reportrec);
 } else {
-    $directory = moss_tool::get_report_path($report_rec);
+    $directory = moss_tool::get_report_path($reportrec);
 }
-//-------------------------------------end parameter processing--------------------------------------------------//
 
-// create page context
-if (!$course_module = $DB->get_record('course_modules', array('id'=>$cmid))) {
+// Create page context.
+if (!$coursemodule = $DB->get_record('course_modules', array(
+    'id' => $cmid
+))) {
     redirect($CFG->wwwroot, 'Invalid course module id');
 }
-$course = $DB->get_record('course', array('id'=>$course_module->course));
+$course = $DB->get_record('course', array(
+    'id' => $coursemodule->course
+));
 if (!$course) {
     redirect($CFG->wwwroot, 'Invalid course id');
 }
-require_login($course, true, $course_module);
+require_login($course, true, $coursemodule);
 
-//------------------------------------- authorisation: only teacher can see the names -----------------------------//
+// Authorisation: only teacher can see the names.
 $context = context_module::instance($cmid);
-$is_teacher = has_capability('mod/assignment:grade', $context);
-if (!$is_teacher) {
-    // check if he is allowed to see the assignment
-    if (!has_capability('mod/assignment:submit', $context) || // must have submission right to his assignment
-        !$DB->get_field('plagiarism_programming', 'auto_publish', array('cmid' => $cmid))) { // and permission to see the report
+$isteacher = has_capability('mod/assignment:grade', $context);
+if (!$isteacher) {
+    // Check if he is allowed to see the assignment.
+    if (!has_capability('mod/assignment:submit', $context) || // Must have submission right to his assignment.
+    !$DB->get_field('plagiarism_programming', 'auto_publish', array(
+        'cmid' => $cmid
+    ))) { // And permission to see the report.
         redirect($CFG->wwwroot, "You don't have permission to see this page");
     }
 
-    if ($result_record->student1_id==$USER->id) {
+    if ($resultrecord->student1_id == $USER->id) {
         $student1 = 'yours';
         $student2 = 'another\'s';
-    } else if ($result_record->student2_id==$USER->id) {
+    } else if ($resultrecord->student2_id == $USER->id) {
         $student1 = 'another\'s';
         $student2 = 'yours';
     } else {
-        // this condition cannot happen unless users fabricate the link
+        // This condition cannot happen unless users fabricate the link.
         redirect($CFG->wwwroot, "You can only see the report on your work");
     }
 } else {
-    // teacher can see the students' name
-    $users = $DB->get_records_list('user', 'id', array($result_record->student1_id, $result_record->student2_id),
-        'firstname,lastname,idnumber');
-    $student1 = isset($users[$result_record->student1_id]) ?
-        fullname($users[$result_record->student1_id]) :
-        $result_record->student1_id;
-    $student2 = isset($users[$result_record->student2_id]) ?
-        fullname($users[$result_record->student2_id]) :
-        $result_record->student2_id;
+    // Teacher can see the students' name.
+    $users = $DB->get_records_list('user', 'id', array(
+        $resultrecord->student1_id,
+        $resultrecord->student2_id
+    ), 'firstname,lastname,idnumber');
+    $student1 = isset($users[$resultrecord->student1_id]) ? fullname($users[$resultrecord->student1_id]) : $resultrecord->student1_id;
+    $student2 = isset($users[$resultrecord->student2_id]) ? fullname($users[$resultrecord->student2_id]) : $resultrecord->student2_id;
 }
-//---------------------------------end authorisation--------------------------------------------------------------------//
+
+// End of authorization.
 
 $title = get_string('comparison_title', 'plagiarism_programming');
 $heading = get_string('comparison', 'plagiarism_programming');
 
-$PAGE->set_pagelayout('base'); // don't want the blocks to save space
+$PAGE->set_pagelayout('base'); // Don't want the blocks to save space.
 $PAGE->set_url(me());
 $PAGE->set_title($title);
 $PAGE->set_heading($heading);
-$PAGE->navbar->add(get_string('similarity_report', 'plagiarism_programming'), "view.php?cmid=$cmid&tool=$report_rec->detector");
+$PAGE->navbar->add(get_string('similarity_report', 'plagiarism_programming'), "view.php?cmid=$cmid&tool=$reportrec->detector");
 $PAGE->navbar->add($heading);
 echo $OUTPUT->header();
 
-// the top bar
-$average_similarity = ($result_record->similarity1+$result_record->similarity2)/2;
-$content = html_writer::tag('div',
-        get_string('and', '', array('one'=>$student1, 'two'=>$student2)). "($average_similarity%)",
-        array('class'=>'compare_header'));
+// The top bar.
+$averagesimilarity = ($resultrecord->similarity1 + $resultrecord->similarity2) / 2;
+$content = html_writer::tag('div', get_string('and', '', array(
+    'one' => $student1,
+    'two' => $student2
+)) . "($averagesimilarity%)", array(
+    'class' => 'compare_header'
+));
 
-$result1 = plagiarism_programming_reconstruct_file($result_record->student1_id, $result_record->student2_id, $directory);
-$result2 = plagiarism_programming_reconstruct_file($result_record->student2_id, $result_record->student1_id, $directory);
-$sumary_data = plagiarism_programming_get_summary_data($result1['list'], $student1, $result_record->similarity1,
-                                            $result2['list'], $student2, $result_record->similarity2);
-// place holder for summary table, content will be rendered via javascript
-echo html_writer::tag('div', $content."<div class='simiarity_table_holder'></div>",
-        array('name'=>'link', 'frameborder'=>'0', 'width'=>'40%',
-        'class'=>'programming_result_comparison_top_left'));
+$result1 = plagiarism_programming_reconstruct_file($resultrecord->student1_id, $resultrecord->student2_id, $directory);
+$result2 = plagiarism_programming_reconstruct_file($resultrecord->student2_id, $resultrecord->student1_id, $directory);
+$sumarydata = plagiarism_programming_get_summary_data($result1['list'], $student1, $resultrecord->similarity1,
+    $result2['list'], $student2, $resultrecord->similarity2);
+// Placeholder for summary table, content will be rendered via javascript.
+echo html_writer::tag('div', $content . "<div class='simiarity_table_holder'></div>", array(
+    'name' => 'link',
+    'frameborder' => '0',
+    'width' => '40%',
+    'class' => 'programming_result_comparison_top_left'
+));
 
-$content='';
-if ($is_teacher) { // If the user is a teacher, add the box to mark as suspicious or normal.
+$content = '';
+if ($isteacher) { // If the user is a teacher, add the box to mark as suspicious or normal.
     $actions = array(
-        'Y'=>get_string('mark_suspicious', 'plagiarism_programming'),
-        'N'=>get_string('mark_nonsuspicious', 'plagiarism_programming')
+        'Y' => get_string('mark_suspicious', 'plagiarism_programming'),
+        'N' => get_string('mark_nonsuspicious', 'plagiarism_programming')
     );
-    $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'action_menu').' ';
-    $content .= html_writer::select($actions, 'mark', $result_record->mark, 'Action...', array('id'=>'action_menu'));
+    $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'action_menu') . ' ';
+    $content .= html_writer::select($actions, 'mark', $resultrecord->mark, 'Action...', array(
+        'id' => 'action_menu'
+    ));
 }
-$img_src = '';
-if ($result_record->mark=='Y') {
-    $img_src = 'pix/suspicious.png';
-} else if ($result_record->mark=='N') {
-    $img_src = 'pix/normal.png';
+$imgsrc = '';
+if ($resultrecord->mark == 'Y') {
+    $imgsrc = 'pix/suspicious.png';
+} else if ($resultrecord->mark == 'N') {
+    $imgsrc = 'pix/normal.png';
 }
-$content .= html_writer::empty_tag('img', array('src'=>$img_src, 'id'=>'mark_image', 'class'=>'programming_result_mark_img'));
+$content .= html_writer::empty_tag('img', array(
+    'src' => $imgsrc,
+    'id' => 'mark_image',
+    'class' => 'programming_result_mark_img'
+));
 
-// select the report history
-$similarity_history = plagiarism_programming_get_student_similarity_history($result_record);
-$report_select = array();
-foreach ($similarity_history as $pair) {
-    $report_select[$pair->id] = date('d M h.i A', $pair->time_created);
+// Select the report history.
+$similarityhistory = plagiarism_programming_get_student_similarity_history($resultrecord);
+$reportselect = array();
+foreach ($similarityhistory as $pair) {
+    $reportselect[$pair->id] = date('d M h.i A', $pair->time_created);
 }
 $content .= '<br/><br/>';
-$content .= html_writer::label(get_string('version'), 'report_version').' ';
-$content .= html_writer::select($report_select, 'report_version', $result_record->id, null, array('id'=>'report_version'));
+$content .= html_writer::label(get_string('version'), 'report_version') . ' ';
+$content .= html_writer::select($reportselect, 'report_version', $resultrecord->id, null, array(
+    'id' => 'report_version'
+));
 
-echo html_writer::tag('div', "<div>$content</div>", array('class'=>'programming_result_comparison_top_right'));
+echo html_writer::tag('div', "<div>$content</div>", array(
+    'class' => 'programming_result_comparison_top_right'
+));
 
-// separator
-echo html_writer::tag('div', '', array('class'=>'programming_result_comparison_separator'));
-// left panel
-echo html_writer::tag('div', $result1['content'], array('class'=>'programming_result_comparison_bottom_left'));
+// Separator.
+echo html_writer::tag('div', '', array(
+    'class' => 'programming_result_comparison_separator'
+));
+// Left panel.
+echo html_writer::tag('div', $result1['content'], array(
+    'class' => 'programming_result_comparison_bottom_left'
+));
 
-// right panel
-echo html_writer::tag('div', $result2['content'], array('class'=>'programming_result_comparison_bottom_right'));
+// Right panel.
+echo html_writer::tag('div', $result2['content'], array(
+    'class' => 'programming_result_comparison_bottom_right'
+));
 
-//----- name lookup table for javascript--------
-$result_select = "reportid=$report_rec->id ".
-    "AND (student1_id='$result_record->student1_id' OR student1_id='$result_record->student2_id' ".
-    "OR student2_id='$result_record->student1_id' OR student2_id='$result_record->student2_id')";
-$result = $DB->get_records_select('plagiarism_programming_reslt', $result_select);
+// Name lookup table for javascript.
+$resultselect = "reportid=$reportrec->id "
+    ."AND (student1_id='$resultrecord->student1_id' OR student1_id='$resultrecord->student2_id' "
+    ."OR student2_id='$resultrecord->student1_id' OR student2_id='$resultrecord->student2_id')";
+$result = $DB->get_records_select('plagiarism_programming_reslt', $resultselect);
 
-$all_names = null;
-plagiarism_programming_create_student_lookup_table($result, $is_teacher, $all_names, $course->id);
+$allnames = null;
+plagiarism_programming_create_student_lookup_table($result, $isteacher, $allnames, $course->id);
 
-//----------id lookup table for javascript-----------------------
-$result_id_table = array();
+// ID lookup table for javascript.
+$resultidtable = array();
 foreach ($result as $pair) {
     $std1 = max($pair->student1_id, $pair->student2_id);
     $std2 = min($pair->student1_id, $pair->student2_id);
-    $result_id_table[$std1][$std2] = $pair->id;
+    $resultidtable[$std1][$std2] = $pair->id;
 }
-$result_info = array('id'=>$result_id, 'mark'=>$result_record->mark, 'student1'=>$result_record->student1_id,
-    'student2'=>$result_record->student2_id);
+$resultinfo = array(
+    'id' => $resultid,
+    'mark' => $resultrecord->mark,
+    'student1' => $resultrecord->student1_id,
+    'student2' => $resultrecord->student2_id
+);
 
 $jsmodule = array(
     'name' => 'plagiarism_programming',
     'fullpath' => '/plagiarism/programming/compare_code.js',
-    'requires' => array('base', 'overlay', 'node', 'json', 'io', 'datatable', 'datatable-scroll'),
+    'requires' => array(
+        'base',
+        'overlay',
+        'node',
+        'json',
+        'io',
+        'datatable',
+        'datatable-scroll'
+    ),
     'strings' => array(
-        array('show_similarity_to_others', 'plagiarism_programming'),
-        array('history_char', 'plagiarism_programming'),
-        array('date', 'moodle')
-     )
+        array(
+            'show_similarity_to_others',
+            'plagiarism_programming'
+        ),
+        array(
+            'history_char',
+            'plagiarism_programming'
+        ),
+        array(
+            'date',
+            'moodle'
+        )
+    )
 );
-$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init',
-    array($result_info, $all_names, $sumary_data, $result_id_table, $anchor), true, $jsmodule);
+$PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init', array(
+    $resultinfo,
+    $allnames,
+    $sumarydata,
+    $resultidtable,
+    $anchor
+), true, $jsmodule);
 echo $OUTPUT->footer();
 
 function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $list2, $student2, $rate2) {
-    // header
+    // Header.
     $data = array();
     foreach ($list1 as $anchor => $portion) {
         $line1 = $portion['line'];
@@ -197,89 +255,103 @@ function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $lis
 
         $color = $portion['color'];
 
-        $data[]= array(
-            'color'    => "#$color",
+        $data[] = array(
+            'color' => "#$color",
             'student1' => "<a style='color:#$color' class='similarity_link' href='sim_$anchor'>$file1 ($line1)</a>",
-            'student2' => "<a style='color:#$color' class='similarity_link' href='sim_$anchor'>$file2 ($line2)</a>",
+            'student2' => "<a style='color:#$color' class='similarity_link' href='sim_$anchor'>$file2 ($line2)</a>"
         );
     }
     $columns = array(
-        array('key' => 'color', 'label' => ' '),
-        array('key' => 'student1', 'label' => "$student1 ($rate1%)"),
-        array('key' => 'student2', 'label' => "$student2 ($rate2%)"),
+        array(
+            'key' => 'color',
+            'label' => ' '
+        ),
+        array(
+            'key' => 'student1',
+            'label' => "$student1 ($rate1%)"
+        ),
+        array(
+            'key' => 'student2',
+            'label' => "$student2 ($rate2%)"
+        )
     );
     return array(
         'columns' => $columns,
-        'data'    => $data,
+        'data' => $data
     );
 }
 
-function plagiarism_programming_reconstruct_file($student_id, $other_student_id, $dir) {
-    $code_file = $dir.'/'.$student_id;
+function plagiarism_programming_reconstruct_file($studentid, $otherstudentid, $dir) {
+    $codefile = $dir . '/' . $studentid;
 
     $dom = new DOMDocument();
     $dom->preserveWhiteSpace = false;
-    $content = file_get_contents($code_file);
-    @$dom->loadHTML('<pre>'.$content.'</pre>');
+    $content = file_get_contents($codefile);
+    @$dom->loadHTML('<pre>' . $content . '</pre>');
 
-    $pre = $dom->childNodes->item(1)->firstChild->firstChild; // root->html->body->pre
+    $pre = $dom->childNodes->item(1)->firstChild->firstChild; // Path: root->html->body->pre.
 
-    $line_no = 1;
-    $current_file = '';
-    $portion_list = array();
+    $linenumber = 1;
+    $currentfile = '';
+    $portionlist = array();
     $node = $pre->firstChild;
-    while ($node!=null) {
-        if ($node->nodeType==XML_TEXT_NODE) {
-            $line_no += substr_count($node->nodeValue, "\n");  // count the line
-        } else if ($node->tagName=='h3') {
-            $current_file = $node->nodeValue;
-            $line_no = 1;
-        } else if ($node->tagName=='span' && $node->getAttribute('type')=='begin') {
+    while ($node != null) {
+        if ($node->nodeType == XML_TEXT_NODE) {
+            $linenumber += substr_count($node->nodeValue, "\n"); // Count the line.
+        } else if ($node->tagName == 'h3') {
+            $currentfile = $node->nodeValue;
+            $linenumber = 1;
+        } else if ($node->tagName == 'span' && $node->getAttribute('type') == 'begin') {
             $sid = explode(',', $node->getAttribute('sid'));
-            $key = array_search($other_student_id, $sid);
-            if ($key!==false) { // matching portion
+            $key = array_search($otherstudentid, $sid);
+            if ($key !== false) { // Matching portion.
                 $anchors = explode(',', $node->getAttribute('anchor'));
                 $anchor = $anchors[$key];
-                $colors = explode(',',  $node->getAttribute('color'));
+                $colors = explode(',', $node->getAttribute('color'));
                 $color = $colors[$key];
 
                 $font = $dom->createElement('font');
                 $font->setAttribute('color', $color);
-                $font->setAttribute('class', 'sim_'.$anchor);
+                $font->setAttribute('class', 'sim_' . $anchor);
                 $font = $node->parentNode->insertBefore($font, $node);
                 $sibling = $node->nextSibling;
-                $start_line = $line_no;
-                while (!plagiarism_programming_end_span_node($sibling, $other_student_id)) {
-                    if ($sibling->nodeType==XML_TEXT_NODE) {
-                        $line_no += substr_count($sibling->nodeValue, "\n");
+                $startline = $linenumber;
+                while (!plagiarism_programming_end_span_node($sibling, $otherstudentid)) {
+                    if ($sibling->nodeType == XML_TEXT_NODE) {
+                        $linenumber += substr_count($sibling->nodeValue, "\n");
                     }
-                    $next_sibling = $sibling->nextSibling;
+                    $nextsibling = $sibling->nextSibling;
                     $font->appendChild($sibling);
-                    $sibling = $next_sibling;
+                    $sibling = $nextsibling;
                 }
-                if (count($sid)==1) { // remove the mark if this portion has in common with only one student
+                if (count($sid) == 1) { // Remove the mark if this portion has in common with only one student.
                     $node->parentNode->removeChild($node);
                     $sibling->parentNode->removeChild($sibling);
-                } else { // if not, move the marks within the font
+                } else { // If not, move the marks within the font.
                     $font->insertBefore($node, $font->firstChild);
                     $font->appendChild($sibling);
                 }
                 $node = $font;
 
-                $portion_list[$anchor] = array('file'=>$current_file, 'line'=>"$start_line-$line_no", 'color'=>$color);
+                $portionlist[$anchor] = array(
+                    'file' => $currentfile,
+                    'line' => "$startline-$linenumber",
+                    'color' => $color
+                );
             }
         }
         $node = $node->nextSibling;
     }
-    return array('list'=>$portion_list, 'content'=>$dom->saveHTML());
+    return array(
+        'list' => $portionlist,
+        'content' => $dom->saveHTML()
+    );
 }
 
-function plagiarism_programming_end_span_node($node, $student_id) {
-    if ($node->nodeType==XML_ELEMENT_NODE &&
-           $node->tagName=='span' &&
-           $node->getAttribute('type')=='end') {
-        $end_sid = explode(',', $node->getAttribute('sid'));
-        return in_array($student_id, $end_sid);
+function plagiarism_programming_end_span_node($node, $studentid) {
+    if ($node->nodeType == XML_ELEMENT_NODE && $node->tagName == 'span' && $node->getAttribute('type') == 'end') {
+        $endsid = explode(',', $node->getAttribute('sid'));
+        return in_array($studentid, $endsid);
     } else {
         return false;
     }

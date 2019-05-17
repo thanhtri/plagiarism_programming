@@ -17,54 +17,99 @@
 /**
  * Common functions which are used in many place
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 /**
  * Return an array containing the possible extensions
  * of source code file of the provided language
- * @param $language {string} Either java, c, csharp
+ *
+ * @param $language {string}
+ *            Either java, c, csharp
  * @return array of extensions of the language
  */
 function plagiarism_programming_get_file_extension($language) {
     $extensions = array();
     switch ($language) {
         case 'java':
-            $extensions = array('java', 'JAVA', 'Java');
+            $extensions = array(
+                'java',
+                'JAVA',
+                'Java'
+            );
             break;
         case 'c':
-            $extensions = array('h', 'c', 'cpp', 'C', 'CPP', 'H');
+            $extensions = array(
+                'h',
+                'c',
+                'cpp',
+                'C',
+                'CPP',
+                'H'
+            );
             break;
         case 'c#':
-            $extensions = array('cs', 'CS', 'Cs');
+            $extensions = array(
+                'cs',
+                'CS',
+                'Cs'
+            );
             break;
         case 'scheme':
-            $extensions = array('scm', 'SCM');
+            $extensions = array(
+                'scm',
+                'SCM'
+            );
             break;
         case 'plsql':
-            $extensions = array('sql', 'pls', 'pks');
+            $extensions = array(
+                'sql',
+                'pls',
+                'pks'
+            );
             break;
         case 'pascal':
-            $extensions = array('pas', 'tp', 'bp', 'p');
+            $extensions = array(
+                'pas',
+                'tp',
+                'bp',
+                'p'
+            );
             break;
         case 'perl':
-            $extensions = array('pl', 'PL');
+            $extensions = array(
+                'pl',
+                'PL'
+            );
             break;
         case 'python':
-            $extensions = array('py', 'PY');
+            $extensions = array(
+                'py',
+                'PY'
+            );
             break;
         case 'vb':
-            $extensions = array('vb', 'VB', 'Vb');
+            $extensions = array(
+                'vb',
+                'VB',
+                'Vb'
+            );
             break;
         case 'javascript':
-            $extensions = array('js', 'JS', 'Js');
+            $extensions = array(
+                'js',
+                'JS',
+                'Js'
+            );
             break;
         case 'text':
-            $extensions = array('txt');
+            $extensions = array(
+                'txt'
+            );
             break;
     }
     return $extensions;
@@ -72,38 +117,44 @@ function plagiarism_programming_get_file_extension($language) {
 
 /**
  * Check if the file has the appropriate extension
- * @param $filename {string} name of the file
- * @param $extension {array} an array of possible extensions
+ *
+ * @param $filename {string}
+ *            name of the file
+ * @param $extension {array}
+ *            an array of possible extensions
  * @return true if the file has the extension in the array
  */
 function plagiarism_programming_check_extension($filename, $extensions) {
-
-    if ($extensions==null) { // If extensions array is null, accept all extension.
+    if ($extensions == null) { // If extensions array is null, accept all extension.
         return true;
     }
-    $dot_index = strrpos($filename, '.');
+    $dotindex = strrpos($filename, '.');
 
-    if ($dot_index === false) {
+    if ($dotindex === false) {
         return false;
     }
 
-    $ext = substr($filename, $dot_index + 1);
+    $ext = substr($filename, $dotindex + 1);
     return in_array($ext, $extensions);
 }
 
-/** Create a file for write. This function will create a directory along the file path if it doesn't exist
- * @param $fullpath {string} The path of the file
+/**
+ * Create a file for write.
+ * This function will create a directory along the file path if it doesn't exist
+ *
+ * @param $fullpath {string}
+ *            The path of the file
  * @return {object} the write file handle. fclose have to be called when finishing with it
  */
 function plagiarism_programming_create_file($fullpath) {
-    $dir_path = dirname($fullpath);
-    if (is_dir($dir_path)) { // directory already exist
+    $dirpath = dirname($fullpath);
+    if (is_dir($dirpath)) { // Directory already exist.
         return fopen($fullpath, 'w');
     } else {
-        $dirs = explode('/', $dir_path);
+        $dirs = explode('/', $dirpath);
         $path = '';
         foreach ($dirs as $dir) {
-            $path .= $dir.'/';
+            $path .= $dir . '/';
             if (!is_dir($path)) {
                 mkdir($path);
             }
@@ -114,19 +165,21 @@ function plagiarism_programming_create_file($fullpath) {
 
 /**
  * Search the file to clear the students' name and clear them
- * @param $filecontent: the content of a file
- * @param $student {object} the user record object of the students. Name and id occurrences will be cleared
+ *
+ * @param $filecontent: the
+ *            content of a file
+ * @param $student {object}
+ *            the user record object of the students. Name and id occurrences will be cleared
  */
 function plagiarism_programming_annonymise_students(&$filecontent, $student) {
-
-    if ($student==null) { // Do not have information to clear.
+    if ($student == null) { // Do not have information to clear.
         return;
     }
     // Dind all the comments. First version just support C++ style comments.
-    $pattern = '/\/\*.*?\*\//s'; // C style
+    $pattern = '/\/\*.*?\*\//s'; // C style.
     $comments1 = array();
     preg_match_all($pattern, $filecontent, $comments1);
-    $pattern = '/\/\/.*/';       // C++ style
+    $pattern = '/\/\/.*/'; // C++ style.
     $comments2 = array();
     preg_match_all($pattern, $filecontent, $comments2);
     $allcomments = array_merge($comments1[0], $comments2[0]);
@@ -135,20 +188,27 @@ function plagiarism_programming_annonymise_students(&$filecontent, $student) {
     $fname = $student->firstname;
     $lname = $student->lastname;
     $idnumber = $student->idnumber;
-    $find_array = array($fname, $lname, $idnumber);
-    $replace_array = array('#firstname', '#lastname', '#id');
+    $findarray = array(
+        $fname,
+        $lname,
+        $idnumber
+    );
+    $replacearray = array(
+        '#firstname',
+        '#lastname',
+        '#id'
+    );
 
     $finds = array();
     $replaces = array();
 
     foreach ($allcomments as $comment) {
-        if (stripos($comment, $fname)!=false || stripos($comment, $lname)!=false || 
-                (!empty($idnumber) && strpos($comment, $idnumber)!=false)) {
-            $new_comment = str_ireplace($find_array, $replace_array, $comment);
-            $finds[]= $comment;
-            $replaces[]=$new_comment;
-            // to be safe, delete the comment with author inside, maybe the student write his name in another form
-        } else if (strpos($comment, 'author')!==false) {
+        if (stripos($comment, $fname) != false || stripos($comment, $lname) != false || (!empty($idnumber) && strpos($comment, $idnumber) != false)) {
+            $newcomment = str_ireplace($findarray, $replacearray, $comment);
+            $finds[] = $comment;
+            $replaces[] = $newcomment;
+            // To be safe, delete the comment with author inside, maybe the student write his name in another form.
+        } else if (strpos($comment, 'author') !== false) {
             $finds[] = $comment;
             $replaces[] = '';
         }
@@ -159,46 +219,53 @@ function plagiarism_programming_annonymise_students(&$filecontent, $student) {
 function plagiarism_programming_send_scanning_notification_email($assignment, $toolname) {
     global $CFG, $DB;
 
-    $context_assignment = context_module::instance($assignment->cmid);
+    $contextassignment = context_module::instance($assignment->cmid);
     $cm = get_coursemodule_from_id('', $assignment->cmid);
 
-    $markers = get_enrolled_users($context_assignment, "mod/$cm->modname:grade");
-    $moodle_support = generate_email_supportuser();
-    $course = $DB->get_record('course', array('id' => $cm->course));
-    $assign = $DB->get_record($cm->modname, array('id' => $cm->instance));
+    $markers = get_enrolled_users($contextassignment, "mod/$cm->modname:grade");
+    $moodlesupport = generate_email_supportuser();
+    $course = $DB->get_record('course', array(
+        'id' => $cm->course
+    ));
+    $assign = $DB->get_record($cm->modname, array(
+        'id' => $cm->instance
+    ));
 
-    $email_params = array('course_short_name' => $course->shortname,
-                          'course_name'       => $course->fullname,
-                          'assignment_name'   => $assign->name,
-                          'time'              => userdate(time(), get_string('strftimerecent')),
-                          'link'              => "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$assignment->cmid&detector=$toolname"
-        );
+    $emailparams = array(
+        'course_short_name' => $course->shortname,
+        'course_name' => $course->fullname,
+        'assignment_name' => $assign->name,
+        'time' => userdate(time(), get_string('strftimerecent')),
+        'link' => "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$assignment->cmid&detector=$toolname"
+    );
 
-    $markers_count = count($markers);
-    mtrace("Sending email to $markers_count markers\n");
+    $markerscount = count($markers);
+    mtrace("Sending email to $markerscount markers\n");
     foreach ($markers as $marker) {
         mtrace("Email to $marker->firstname $marker->lastname\n");
-        $email_params['recipientname'] = fullname($marker);
-        email_to_user($marker, $moodle_support,
-                get_string('scanning_complete_email_notification_subject', 'plagiarism_programming', $email_params),
-                get_string('scanning_complete_email_notification_body_txt', 'plagiarism_programming', $email_params),
-                get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $email_params));
+        $emailparams['recipientname'] = fullname($marker);
+        email_to_user($marker, $moodlesupport,
+            get_string('scanning_complete_email_notification_subject', 'plagiarism_programming', $emailparams),
+            get_string('scanning_complete_email_notification_body_txt', 'plagiarism_programming', $emailparams),
+            get_string('scanning_complete_email_notification_body_html', 'plagiarism_programming', $emailparams));
     }
 }
 
 /**
  * Delete a directory (taken from php.net) with all of its sub-dirs and files
- * @param string $dir: the directory to be deleted
+ *
+ * @param string $dir:
+ *            the directory to be deleted
  */
 function plagiarism_programming_rrmdir($dir) {
     if (is_dir($dir)) {
         $objects = scandir($dir);
         foreach ($objects as $object) {
             if ($object != "." && $object != "..") {
-                if (filetype($dir.'/'.$object) == 'dir') {
-                    plagiarism_programming_rrmdir($dir."/".$object);
+                if (filetype($dir . '/' . $object) == 'dir') {
+                    plagiarism_programming_rrmdir($dir . "/" . $object);
                 } else {
-                    unlink($dir.'/'.$object);
+                    unlink($dir . '/' . $object);
                 }
             }
         }
@@ -208,58 +275,63 @@ function plagiarism_programming_rrmdir($dir) {
 }
 
 /**
- * Get a list of links in parallel. curl is used to call the parallel
- * @param array $links: list of links
- * @param mixed $directory: if null, the contents get by the links will not be stored, if a string, the content
- *  will be stored in that directory, if an array, each link will be saved in the corresponding directory entry
- * (must be the same size with the links array)
- * (each directory entry should contain the full path, including the filename)
- * @param int $timeout the maximum time (in number of second) to wait
+ * Get a list of links in parallel.
+ * curl is used to call the parallel
+ *
+ * @param array $links:
+ *            list of links
+ * @param mixed $directory:
+ *            if null, the contents get by the links will not be stored, if a string, the content
+ *            will be stored in that directory, if an array, each link will be saved in the corresponding directory entry
+ *            (must be the same size with the links array)
+ *            (each directory entry should contain the full path, including the filename)
+ * @param int $timeout
+ *            the maximum time (in number of second) to wait
  */
-function plagiarism_programming_curl_download($links, $directory=null, $timeout=0) {
-    $curl_handle_array = array();
-    $multi_handler = curl_multi_init();
+function plagiarism_programming_curl_download($links, $directory = null, $timeout = 0) {
+    $curlhandlearray = array();
+    $multihandler = curl_multi_init();
 
-    // initialise
+    // Initialise.
     if (is_array($directory)) {
         foreach ($links as $key => $link) {
-            $curl_handle_array[$key] = curl_init($link);
-            curl_setopt($curl_handle_array[$key], CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl_handle_array[$key], CURLOPT_TIMEOUT, $timeout);
-            curl_multi_add_handle($multi_handler, $curl_handle_array[$key]);
+            $curlhandlearray[$key] = curl_init($link);
+            curl_setopt($curlhandlearray[$key], CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curlhandlearray[$key], CURLOPT_TIMEOUT, $timeout);
+            curl_multi_add_handle($multihandler, $curlhandlearray[$key]);
         }
     } else {
         foreach ($links as $link) {
             $filename = substr($link, strrpos($link, '/'));
-            $curl_handle_array[$filename] = curl_init($link);
-            curl_setopt($curl_handle_array[$filename], CURLOPT_RETURNTRANSFER, true);
-            curl_multi_add_handle($multi_handler, $curl_handle_array[$filename]);
+            $curlhandlearray[$filename] = curl_init($link);
+            curl_setopt($curlhandlearray[$filename], CURLOPT_RETURNTRANSFER, true);
+            curl_multi_add_handle($multihandler, $curlhandlearray[$filename]);
         }
     }
 
-    // download
-    $still_running = 0;
+    // Download.
+    $stillrunning = 0;
     do {
-        curl_multi_exec($multi_handler, $still_running);
-    } while ($still_running>0);
+        curl_multi_exec($multihandler, $stillrunning);
+    } while ($stillrunning > 0);
 
     if (!$directory) {
         return;
     }
 
     if (is_array($directory)) {
-        foreach ($curl_handle_array as $key => $handle) {
+        foreach ($curlhandlearray as $key => $handle) {
             $result = curl_multi_getcontent($handle);
             $file = fopen($directory[$key], 'w');
             fwrite($file, $result);
             fclose($file);
         }
-    } else { // directory is a string
-        // add a slash at the end if it doesn't exist
-        $directory = (substr($directory, -1)!='/')?$directory.'/':$directory;
-        foreach ($curl_handle_array as $filename => $handle) {
+    } else { // Directory is a string.
+        // Add a slash at the end if it doesn't exist.
+        $directory = (substr($directory, -1) != '/') ? $directory . '/' : $directory;
+        foreach ($curlhandlearray as $filename => $handle) {
             $result = curl_multi_getcontent($handle);
-            $file = fopen($directory.$filename, 'w');
+            $file = fopen($directory . $filename, 'w');
             fwrite($file, $result);
             fclose($file);
         }
@@ -267,160 +339,182 @@ function plagiarism_programming_curl_download($links, $directory=null, $timeout=
 }
 
 /**
- * Extract a rar file. In addition, this function also clear students' name and id if there
+ * Extract a rar file.
+ * In addition, this function also clear students' name and id if there
  * are in the comments and the name of the file
- * @param string $zip_file full path of the zip file
- * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
- * @param string $location directory of 
- * @param stdClass $user: record object of the student who submitted the file
+ *
+ * @param string $zip_file
+ *            full path of the zip file
+ * @param array $extensions
+ *            extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location
+ *            directory of
+ * @param stdClass $user:
+ *            record object of the student who submitted the file
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
-function plagiarism_programming_extract_rar($rar_file, $extensions, $location, $student=null, $textfile_only=false) {
+function plagiarism_programming_extract_rar($rarfile, $extensions, $location, $student = null, $textfileonly = false) {
     mtrace("Extracting rar file...\n");
     if (!class_exists('RarArchive')) {
         mtrace("Rar library doesn't exist");
         return false;
     }
-    $rar_archive = RarArchive::open($rar_file);
-    if (!$rar_archive) {
+    $rararchive = RarArchive::open($rarfile);
+    if (!$rararchive) {
         return false;
     }
 
-    $has_valid_file = false;
+    $hasvalidfile = false;
 
-    // finfo object to check for plain text file
+    // Finfo object to check for plain text file.
     $finfo = new finfo(FILEINFO_MIME);
 
-    $entries = $rar_archive->getEntries();
+    $entries = $rararchive->getEntries();
     foreach ($entries as $entry) {
-        $entry_name = $entry->getName();
-        // if an entry name contain the id, remove it
+        $entryname = $entry->getName();
+        // If an entry name contain the id, remove it.
         if (isset($student->idnumber)) {
-            $entry_name = str_replace($student->idnumber, '_id_', $entry_name);
+            $entryname = str_replace($student->idnumber, '_id_', $entryname);
         }
-        // if it's a file (skip directory entry since directories along the path
-        // will be created $handlewhen writing to the files
-        if (!$entry->isDirectory() && plagiarism_programming_check_extension($entry_name, $extensions)) {
+        // If it's a file (skip directory entry since directories along the path will be created $handlewhen writing to the files.
+        if (!$entry->isDirectory() && plagiarism_programming_check_extension($entryname, $extensions)) {
             $stream = $entry->getStream();
             if ($stream) {
                 $buf = fread($stream, $entry->getUnpackedSize());
-                if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check if it is not a binary file
-                    $file_path = $location.$entry_name;
-                    $fp = plagiarism_programming_create_file($file_path);
+                if (!$textfileonly || strpos($finfo->buffer($buf), 'text') !== false) { // Check if it is not a binary file.
+                    $filepath = $location . $entryname;
+                    $fp = plagiarism_programming_create_file($filepath);
 
                     plagiarism_programming_annonymise_students($buf, $student);
                     fwrite($fp, $buf);
                     fclose($fp);
-                    $has_valid_file = true;
+                    $hasvalidfile = true;
                 }
                 fclose($stream);
             }
         }
     }
 
-    return $has_valid_file;
+    return $hasvalidfile;
 }
 
 /**
- * Extract a zip file. In addition, this function also clear students' name and id if there
+ * Extract a zip file.
+ * In addition, this function also clear students' name and id if there
  * are in the comments and the name of the file
- * @param string $zip_file full path of the zip file
- * @param array $extensions extension of files that should be extracted (for example, just .java file should be extracted)
- * @param string $location directory of 
- * @param stdClass $user: record object of the student who submitted the file
+ *
+ * @param string $zipfile
+ *            full path of the zip file
+ * @param array $extensions
+ *            extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location
+ *            directory of
+ * @param stdClass $user:
+ *            record object of the student who submitted the file
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
-function plagiarism_programming_extract_zip($zip_file, $extensions, $location, $user = null, $textfile_only = true) {
-    $zip_handle = zip_open($zip_file);
-    $has_valid_file = false;
-    if (!$zip_handle) {
+function plagiarism_programming_extract_zip($zipfile, $extensions, $location, $user = null, $textfileonly = true) {
+    $ziphandle = zip_open($zipfile);
+    $hasvalidfile = false;
+    if (!$ziphandle) {
         return false;
     }
 
-    // finfo object to check for plain text file
+    // Finfo object to check for plain text file.
     $finfo = new finfo(FILEINFO_MIME);
 
-    while ($zip_entry = zip_read($zip_handle)) {
-        $entry_name = zip_entry_name($zip_entry);
+    while ($zipentry = zip_read($ziphandle)) {
+        $entryname = zip_entry_name($zipentry);
 
-        // if an entry name contain the student id, hide it
+        // Ff an entry name contain the student id, hide it.
         if ($user) {
-            $entry_name = str_replace($user->idnumber, '_id_', $entry_name);
+            $entryname = str_replace($user->idnumber, '_id_', $entryname);
         }
-        // if it's a file (skip directory entry since directories along the path
-        // will be created when writing to the files
-        if (substr($entry_name, -1)!='/' && plagiarism_programming_check_extension($entry_name, $extensions)) {
-            if (zip_entry_open($zip_handle, $zip_entry, 'r')) {
-                $buf = zip_entry_read($zip_entry, zip_entry_filesize($zip_entry));
-                if (!$textfile_only || strpos($finfo->buffer($buf),'text') !== FALSE) { // check text file
-                    $file_path = $location.$entry_name;
-                    $fp = plagiarism_programming_create_file($file_path);
+        // Ff it's a file (skip directory entry since directories along the path will be created when writing to the files.
+        if (substr($entryname, -1) != '/' && plagiarism_programming_check_extension($entryname, $extensions)) {
+            if (zip_entry_open($ziphandle, $zipentry, 'r')) {
+                $buf = zip_entry_read($zipentry, zip_entry_filesize($zipentry));
+                if (!$textfileonly || strpos($finfo->buffer($buf), 'text') !== false) { // Check text file.
+                    $filepath = $location . $entryname;
+                    $fp = plagiarism_programming_create_file($filepath);
                     if ($user) {
                         plagiarism_programming_annonymise_students($buf, $user);
                     }
                     fwrite($fp, $buf);
                     fclose($fp);
-                    $has_valid_file = true;
+                    $hasvalidfile = true;
                 }
-                zip_entry_close($zip_entry);
+                zip_entry_close($zipentry);
             }
         }
     }
 
-    return $has_valid_file;
+    return $hasvalidfile;
 }
 
 /**
- * The file is a compressed file or not. Since the plugin supports only zip and
+ * The file is a compressed file or not.
+ * Since the plugin supports only zip and
  * rar files, every other compression type will be considered not compressed.
  * Just a simple extension check is performed (zip or rar)
  */
 function plagiarism_programming_is_compressed_file($filename) {
     $ext = substr($filename, -4, 4);
-    return ($ext=='.zip') || ($ext=='.rar');
+    return ($ext == '.zip') || ($ext == '.rar');
 }
 
 /**
  * Count the number of line and the number of characters at the final line in the provided string
+ *
  * @param: the string to countstring
  */
 function plagiarism_programming_count_line(&$text) {
-    $line_count = substr_count($text, "\n");
-    $char_num = strlen($text)-strrpos($text, "\n");
-    return array($line_count, $char_num);
+    $linecount = substr_count($text, "\n");
+    $charnum = strlen($text) - strrpos($text, "\n");
+    return array(
+        $linecount,
+        $charnum
+    );
 }
 
 /**
- * This class is used to inform the progress of something (scanning, downloading). It is passed to the stub and
+ * This class is used to inform the progress of something (scanning, downloading).
+ * It is passed to the stub and
  * used by the stub to inform the progress by calling update_progress. It decouples the generic stubs, which contain
  * client code with the database.
  */
-class progress_handler {
-    private $tool_name;
-    private $tool_param;
+class progress_handler{
+    private $toolname;
+    private $toolparam;
 
     /**
      * Construct the object
-     * @param $tool_name {string} The tool need progress update (either JPlag or MOSS)
-     * @param $tool_param: the record object of MOSS param status
+     *
+     * @param $toolname {string}
+     *            The tool need progress update (either JPlag or MOSS)
+     * @param $tool_param: the
+     *            record object of MOSS param status
      */
-    public function __construct($tool_name, $tool_param) {
-        $this->tool_name = $tool_name;
-        $this->tool_param = $tool_param;
+    public function __construct($toolname, $toolparam) {
+        $this->toolname = $toolname;
+        $this->toolparam = $toolparam;
     }
 
     /**
      * Update the progress of the tool indicated in the constructor
+     *
      * @param $stage {string} The stage the scanning is in (upload, download, scanning...)
      * @param $progress {number} The percentage finished (between 0 and 100)
      */
     public function update_progress($stage, $progress) {
         global $DB;
-        $record = $DB->get_record('plagiarism_programming_'.$this->tool_name, array('id'=>$this->tool_param->id));
+        $record = $DB->get_record('plagiarism_programming_' . $this->toolname, array(
+            'id' => $this->toolparam->id
+        ));
         $record->status = $stage;
         $record->progress = intval($progress);
-        $DB->update_record('plagiarism_programming_'.$this->tool_name, $record);
-        $this->tool_param->progress = intval($progress);
-        $this->tool_param->status = $stage;
+        $DB->update_record('plagiarism_programming_' . $this->toolname, $record);
+        $this->toolparam->progress = intval($progress);
+        $this->toolparam->status = $stage;
     }
 }

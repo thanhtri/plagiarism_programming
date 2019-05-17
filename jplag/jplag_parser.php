@@ -17,16 +17,16 @@
 /**
  * This class parse the result of the generated webpages of JPlag
  *
- * @package    plagiarism
+ * @package plagiarism
  * @subpackage programming
- * @author     thanhtri
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author thanhtri
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
-require_once(__DIR__.'/../utils.php');
+require_once(__DIR__ . '/../utils.php');
 
-class jplag_parser {
+class jplag_parser{
     private $filename;
     private $cmid;
     private $report;
@@ -34,7 +34,7 @@ class jplag_parser {
     public function __construct($cmid) {
         $this->cmid = $cmid;
         $this->report = plagiarism_programming_get_latest_report($cmid, 'jplag');
-        $this->filename = jplag_tool::get_report_path($this->report).'/index.html';
+        $this->filename = jplag_tool::get_report_path($this->report) . '/index.html';
     }
 
     public function parse() {
@@ -48,37 +48,37 @@ class jplag_parser {
             trigger_error('Loading index.html file failed!', E_USER_ERROR);
         }
 
-        // extract table elements, only the third and forth tables contain the required info
+        // Extract table elements, only the third and forth tables contain the required info.
         $tables = $dom->getElementsByTagName('table');
-        $average_tbl = $tables->item(2);
-        $rows = $average_tbl->getElementsByTagName('tr');
+        $averagetable = $tables->item(2);
+        $rows = $averagetable->getElementsByTagName('tr');
         $rownum = $rows->length;
 
         $res = new stdClass();
         $res->reportid = $this->report->id;
-        for ($i=0; $i<$rownum; $i++) {
+        for ($i = 0; $i < $rownum; $i++) {
             $row = $rows->item($i);
             $cells = $row->getElementsByTagName('td');
 
-            for ($j=2; $j<$cells->length; $j++) {
+            for ($j = 2; $j < $cells->length; $j++) {
                 $cell = $cells->item($j);
                 $link = $cell->childNodes->item(0);
                 $file = $link->getAttribute('href');
 
-                // the similarity percentage of each student is contained in the -top file
+                // The similarity percentage of each student is contained in the -top file.
                 $pattern = '/<TR><TH><TH>(.*) \(([0-9]*\.[0-9]*)%\)<TH>(.*) \(([0-9]*\.[0-9]*)%\)<TH>/';
-                $top_filename = $directory.'/'.substr($file, 0, -5).'-top.html';
-                $top_content = file_get_contents($top_filename);
+                $topfilename = $directory . '/' . substr($file, 0, -5) . '-top.html';
+                $topcontent = file_get_contents($topfilename);
                 $matches = null;
-                preg_match($pattern, $top_content, $matches);
+                preg_match($pattern, $topcontent, $matches);
 
-                // save to the db
+                // Save to the db.
                 if (ctype_digit($matches[1]) || ctype_digit($matches[3])) {
                     $res->student1_id = $matches[1];
                     $res->student2_id = $matches[3];
                     $res->similarity1 = $matches[2];
                     $res->similarity2 = $matches[4];
-                    $res->comparison  = $file;
+                    $res->comparison = $file;
                     plagiarism_programming_save_similarity_pair($res);
                 }
             }
@@ -88,36 +88,37 @@ class jplag_parser {
 
     public function get_similar_parts() {
         global $DB;
-        $pairs = $DB->get_records('plagiarism_programming_reslt', array('reportid'=>$this->report->id));
+        $pairs = $DB->get_records('plagiarism_programming_reslt', array(
+            'reportid' => $this->report->id
+        ));
         $pairs = plagiarism_programming_transform_similarity_pair($pairs);
         $path = dirname($this->filename);
 
-        $similarity_array = array();
-        $file_array = array();
+        $similarityarray = array();
+        $filearray = array();
 
         foreach ($pairs as $pair) {
             $file = $pair->comparison;
-            $file_0 = $path.'/'.substr($file, 0, -5).'-0.html';
-            $file_1 = $path.'/'.substr($file, 0, -5).'-1.html';
-            $file = $path.'/'.$file;
+            $file0 = $path . '/' . substr($file, 0, -5) . '-0.html';
+            $file1 = $path . '/' . substr($file, 0, -5) . '-1.html';
+            $file = $path . '/' . $file;
 
-            $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file_0, $similarity_array, $file_array);
-            $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file_1, $similarity_array, $file_array);
+            $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file0, $similarityarray, $filearray);
+            $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file1, $similarityarray, $filearray);
 
-            // TODO: uncomment to delete these files after debugging
+            // TODO Uncomment to delete these files after debugging.
             if (!debugging()) {
                 unlink($file);
-                unlink($file_0);
-                unlink($file_1);
+                unlink($file0);
+                unlink($file1);
             }
         }
-        $this->save_code($file_array, $similarity_array, $path);
+        $this->save_code($filearray, $similarityarray, $path);
     }
 
-    private function parse_similar_parts($student_id, $other_student_id, $filename, &$similarity_array, &$file_array) {
-
-        if (!isset($similarity_array[$student_id])) {
-            $similarity_array[$student_id] = array();
+    private function parse_similar_parts($studentid, $otherstudentid, $filename, &$similarityarray, &$filearray) {
+        if (!isset($similarityarray[$studentid])) {
+            $similarityarray[$studentid] = array();
         }
 
         $dom = new DOMDocument();
@@ -127,102 +128,106 @@ class jplag_parser {
         $codes = $dom->getElementsByTagName('pre');
         foreach ($codes as $code) {
 
-            // save the code first
-            $code_name = $this->register_code(dirname($filename), $student_id, $file_array, $code);
-            if (!isset($similarity_array[$student_id][$code_name])) {
-                $similarity_array[$student_id][$code_name] = array();
+            // Save the code first.
+            $codename = $this->register_code(dirname($filename), $studentid, $filearray, $code);
+            if (!isset($similarityarray[$studentid][$codename])) {
+                $similarityarray[$studentid][$codename] = array();
             }
 
-            $line_number = 1;
-            // filter all anchor name: <a name="..."></a>
+            $linenumber = 1;
+            // Filter all anchor name: <a name="..."></a>.
             $anchors = $code->getElementsByTagName('a');
-            $anchor_names = array();
+            $anchornames = array();
             foreach ($anchors as $anchor) {
                 $name = $anchor->getAttribute('name');
-                if ($name!='') {
-                    $anchor_names[] = $name;
+                if ($name != '') {
+                    $anchornames[] = $name;
                 }
             }
 
-            $char_number = 0;
-            $char_number_2 = 0;
-            $child_nodes = $code->childNodes;
-            $font_num = 0;
-            foreach ($child_nodes as $node) {
-                if ($node->nodeType==XML_TEXT_NODE) {
-                    list($lines, $chars) = plagiarism_programming_count_line($node->nodeValue);
-                    $line_number += $lines;
-                    if ($lines==0) { // start of another block is on the same line
-                        $char_number += $char_number_2 + $chars;
+            $charnumber = 0;
+            $charnumber2 = 0;
+            $childnodes = $code->childNodes;
+            $fontnumber = 0;
+            foreach ($childnodes as $node) {
+                if ($node->nodeType == XML_TEXT_NODE) {
+                    list ($lines, $chars) = plagiarism_programming_count_line($node->nodeValue);
+                    $linenumber += $lines;
+                    if ($lines == 0) { // Start of another block is on the same line.
+                        $charnumber += $charnumber2 + $chars;
                     } else {
-                        $char_number = $chars;
+                        $charnumber = $chars;
                     }
-                } else if ($node->nodeType==XML_ELEMENT_NODE) {
+                } else if ($node->nodeType == XML_ELEMENT_NODE) {
                     $tag = $node->tagName;
-                    if ($tag=='font') {
-                        list($line_number_2, $char_number_2) = $this->process_font_node($node);
-                        $line_number_2 += $line_number;
-                        if ($line_number_2==$line_number) { // start and end block is on the same line
-                            $char_number_2 += $char_number;
+                    if ($tag == 'font') {
+                        list ($linenumber2, $charnumber2) = $this->process_font_node($node);
+                        $linenumber2 += $linenumber;
+                        if ($linenumber2 == $linenumber) { // Start and end block is on the same line.
+                            $charnumber2 += $charnumber;
                         }
-                        $anchor_name = $anchor_names[$font_num];
-                        $color = substr($node->getAttribute('color'), 1); // strip the '#' sign at the beginning
+                        $anchorname = $anchornames[$fontnumber];
+                        $color = substr($node->getAttribute('color'), 1); // Strip the '#' sign at the beginning.
 
-                        $similarity_array[$student_id][$code_name][] =
-                            array('begin_line'=>$line_number,
-                                'begin_char'=>$char_number,
-                                'end_line'=>$line_number_2,
-                                'end_char'=>$char_number_2,
-                                'color'=>$color,
-                                'student'=>$other_student_id,
-                                'anchor'=>$anchor_name);
+                        $similarityarray[$studentid][$codename][] = array(
+                            'begin_line' => $linenumber,
+                            'begin_char' => $charnumber,
+                            'end_line' => $linenumber2,
+                            'end_char' => $charnumber2,
+                            'color' => $color,
+                            'student' => $otherstudentid,
+                            'anchor' => $anchorname
+                        );
 
-                        $line_number = $line_number_2;
-                        $font_num++;
+                        $linenumber = $linenumber2;
+                        $fontnumber++;
                     }
                 }
             }
-            $line_number = 1;
+            $linenumber = 1;
         }
-        return $similarity_array;
+        return $similarityarray;
     }
 
     private function process_font_node($node) {
-        assert($node->tagName=='font');
+        assert($node->tagName == 'font');
         $text = $node->childNodes->item(1)->nodeValue;
-        list($lines_num, $char_num) = plagiarism_programming_count_line($text);
-        return array($lines_num, $char_num);
+        list ($linesnum, $charnum) = plagiarism_programming_count_line($text);
+        return array(
+            $linesnum,
+            $charnum
+        );
     }
 
-    private function register_code($directory, $student_id, &$file_array, $code) {
-        if (!isset($file_array[$student_id])) {
-            $file_array[$student_id] = array();
+    private function register_code($directory, $studentid, &$filearray, $code) {
+        if (!isset($filearray[$studentid])) {
+            $filearray[$studentid] = array();
         }
 
         $header = $code->previousSibling;
-        while ($header->nodeType!=XML_ELEMENT_NODE || $header->tagName!='h3') {
+        while ($header->nodeType != XML_ELEMENT_NODE || $header->tagName != 'h3') {
             $header = $header->previousSibling;
         }
-        $code_name = $header->nodeValue;
+        $codename = $header->nodeValue;
 
-        // if this code is not recorded yet, record it to disk (avoid holding too much in memory)
-        if (!isset($file_array[$student_id][$code_name])) {
-            $filename = tempnam($directory, str_replace(' ', '_', "$student_id"));
-            $file_array[$student_id][$code_name]= $filename;
+        // If this code is not recorded yet, record it to disk (avoid holding too much in memory).
+        if (!isset($filearray[$studentid][$codename])) {
+            $filename = tempnam($directory, str_replace(' ', '_', "$studentid"));
+            $filearray[$studentid][$codename] = $filename;
             file_put_contents($filename, htmlspecialchars($code->nodeValue));
         }
-        return $code_name;
+        return $codename;
     }
 
-    // all the code files of each student are concatenated and saved in one file
-    private function save_code(&$file_array, &$record_array, $directory) {
-        foreach ($file_array as $student_id => $code) {
-            $file = fopen($directory.'/'.$student_id, 'w');
-            foreach ($code as $code_name => $filename) {
-                $html_codename = htmlspecialchars($code_name);
-                fwrite($file, "<hr/><h3>$html_codename</h3><hr/>\n");
+    // All the code files of each student are concatenated and saved in one file.
+    private function save_code(&$filearray, &$recordarray, $directory) {
+        foreach ($filearray as $studentid => $code) {
+            $file = fopen($directory . '/' . $studentid, 'w');
+            foreach ($code as $codename => $filename) {
+                $htmlcodename = htmlspecialchars($codename);
+                fwrite($file, "<hr/><h3>$htmlcodename</h3><hr/>\n");
                 $content = file_get_contents($filename);
-                $this->mark_similarity($content, $record_array[$student_id][$code_name]);
+                $this->mark_similarity($content, $recordarray[$studentid][$codename]);
                 fwrite($file, $content);
                 unlink($filename);
             }
@@ -231,51 +236,50 @@ class jplag_parser {
     }
 
     private function mark_similarity(&$content, $similarities) {
-
         $this->merge_similar_portions($similarities);
         $this->split_and_sort($similarities);
 
         $lines = explode("\n", $content);
 
-        // mark in the reverse order so that it does not affect the char count
-        // if two marks are on the same line
+        // Mark in the reverse order so that it does not affect the char count if two marks are on the same line.
         foreach ($similarities as $position) {
             $anchor = implode(',', $position['anchor']);
-            $student_id = implode(',', $position['student']);
+            $studentid = implode(',', $position['student']);
             $color = implode(',', $position['color']);
             $type = $position['type'];
-            $line = $lines[$position['line']-1];
-            $line = substr($line, 0, $position['char']-1)
-                    ."<span sid='$student_id' anchor='$anchor' type='$type' color='$color'></span>"
-                    .substr($line, $position['char']-1);
-            $lines[$position['line']-1] = $line;
+            $line = $lines[$position['line'] - 1];
+            $line = substr($line, 0, $position['char'] - 1)."<span sid='$studentid' anchor='$anchor' type='$type' color='$color'></span>".substr($line, $position['char'] - 1);
+            $lines[$position['line'] - 1] = $line;
         }
         $content = implode("\n", $lines);
     }
 
     private function merge_similar_portions(&$similarities) {
         $num = count($similarities);
-        for ($i=0; $i<$num; $i++) {
+        for ($i = 0; $i < $num; $i++) {
             if (!isset($similarities[$i])) {
                 continue;
             }
             $first = $similarities[$i];
-            $first['student'] = array($first['student']);
-            $first['anchor'] = array($first['anchor']);
-            $first['color'] = array($first['color']);
-            for ($j=$i+1; $j<$num; $j++) {
+            $first['student'] = array(
+                $first['student']
+            );
+            $first['anchor'] = array(
+                $first['anchor']
+            );
+            $first['color'] = array(
+                $first['color']
+            );
+            for ($j = $i + 1; $j < $num; $j++) {
                 if (!isset($similarities[$j])) {
                     continue;
                 }
                 $second = $similarities[$j];
-                if ($first['begin_line']==$second['begin_line'] &&
-                    $first['begin_char']==$second['begin_char'] &&
-                    $first['end_line'] == $second['end_line'] &&
-                    $first['end_char'] == $second['end_char'] ) {
-                        unset($similarities[$j]);
-                        $first['student'][] = $second['student'];
-                        $first['anchor'][] = $second['anchor'];
-                        $first['color'][] = $second['color'];
+                if ($first['begin_line'] == $second['begin_line'] && $first['begin_char'] == $second['begin_char'] && $first['end_line'] == $second['end_line'] && $first['end_char'] == $second['end_char']) {
+                    unset($similarities[$j]);
+                    $first['student'][] = $second['student'];
+                    $first['anchor'][] = $second['anchor'];
+                    $first['color'][] = $second['color'];
                 }
             }
             $similarities[$i] = $first;
@@ -283,27 +287,30 @@ class jplag_parser {
     }
 
     public function split_and_sort(&$similarities) {
-        $splited_positions = array();
+        $splitpositions = array();
         foreach ($similarities as $portion) {
-            $splited_positions[] = array(
+            $splitpositions[] = array(
                 'line' => $portion['begin_line'],
                 'char' => $portion['begin_char'],
-                'student' =>$portion['student'],
+                'student' => $portion['student'],
                 'anchor' => $portion['anchor'],
                 'color' => $portion['color'],
                 'type' => 'begin'
             );
-            $splited_positions[] = array(
+            $splitpositions[] = array(
                 'line' => $portion['end_line'],
                 'char' => $portion['end_char'],
-                'student' =>$portion['student'],
+                'student' => $portion['student'],
                 'anchor' => $portion['anchor'],
                 'color' => $portion['color'],
                 'type' => 'end'
             );
         }
-        usort($splited_positions, array('jplag_parser', 'position_sorter'));
-        $similarities = $splited_positions;
+        usort($splitpositions, array(
+            'jplag_parser',
+            'position_sorter'
+        ));
+        $similarities = $splitpositions;
     }
 
     public static function position_sorter($p1, $p2) {

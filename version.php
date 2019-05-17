@@ -23,8 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version =  2019050601;
-$plugin->requires = 2010112400; // Moodle 2.0 or above
+defined('MOODLE_INTERNAL') || die();
+
+$plugin->version = 2019050601;
+$plugin->requires = 2010112400; // Moodle 2.0 or above.
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->release = '1.3';
 $plugin->cron     = 7200;
