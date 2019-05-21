@@ -14,16 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Upgrade script
  *
- * @package    core
- * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Upgrades the moodle database from an older version to a new one.
+ *
+ * @param number $oldversion
+ * @return boolean
+ */
 function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
     global $DB;
     $dbman = $DB->get_manager();

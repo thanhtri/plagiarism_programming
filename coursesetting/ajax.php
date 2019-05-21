@@ -17,9 +17,13 @@
 /**
  * Ajax calls for selecting courses having the plugin enabled
  *
- * @package plagiarism programming
+ * @package plagiarism_programming
+ * @copyright 2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use Leafo\ScssPhp\Node\Number;
+
 require_once(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/course_selection_form.php');
 
@@ -57,6 +61,13 @@ if ($task == 'getcourse') {
     echo html_writer::select($options, 'category_select');
 }
 
+/**
+ * Searches courses in the course select screen.
+ *
+ * @param object $page
+ * @param number $category
+ * @param string $name
+ */
 function plagiarism_programming_search_courses($page, $category = 0, $name = '') {
     ob_start();
     $form = new course_selection_form($page, $category, $name);
@@ -65,12 +76,22 @@ function plagiarism_programming_search_courses($page, $category = 0, $name = '')
     echo $html;
 }
 
+/**
+ * Sets the level for which the plugin is enabled - either globally or for selected courses.
+ *
+ * @param object $level
+ */
 function plagiarism_programming_enable_level($level) {
     // Just two values global and course are accepted.
     $level = ($level == 'global') ? 'global' : 'course';
     set_config('level_enabled', $level, 'plagiarism_programming');
 }
 
+/**
+ * Adds a course to the list of enabled courses.
+ *
+ * @param Number $id
+ */
 function plagiarism_programming_enable_course($id) {
     global $DB;
     $course = $DB->get_record('plagiarism_programming_cours', array(
@@ -86,6 +107,11 @@ function plagiarism_programming_enable_course($id) {
     }
 }
 
+/**
+ * Deletes a course from the enabled courses database.
+ *
+ * @param Number $id
+ */
 function plagiarism_programming_disable_course($id) {
     global $DB;
     $DB->delete_records('plagiarism_programming_cours', array(
@@ -97,6 +123,7 @@ function plagiarism_programming_disable_course($id) {
 }
 
 /**
+ * Gets all course categories and their subcategories.
  *
  * @return array the category tree with each node has name (category name) and subcat (array of category nodes)
  */
@@ -121,13 +148,11 @@ function plagiarism_programming_get_course_categories() {
 }
 
 /**
+ * Creates the course category select tree for course-wide instead of global setting.
  *
- * @param array $category_tree
- *            the category tree returned by plagiarism_programming_get_course_categories()
- * @param string $content
- *            the select html makup
- * @param int $level
- *            level of the tree, used for recursion
+ * @param array $categorytree the category tree returned by plagiarism_programming_get_course_categories()
+ * @param int $level level of the tree, used for recursion
+ * @return string[] The options that can be selected
  */
 function plagiarism_programming_create_course_category_select($categorytree, $level) {
     $prefix = str_repeat('&nbsp;', $level * 4);

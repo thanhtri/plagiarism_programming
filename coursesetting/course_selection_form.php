@@ -15,26 +15,50 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Build the form used for site-wide configuration
+ * Build the form used for site-wide configuration.
+ *
  * This form is assessible by Site Administration -> Plugins -> Plagiarism Prevention -> Programming Assignment
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use Leafo\ScssPhp\Node\Number;
 
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 define('PAGE_SIZE', 12);
 
+/**
+ * Lets the admin select the courses the plugin is enabled for.
+ *
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class course_selection_form extends moodleform {
 
+    /**
+     * @var object $page
+     */
     private $page;
+    /**
+     * @var Number $category
+     */
     private $category;
+    /**
+     * @var string $name
+     */
     private $name;
 
+    /**
+     * Initializes the class.
+     *
+     * @param number $page
+     * @param number $category
+     * @param string $name
+     */
     public function __construct($page=1, $category=0, $name='') {
         $this->page = $page;
         $this->category = $category;
@@ -42,6 +66,12 @@ class course_selection_form extends moodleform {
         parent::__construct();
     }
 
+    /**
+     * Defines the moodleform.
+     *
+     * {@inheritDoc}
+     * @see moodleform::definition()
+     */
     protected function definition() {
         global $DB;
 
@@ -75,6 +105,12 @@ class course_selection_form extends moodleform {
         $mform->addElement('html', html_writer::tag('div', $backlink.' '.$nextlink, array('style' => 'text-align:center')));
     }
 
+    /**
+     * Searches the courses.
+     *
+     * @param Number $totalrecord
+     * @return array the result of the search
+     */
     private function course_search(&$totalrecord) {
         global $CFG, $DB;
 

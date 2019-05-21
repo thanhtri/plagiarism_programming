@@ -16,14 +16,14 @@
 
 /**
  * This script is used to fork processes in order to scan assignments after extraction.
+ *
  * It cannot be called directly through the website, but just through curl libray in
  * scan_assignment function in start_scanning.php file
  * Authentication: a random token is generated and stored in the plagiarism_programming_jplag or plagiarism_programming_moss table
  * in DB before calling the script. This token is passed to this script, which in turn verify it with the one stored in DB.
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -64,7 +64,12 @@ set_error_handler('plagiarism_programming_error_handler');
 register_shutdown_function('plagiarism_programming_handle_shutdown');
 scan_after_extract_assignment($assignment, $tool, $waittofinish, $notificationmail);
 
-
+/**
+ * Handles errors.
+ * @param Number $errornumber
+ * @param String $errormessage
+ * @return boolean
+ */
 function plagiarism_programming_error_handler($errornumber, $errormessage) {
 
     if ($errornumber == E_ERROR) {

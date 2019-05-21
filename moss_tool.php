@@ -16,12 +16,12 @@
 
 /**
  * Define entry function for MOSS engine
+ *
  * Organise the result into the structure required by MOSS,
  * upload the assignment and interpret the result.
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
@@ -31,10 +31,21 @@ require_once(__DIR__.'/moss/moss_stub.php');
 require_once(__DIR__.'/moss/moss_parser.php');
 require_once(__DIR__.'/reportlib.php');
 
+/**
+ * Wrapper class for the moss tool.
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class moss_tool implements plagiarism_tool {
 
+    /**
+     * @var $mossstub
+     */
     private $mossstub;
-
+    /**
+     * @var $supportedlanguages
+     */
     private static $supportedlanguages = array(
         'java' => 'java',
         'c' => 'cc',
@@ -55,6 +66,11 @@ class moss_tool implements plagiarism_tool {
         'a8086' => 'a8086',
     );
 
+    /**
+     * Initiializes the Stub for moss.
+     * @param Object $mossparam
+     * @return Object mossstub
+     */
     private function init_stub($mossparam = null) {
         global $CFG;
 
@@ -75,6 +91,13 @@ class moss_tool implements plagiarism_tool {
         return $this->mossstub;
     }
 
+    /**
+     * Submit all the code to the plagiarism detection service
+     * @param String $inputdir the directory containing all the extracted code.
+     *        Each immediate subdirectory is the submission of one student
+     * @param Object $assignment
+     * @param Object $mossparam containing the information of the assignment (name, context id...)
+     */
     public function submit_assignment($inputdir, $assignment, $mossparam) {
 
         if (!$this->init_stub($mossparam)) { // Credentials not provided.
@@ -122,18 +145,31 @@ class moss_tool implements plagiarism_tool {
      * Check scanning status.
      * Since MOSS doesn't have API to probe the scanning status on the server,
      * the status in the db is returned.
+     * @param Object $assignmentparam containing the information of the assignment
+     * @param Object $mossparam containing the information of the configuration for that tool of the assignment
+     * @return Object $mossparam
      */
     public function check_status($assignmentparam, $mossparam) {
         // Moss does not allow to query the scanning progress.
         return $mossparam;
     }
-
+    /**
+     * Display the link to the report. This function return html <a> tag of the link
+     * @param Object $setting
+     */
     public function display_link($setting) {
         global $CFG;
         $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$setting->cmid&tool=moss";
         return "<a target='_blank' href='$link'>MOSS report</a>";
     }
 
+    /**
+     * Scans the direcotry
+     * @param String $fullbasedir
+     * @param String $shortbasedir
+     * @param String $mergedir
+     * @return string[]|array
+     */
     private function scan_directory($fullbasedir, $shortbasedir, $mergedir) {
         // Construct an array like path=>name.
         $results = array();
@@ -155,12 +191,22 @@ class moss_tool implements plagiarism_tool {
         return $results;
     }
 
+    /**
+     * Returns the "id" of the language.
+     * @param String $language
+     * @return String
+     */
     private function get_language_code($language) {
         return self::$supportedlanguages[$language];
     }
 
-    // The download page to page of the report is very slow.
-    // Therefore, it call another process to function.
+    /**
+     * The download page to page of the report is very slow.
+     * Therefore, it call another process to function.
+     * @param Object $assignment
+     * @param Object $mossinfo
+     * @return Object $mossinfo
+     */
     public function download_result($assignment, $mossinfo) {
         if (!$this->init_stub($mossinfo)) { // Credentials not provided.
             return $mossinfo;
@@ -186,6 +232,12 @@ class moss_tool implements plagiarism_tool {
         return $mossinfo;
     }
 
+    /**
+     * Parses the result
+     * @param Object $assignment
+     * @param Object $mossinfo
+     * @return Object $mossinfo
+     */
     public function parse_result($assignment, $mossinfo) {
 
         $parser = new moss_parser($assignment->cmid);
@@ -199,9 +251,8 @@ class moss_tool implements plagiarism_tool {
 
     /**
      * Return the path of the directory containing the report
-     * @param number $cmid the course module id of the assignment. If null, it will return the root directory of all the report
-     * @param number $version the version of report. If null, it will return the directory of the latest report of this assignment
-     * (if cmid not null)
+     * @param Object $report
+     * @return string
      */
     public static function get_report_path($report=null) {
         global $CFG;
@@ -212,10 +263,17 @@ class moss_tool implements plagiarism_tool {
         }
     }
 
-    public static function get_supported_laguage() {
+    /**
+     * Returns the supported languages
+     * @return string[]
+     */
+    public static function get_supported_language() {
         return self::$supportedlanguages;
     }
 
+    /**
+     * It's just moss.
+     */
     public function get_name() {
         return 'moss';
     }

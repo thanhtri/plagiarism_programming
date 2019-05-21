@@ -15,28 +15,52 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This class parse the result of the generated webpages of JPlag
+ * This class parse the result of the generated webpages of JPlag.
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+use Leafo\ScssPhp\Node\Number;
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once(__DIR__ . '/../utils.php');
 
+/**
+ * Class for the jplag-parser.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class jplag_parser{
+    /**
+     * @var String $filename
+     */
     private $filename;
+    /**
+     * @var Number $cmid
+     */
     private $cmid;
+    /**
+     * @var Object $report
+     */
     private $report;
 
+    /**
+     * Initializes the variables.
+     *
+     * @param Number $cmid
+     */
     public function __construct($cmid) {
         $this->cmid = $cmid;
         $this->report = plagiarism_programming_get_latest_report($cmid, 'jplag');
         $this->filename = jplag_tool::get_report_path($this->report) . '/index.html';
     }
 
+    /**
+     * Parses the input to the jplag format, I guess.
+     */
     public function parse() {
         global $DB;
 
@@ -86,6 +110,9 @@ class jplag_parser{
         $this->get_similar_parts();
     }
 
+    /**
+     * Gets the similar parts of two submissions.
+     */
     public function get_similar_parts() {
         global $DB;
         $pairs = $DB->get_records('plagiarism_programming_reslt', array(
@@ -116,6 +143,16 @@ class jplag_parser{
         $this->save_code($filearray, $similarityarray, $path);
     }
 
+    /**
+     * Parses the parts which are similar.
+     *
+     * @param Number $studentid
+     * @param Number $otherstudentid
+     * @param String $filename
+     * @param Array $similarityarray
+     * @param Array $filearray
+     * @return Array with similarities
+     */
     private function parse_similar_parts($studentid, $otherstudentid, $filename, &$similarityarray, &$filearray) {
         if (!isset($similarityarray[$studentid])) {
             $similarityarray[$studentid] = array();
@@ -189,6 +226,12 @@ class jplag_parser{
         return $similarityarray;
     }
 
+    /**
+     * Processes the font node.
+     *
+     * @param object $node
+     * @return Array
+     */
     private function process_font_node($node) {
         assert($node->tagName == 'font');
         $text = $node->childNodes->item(1)->nodeValue;
@@ -199,6 +242,15 @@ class jplag_parser{
         );
     }
 
+    /**
+     * Registers the code.
+     *
+     * @param String $directory
+     * @param Number $studentid
+     * @param Array $filearray
+     * @param object $code
+     * @return String
+     */
     private function register_code($directory, $studentid, &$filearray, $code) {
         if (!isset($filearray[$studentid])) {
             $filearray[$studentid] = array();
@@ -219,7 +271,13 @@ class jplag_parser{
         return $codename;
     }
 
-    // All the code files of each student are concatenated and saved in one file.
+    /**
+     * All the code files of each student are concatenated and saved in one file.
+     *
+     * @param Array $filearray
+     * @param Array $recordarray
+     * @param String $directory
+     */
     private function save_code(&$filearray, &$recordarray, $directory) {
         foreach ($filearray as $studentid => $code) {
             $file = fopen($directory . '/' . $studentid, 'w');
@@ -235,6 +293,12 @@ class jplag_parser{
         }
     }
 
+    /**
+     * Marks the similarity of two submissions
+     *
+     * @param String $content
+     * @param object $similarities
+     */
     private function mark_similarity(&$content, $similarities) {
         $this->merge_similar_portions($similarities);
         $this->split_and_sort($similarities);
@@ -254,6 +318,11 @@ class jplag_parser{
         $content = implode("\n", $lines);
     }
 
+    /**
+     * Merges similar portions into one.
+     *
+     * @param object $similarities
+     */
     private function merge_similar_portions(&$similarities) {
         $num = count($similarities);
         for ($i = 0; $i < $num; $i++) {
@@ -286,6 +355,11 @@ class jplag_parser{
         }
     }
 
+    /**
+     * Splits and then sorts similarities for further processing.
+     *
+     * @param object $similarities
+     */
     public function split_and_sort(&$similarities) {
         $splitpositions = array();
         foreach ($similarities as $portion) {
@@ -313,6 +387,13 @@ class jplag_parser{
         $similarities = $splitpositions;
     }
 
+    /**
+     * Sorts two positions.
+     *
+     * @param object $p1
+     * @param object $p2
+     * @return number
+     */
     public static function position_sorter($p1, $p2) {
         if ($p1['line'] != $p2['line']) {
             return $p2['line'] - $p1['line'];

@@ -17,10 +17,9 @@
 /**
  * Page to compare two assignment, when the user click on the similarity percentage
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/reportlib.php');
@@ -244,6 +243,16 @@ $PAGE->requires->js_init_call('M.plagiarism_programming.compare_code.init', arra
 ), true, $jsmodule);
 echo $OUTPUT->footer();
 
+/**
+ * Returns the summary data.
+ * @param Array $list1
+ * @param String $student1
+ * @param String $rate1
+ * @param Array $list2
+ * @param String $student2
+ * @param String $rate2
+ * @return string[][][]
+ */
 function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $list2, $student2, $rate2) {
     // Header.
     $data = array();
@@ -280,7 +289,13 @@ function plagiarism_programming_get_summary_data($list1, $student1, $rate1, $lis
         'data' => $data
     );
 }
-
+/**
+ * REconstructs a file, I guess.
+ * @param Number $studentid
+ * @param Number $otherstudentid
+ * @param String $dir
+ * @return string[]|string[][][]|mixed[][][]
+ */
 function plagiarism_programming_reconstruct_file($studentid, $otherstudentid, $dir) {
     $codefile = $dir . '/' . $studentid;
 
@@ -348,6 +363,12 @@ function plagiarism_programming_reconstruct_file($studentid, $otherstudentid, $d
     );
 }
 
+/**
+ * Some YUI things.
+ * @param Object $node YUI Node
+ * @param Number $studentid
+ * @return boolean
+ */
 function plagiarism_programming_end_span_node($node, $studentid) {
     if ($node->nodeType == XML_ELEMENT_NODE && $node->tagName == 'span' && $node->getAttribute('type') == 'end') {
         $endsid = explode(',', $node->getAttribute('sid'));

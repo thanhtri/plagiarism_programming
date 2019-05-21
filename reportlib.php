@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Functions to generate the report
- * Provide the site-wide setting and specific configuration for each assignment
+ * Functions to generate the report.
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Provide the site-wide setting and specific configuration for each assignment.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once($CFG->dirroot . '/user/lib.php');
 
-define('CHART_WITH', 800);
+define('CHART_WIDTH', 800);
 define('CHART_HEIGHT', 240);
 define('BAR_WIDTH', 20);
 
@@ -35,15 +35,11 @@ define('BAR_WIDTH', 20);
  * Create the similarity table in grouping mode, in which each row lists all the similarity rate of a student to all others.
  * Used to create the similarity report
  *
- * @param $list: a
- *            list of records of plagiarism_programming_reslt table (in DESC order) for the selected detector.
- *            Not altered by the function. Passed by reference for performance only
- * @param $student_names: associative
- *            array id=>name of the students in this assignment. Not altered by the function.
- *            Passed by reference for performance only
- * @param $cmid: course
- *            module id of the assignment
- * @return the html_table object
+ * @param Array $list A list of records of plagiarism_programming_reslt table (in DESC order) for the selected detector.
+ *            Not altered by the function. Passed by reference for performance only.
+ * @param Array $studentnames Associative array id=>name of the students in this assignment. Not altered by the function.
+ *            Passed by reference for performance only.
+ * @return $table The html_table object
  */
 function plagiarism_programming_create_table_grouping_mode(&$list, &$studentnames) {
     $similaritytable = array();
@@ -107,16 +103,13 @@ function plagiarism_programming_create_table_grouping_mode(&$list, &$studentname
  * Create the similarity table in list mode, in which pairs of students are listed in descending similarity rate
  * Used to create the similarity report
  *
- * @param $list: a
- *            list of records of plagiarism_programming_reslt table in DESC order for the selected detector.
+ * @param Object $list A list of records of plagiarism_programming_reslt table in DESC order for the selected detector.
  *            Not altered by the function.
  *            Passed by reference for performance only
- * @param $student_names: associative
- *            array id=>name of the students in this assignment. Not altered by the function.
+ * @param Array $studentnames Associative array id=>name of the students in this assignment. Not altered by the function.
  *            Passed by reference for performance only
- * @param $anchor: if
- *            anchor is specified, the anchored student will always appear on the left
- * @return the html_table object
+ * @param Number $anchor ID of anchor student. If anchor is specified, the anchored student will always appear on the left.
+ * @return $table The html_table object.
  */
 function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $anchor = null) {
     $table = new html_table();
@@ -162,14 +155,9 @@ function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $
 
 /**
  * Create the distribution graph of similarity rate of all the students
- *
- * @param $cmid: the
- *            course module id
- * @param $tool: the
- *            name of the tool (either JPlag or MOSS)
- * @param $similarity_type: either
- *            average (avg) or maximum (max)
- * @return the html code for the graph
+ * @param Number $reportid ID of the report.
+ * @param String $similaritytype Either average (avg) or maximum (max)
+ * @return String The html code for the graph
  */
 function plagiarism_programming_create_chart($reportid, $similaritytype) {
     global $DB;
@@ -193,7 +181,7 @@ function plagiarism_programming_create_chart($reportid, $similaritytype) {
 
     $maxstudentnum = max($histogram);
     if ($maxstudentnum > 0) {
-        $lengthratio = intval(floor(CHART_WITH / $maxstudentnum));
+        $lengthratio = intval(floor(CHART_WIDTH / $maxstudentnum));
     } else {
         return '';
     }
@@ -239,7 +227,7 @@ function plagiarism_programming_create_chart($reportid, $similaritytype) {
     }
 
     $posy = (10 * (BAR_WIDTH + 5) - 5) . 'px';
-    $width = CHART_WITH . 'px';
+    $width = CHART_WIDTH . 'px';
     $posy = (CHART_HEIGHT + 10) . 'px';
     $div .= html_writer::tag('div', get_string('pair', 'plagiarism_programming'), array(
         'class' => 'legend',
@@ -250,6 +238,10 @@ function plagiarism_programming_create_chart($reportid, $similaritytype) {
 
 /**
  * Create HTML output of the lookup table in the top left section
+ * @param Object $resulttable
+ * @param Boolean $isteacher
+ * @param Array $studentnames
+ * @param Number $courseid
  */
 function plagiarism_programming_create_student_lookup_table(&$resulttable, $isteacher, &$studentnames, $courseid) {
     global $USER, $DB;
@@ -279,6 +271,12 @@ function plagiarism_programming_create_student_lookup_table(&$resulttable, $iste
     }
 }
 
+/**
+ * Create link to detailed view of one student.
+ * @param String $studentname
+ * @param Number $studentid
+ * @return string
+ */
 function plagiarism_programming_create_student_link($studentname, $studentid) {
     $reporturl = me();
     return html_writer::link("$reporturl&student=$studentid", $studentname, array(
@@ -286,6 +284,12 @@ function plagiarism_programming_create_student_link($studentname, $studentid) {
     ));
 }
 
+/**
+ * Returns all submissions marked as suspicious
+ * @param Number $studentid
+ * @param Number $cmid course module id
+ * @return array|array
+ */
 function plagiarism_programming_get_suspicious_works($studentid, $cmid) {
     global $DB;
     // Get the latest report version.
@@ -309,6 +313,12 @@ function plagiarism_programming_get_suspicious_works($studentid, $cmid) {
     }
 }
 
+/**
+ * Returns the similarity info.
+ * @param Number $cmid Course Module ID
+ * @param Number $studid
+ * @return array|mixed[][]|string[][]|NULL[][]
+ */
 function plagiarism_programming_get_students_similarity_info($cmid, $studid = null) {
     global $DB, $detectiontools;
 
@@ -370,6 +380,14 @@ function plagiarism_programming_get_students_similarity_info($cmid, $studid = nu
     return $students;
 }
 
+/**
+ * Returns the URL of with optional filters.
+ * @param Number $cmid Course Module ID
+ * @param Number $studentid
+ * @param String $detector Moss or JPlag
+ * @param Number $threshold Minimum similarity to show.
+ * @return string
+ */
 function plagiarism_programming_get_report_link($cmid, $studentid = null, $detector = null, $threshold = null) {
     global $CFG;
     $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$cmid";
@@ -392,7 +410,7 @@ function plagiarism_programming_get_report_link($cmid, $studentid = null, $detec
  *            the course module id of the assignment. If null, it will return the root directory of all the report
  * @param number $detector
  *            the version of report. If null, it will return the directory of the latest report of this assignment
- * @return the report record having the latest version
+ * @return $report The report record having the latest version.
  */
 function plagiarism_programming_get_latest_report($cmid, $detector) {
     global $DB;
@@ -419,7 +437,7 @@ function plagiarism_programming_get_latest_report($cmid, $detector) {
  *            the course module id of the assignment. If null, it will return the root directory of all the report
  * @param number $detector
  *            the version of report. If null, it will return the directory of the latest report of this assignment
- * @return the report record created
+ * @return $report The report record created.
  */
 function plagiarism_programming_create_new_report($cmid, $detector) {
     global $DB;
@@ -439,6 +457,10 @@ function plagiarism_programming_create_new_report($cmid, $detector) {
     return $report;
 }
 
+/**
+ * Save the similarity of one pair.
+ * @param Object $pairresult
+ */
 function plagiarism_programming_save_similarity_pair($pairresult) {
     global $DB;
     if (! ctype_digit($pairresult->student1_id)) {
@@ -453,6 +475,11 @@ function plagiarism_programming_save_similarity_pair($pairresult) {
     $DB->insert_record('plagiarism_programming_reslt', $pairresult);
 }
 
+/**
+ * Transforms a similarity pair (adds student id's?)
+ * @param Object $similarpairs
+ * @return $similarpairs
+ */
 function plagiarism_programming_transform_similarity_pair($similarpairs) {
     if (! is_array($similarpairs)) { // Only one object is passed.
         $pairs = array(
@@ -474,6 +501,12 @@ function plagiarism_programming_transform_similarity_pair($similarpairs) {
     return $similarpairs;
 }
 
+/**
+ * Returns the history of one student.
+ * @param Object $result
+ * @param string $timesort
+ * @return array
+ */
 function plagiarism_programming_get_student_similarity_history($result, $timesort = 'desc') {
     global $DB;
     $report = $DB->get_record('plagiarism_programming_rpt', array(
@@ -508,6 +541,10 @@ function plagiarism_programming_get_student_similarity_history($result, $timesor
     return $pairs;
 }
 
+/**
+ * Deletes the config of an activity.
+ * @param Number $cmid Course Module ID
+ */
 function plagiarism_programming_delete_config($cmid) {
     global $DB;
 

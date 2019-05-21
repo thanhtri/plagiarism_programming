@@ -15,13 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script serves the ajax requests of assignment scanning when users click the scan button
- * on the assignment page
+ * This script serves the ajax requests of assignment scanning when users click the scan button on the assignment page.
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define('NO_OUTPUT_BUFFERING', true);
 
@@ -81,10 +79,8 @@ if ($task == 'scan') {
  * This function intend only to serve the ajax
  * request for scanning an assignment
  *
- * @param $assignment: the
- *            record object of settings for the assignment.
- * @param $time: the
- *            timestamp this request is issued at the client side, to synchronise it with the check status requests
+ * @param Object $assignment The record object of settings for the assignment.
+ * @param Number $time The timestamp this request is issued at the client side, to synchronise it with the check status requests
  */
 function start_scan_assignment($assignment, $time) {
     global $DB, $detectiontools;
@@ -118,10 +114,8 @@ function start_scan_assignment($assignment, $time) {
  * Check the scanning status of the selected tools for an assignment.
  * The function will output a json object {toolname=>{stage:status,progress:percentage}}
  *
- * @param $assignment: the
- *            record object of settings for the assignment
- * @param $time: a
- *            timestamp to make sure the checked status is the status of the scanning triggered
+ * @param Object $assignment The record object of settings for the assignment.
+ * @param Number $time The timestamp this request is issued at the client side, to synchronise it with the check status requests
  */
 function plagiarism_programming_check_status($assignment, $time = 0) {
     global $DB, $detectiontools;
@@ -175,8 +169,7 @@ function plagiarism_programming_check_status($assignment, $time = 0) {
  * Download the similarity report of the selected tools.
  * This function only delegates to download_result in scan_assignment.php
  *
- * @param $assignment: the
- *            record object of setting for the assignment
+ * @param Object $assignment The record object of settings for the assignment.
  */
 function plagiarism_programming_download_assignment($assignment) {
     global $DB, $detectiontools;

@@ -17,27 +17,62 @@
 /**
  * This class is the PHP implementation of MOSS client
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 require_once(__DIR__ . '/../../../lib/filelib.php');
 
+/**
+ * Wrapper class.
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class moss_stub {
+    /**
+     * @var $userid
+     */
     private $userid;
+    /**
+     * @var $proxyhost
+     */
     private $proxyhost;
+    /**
+     * @var $proxyport
+     */
     private $proxyport;
+    /**
+     * @var $proxylogin
+     */
     private $proxylogin;
+    /**
+     * @var $proxypass
+     */
     private $proxypass;
-    const TIMEOUT = 3;
-
-    // Maximum time to open socket or download result in seconds.
+    /**
+     * @var TIMEOUT
+     */
+    const TIMEOUT = 3;    // Maximum time to open socket or download result in seconds.
+    /**
+     * @var MOSSHOST
+     */
     const MOSSHOST = 'moss.stanford.edu';
+    /**
+     * @var MOSSPORT
+     */
     const MOSSPORT = 7690;
 
+    /**
+     * Initialize
+     * @param Number $userid
+     * @param String $proxyhost
+     * @param Number $proxyport
+     * @param String $proxylogin
+     * @param String $proxypass
+     */
     public function __construct($userid, $proxyhost = null, $proxyport = null, $proxylogin = null, $proxypass = null) {
         $this->userid = $userid;
         if (! empty($proxyhost) && ! empty($proxyport)) {
@@ -50,6 +85,13 @@ class moss_stub {
         }
     }
 
+    /**
+     * Scans the assignment.
+     * @param Array $filelist
+     * @param String $language
+     * @param progress_handler $handler
+     * @return string[]
+     */
     public function scan_assignment(&$filelist, $language, progress_handler $handler) {
         $totalsize = $this->calculate_total_size($filelist);
 
@@ -168,6 +210,12 @@ class moss_stub {
         return $socket;
     }
 
+    /**
+     * Download the results from moss.
+     * @param String $url
+     * @param String $downloaddir
+     * @param Object $handler
+     */
     public function download_result($url, $downloaddir, $handler = null) {
         // Download the main page first.
         if (substr($url, - 1) != '/') {
@@ -218,6 +266,11 @@ class moss_stub {
         }
     }
 
+    /**
+     * Gets the size of the filelist.
+     * @param Array $filelist
+     * @return number
+     */
     private function calculate_total_size(&$filelist) {
         $totalsize = 0;
         foreach ($filelist as $path => $file) {
@@ -226,6 +279,13 @@ class moss_stub {
         return $totalsize;
     }
 
+    /**
+     * Updates the progress of current stage.
+     * @param Object $handler
+     * @param Number $stage
+     * @param Number $currentsize
+     * @param Number $totalsize
+     */
     private function update_progress($handler, $stage, $currentsize, $totalsize) {
         if ($handler) {
             $percentage = intval($currentsize * 100 / $totalsize);

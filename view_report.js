@@ -16,9 +16,8 @@
  * This is the javascript code of the compare code page (to compare the similarity of 2 students' code)
  * It include ajax calls to mark a student as suspicious and cross similarity of one student with another
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 M.plagiarism_programming = M.plagiarism_programming || {};

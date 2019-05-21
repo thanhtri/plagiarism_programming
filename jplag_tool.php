@@ -16,13 +16,13 @@
 
 /**
  * Define the entry calls for JPlag
+ *
  * Transform data into the structure required by JPlag,
  * communicate with JPlag server and interpret the result
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
@@ -31,8 +31,21 @@ require_once(__DIR__ . '/jplag/jplag_stub.php');
 require_once(__DIR__ . '/jplag/jplag_parser.php');
 require_once(__DIR__ . '/reportlib.php');
 
+/**
+ * Wrapper class.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class jplag_tool implements plagiarism_tool{
+    /**
+     * @var $jplagstub
+     */
     private $jplagstub = null;
+    /**
+     * @var $supportedlanguages
+     */
     private static $supportedlanguages = array(
         'java' => 'java15',
         'c' => 'c/c++',
@@ -42,7 +55,10 @@ class jplag_tool implements plagiarism_tool{
     );
 
     /**
-     * Initialise the soap stub.
+     * Initialise the SOAP stub.
+     *
+     * @param Object $jplaginfo
+     * @return Object $jplaginfo
      */
     private function stub_init($jplaginfo = null) {
         global $CFG;
@@ -102,13 +118,10 @@ class jplag_tool implements plagiarism_tool{
     /**
      * Send the zip file to JPlag server by SOAP protocol
      *
-     * @param $zipfilepath the
-     *            path of zip file
-     * @param stdClass $assignmentparam
-     *            the record object of assignment config
-     * @param stdClass $scaninfo
-     *            the record object of the status of jplag (in plagiarism_programming_jplag table)
-     * @return the same updated record object of jplag status
+     * @param String $zipfilepath the path of zip file
+     * @param stdClass $assignmentparam the record object of assignment config
+     * @param stdClass $scaninfo the record object of the status of jplag (in plagiarism_programming_jplag table)
+     * @return Object the same updated record object of jplag status
      */
     private function jplag_send_to_server($zipfilepath, $assignmentparam, $scaninfo) {
         if (!$this->stub_init($scaninfo)) {
@@ -142,11 +155,9 @@ class jplag_tool implements plagiarism_tool{
      * it will contact JPlag server to see if the scanning has been finished
      * Otherwise, it just return the status in the database
      *
-     * @param $assignmentparam the
-     *            assignment record object (plagiarism_programming table)
-     * @param $jplagparam the
-     *            jplag record object (plagiarism_programming_jplag table)
-     * @return the updated $jplag_param object
+     * @param Object $assignmentparam the assignment record object (plagiarism_programming table)
+     * @param Object $jplagparam the jplag record object (plagiarism_programming_jplag table)
+     * @return Object $jplag_param Updated
      */
     public function check_status($assignmentparam, $jplagparam) {
         if (!$this->stub_init($jplagparam)) {
@@ -178,6 +189,11 @@ class jplag_tool implements plagiarism_tool{
     /**
      * Download the result from jplag server.
      * Note that the scanning status must be "done"
+     * Display the link to the report. This function returns html <a> tag of the link
+     *
+     * @param Object $assignmentparam parameter of the assignment
+     * @param Object $jplagparam
+     * @return Object $jplag_param Updated
      */
     public function download_result($assignmentparam, $jplagparam) {
         if (!$this->stub_init($jplagparam)) {
@@ -222,6 +238,10 @@ class jplag_tool implements plagiarism_tool{
         return $jplagparam;
     }
 
+    /**
+     * Cancels the current submission
+     * @param Object $jplagparam
+     */
     protected function cancel_submission($jplagparam) {
         try {
             $this->jplagstub->cancel_submission($jplagparam->submissionid);
@@ -243,6 +263,11 @@ class jplag_tool implements plagiarism_tool{
         return "<a target='_blank' href='$reportpath'>JPlag report</a>";
     }
 
+    /**
+     * Gets the report path.
+     * @param Object $report
+     * @return string
+     */
     public static function get_report_path($report = null) {
         global $CFG;
         if (!$report) {

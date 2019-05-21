@@ -15,27 +15,48 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Prints the result page.
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 require_once(dirname(__FILE__) . '/detection_tools.php');
 
+/**
+ * Wrapper class.
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class programming_plag_result_form extends moodleform {
+    /**
+     * @var number $cmid id of course module
+     */
     private $cmid;
+    /**
+     * @var String $detector Either moss or jplag
+     */
     private $detector;
 
+    /**
+     * Initialize variables.
+     * @param number $cmid id of course module
+     * @param String $detector Either moss or jplag
+     */
     public function __construct($cmid, $detector) {
         $this->cmid = $cmid;
         $this->detector = $detector;
         parent::__construct(null, null, 'get');
     }
 
+    /**
+     * Moodle Form definition. Inherited.
+     * {@inheritDoc}
+     * @see moodleform::definition()
+     */
     protected function definition() {
         global $DB, $detectiontools;
 

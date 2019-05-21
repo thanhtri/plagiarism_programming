@@ -17,42 +17,53 @@
 /**
  * Define the interface for entry points that the client of each engine must implement
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 interface plagiarism_tool {
 
     /**
-     * Submit result: submit all the code to the plagiarism detection service
-     * @param $inputdir: the directory containing all the extracted code.
-     *        Each immediate subdirectory is the submission of one student
-     * @param $outputdir: the output directory. This is just a temporary directory,
-     *        used for the client to reorganise the files into the appropriate structure
-     * @param $params: containing the information of the assignment (name, context id...)
+     * Submit all the code to the plagiarism detection service.
+     * Interface for jplag or moss. See moss_tool.php or jplag_tool.php.
+     * @param String $inputdir the directory containing all the extracted code.
+     * @param Object $assignment
+     * @param Object $params containing the information of the assignment (name, context id...)
      */
     public function submit_assignment($inputdir, $assignment, $params);
 
     /**
-     * Check the status of the scanning after submit. If the scanning is finised, download the result and return finished
-     * @param $assignment_param: containing the information of the assignment
-     * @param $tool_param: containing the information of the configuration for that tool of the assignment
+     * Interface for jplag or moss. See moss_tool.php or jplag_tool.php.
+     * @param Object $assignmentparam containing the information of the assignment
+     * @param Object $toolparam containing the information of the configuration for that tool of the assignment
      */
     public function check_status($assignmentparam, $toolparam);
 
     /**
-     * Display the link to the report. This function return html <a> tag of the link
-     * @param type $param: parameter of the assignment
+     * Display the link to the report.
+     * Interface for jplag or moss. See moss_tool.php or jplag_tool.php.
+     * @param Object $param
      */
     public function display_link($param);
 
+    /**
+     * Interface for downloading the results. Is used by moss and jplag.
+     * @param Object $assignmentparam
+     * @param Object $jplagparam
+     */
     public function download_result($assignmentparam, $jplagparam);
 
+    /**
+     * Interface for parsing the results. Is used by moss and jplag.
+     * @param Object $assignment
+     * @param Object $mossinfo
+     */
     public function parse_result($assignment, $mossinfo);
 
+    /**
+     * Interface to get the name of the service used. Jplag or Moss.
+     */
     public function get_name();
 }

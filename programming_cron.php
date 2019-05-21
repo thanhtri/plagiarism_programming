@@ -16,12 +16,12 @@
 
 /**
  * Implement the automatic similarity scanning according to the specified dates in {plagiarism_programming_date}.
- * This script is called periodically, by moodle's cron script
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * This script is called periodically, by moodle's cron script.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
@@ -94,6 +94,11 @@ foreach ($settngids as $settingid) {
 }
 echo "Finished sending submissions to plagiarism tools\n";
 
+/**
+ * Returns if the scanning is still in progress by getting the status from the databse.
+ * @param Object $assignmentconfig One line of table plagiarism_programming
+ * @return boolean
+ */
 function scanning_in_progress($assignmentconfig) {
     global $DB, $detectiontools;
     foreach ($detectiontools as $toolname => $toolinfo) {

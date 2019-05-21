@@ -15,14 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Initiate the plagiarism scanning for all assignments of which the
- * scanning date already passed
- * Called by the cron script
+ * Initiate the plagiarism scanning for all assignments of which the scanning date already passed.
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Called by the cron script.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
@@ -55,11 +54,10 @@ function plagiarism_programming_create_temp_dir() {
 }
 
 /**
- * Create the temporary directory (if doesn't exist) for the assignment.
- * Students' code will be extracted here
- *
- * @param: $assignment: the record object of setting for the assignment
- * @return a temporary directory that all files of this assignment will be stored
+ * Create the temporary directory for the assignment where student's code will be extracted.
+ * @param Object $assignment The record object of setting for the assignment
+ * @param boolean $emptydir
+ * @return string A temporary directory that all files of this assignment will be stored
  */
 function plagiarism_programming_get_assignment_dir($assignment, $emptydir = false) {
     $dir = PLAGIARISM_TEMP_DIR . $assignment->cmid . '/';
@@ -77,8 +75,7 @@ function plagiarism_programming_get_assignment_dir($assignment, $emptydir = fals
  * This function will take into account the difference of component and
  * file area between Moodle 2.3 and previous version
  *
- * @param context_module $assignmentcontext
- *            The context of the assignment
+ * @param context_module $assignmentcontext The context of the assignment
  */
 function plagiarism_programming_get_submitted_files($assignmentcontext) {
     global $CFG;
@@ -98,6 +95,15 @@ function plagiarism_programming_get_submitted_files($assignmentcontext) {
 
 /**
  * Extract a compressed file, either zip or rar
+ */
+/**
+ * Extracts either zip or rar.
+ * @param Object $file
+ * @param Array $extensions
+ * @param String $location
+ * @param stdClass $user
+ * @param boolean $textfileonly
+ * @return true
  */
 function plagiarism_programming_extract_file($file, $extensions, $location, $user = null, $textfileonly = true) {
     if ($file instanceof stored_file) {
@@ -123,7 +129,6 @@ function plagiarism_programming_extract_file($file, $extensions, $location, $use
     }
     return $validfile;
 }
-
 /**
  * Determine the validity of the structure of the additional code file (submitted when editing an assignment).
  * The zip file could contain:
@@ -131,6 +136,8 @@ function plagiarism_programming_extract_file($file, $extensions, $location, $use
  * at the top most directory level
  * + a number of directories, each contains an assignment
  * + a number zip files, each contains an assignment
+ * @param String $decompresseddir
+ * @return NULL|string
  */
 function plagiarism_programming_check_additional_code_structure($decompresseddir) {
     if (!is_dir($decompresseddir)) {
@@ -162,7 +169,11 @@ function plagiarism_programming_check_additional_code_structure($decompresseddir
 }
 
 /**
- * Extract the additional code file
+ * Extract the additional code file submitted in assignment settings.
+ * @param String $decompresseddir
+ * @param array $extensions
+ * @param String $location
+ * @return NULL
  */
 function process_code_file_archive_format($decompresseddir, array $extensions, $location) {
     if (!is_dir($decompresseddir)) {
@@ -188,6 +199,12 @@ function process_code_file_archive_format($decompresseddir, array $extensions, $
     }
 }
 
+/**
+ * Prepares the file directory.
+ * @param String $decompresseddir
+ * @param array $extensions File extensions which are used.
+ * @param String $location Location where the files are saved
+ */
 function process_code_file_directory_format($decompresseddir, array $extensions, $location) {
     if (!is_dir($decompresseddir)) {
         debugging("$decompresseddir is not a directory");
@@ -205,8 +222,9 @@ function process_code_file_directory_format($decompresseddir, array $extensions,
         if (is_dir($fullpath)) {
             mkdir("$location/$file");
             process_code_file_directory_format($fullpath, $extensions, "$location/$file");
-        } else { // Is a file.
-            if (plagiarism_programming_check_extension($file, $extensions)) { // Move the file (faster than copy).
+        } else { // Not a directory but a file.
+            if (plagiarism_programming_check_extension($file, $extensions)) {
+                // Move the file (faster than copy).
                 rename($fullpath, "$location/$file");
             }
         }
@@ -217,9 +235,7 @@ function process_code_file_directory_format($decompresseddir, array $extensions,
  * Extract students' assignments.
  * This function will extract the students' compressed files and save them temporarily.
  * The directory is $CFG->tempdir/plagiarism_programming/student_id/files
- *
- * @param $assignment: the
- *            record object of setting for the assignment
+ * @param Object $assignment The record object of setting for the assignment
  * @return boolean true if extraction is successful and there are at least 2 students submitted their assignments
  *         boolean false if there are less than 2 students submitted (not need to send for marking)
  */
@@ -316,13 +332,10 @@ function plagiarism_programming_extract_assignment($assignment) {
  * Submit an assignment to a specified tool.
  * This method must be call after extracting the assignments
  *
- * @param $assignment: the
- *            record object of setting for the assignment
- * @param $tool: the
- *            tool object (either of type moss_tool or jplag_tool)
- * @param $scan_info: the
- *            status record object of that tool
- * @return the updated scan_info object
+ * @param Object $assignment The record object of setting for the assignment
+ * @param Object $tool The tool object (either of type moss_tool or jplag_tool)
+ * @param Object $scaninfo The status record object of that tool
+ * @return $scaninfo The updated scan_info object
  */
 function plagiarism_programming_submit_assignment($assignment, $tool, $scaninfo) {
     global $DB;
@@ -355,13 +368,10 @@ function plagiarism_programming_submit_assignment($assignment, $tool, $scaninfo)
  * Use this function to check whether the scanning has been done.
  * This function also update the status record of the tool in the database
  *
- * @param $assignment: the
- *            record object of setting for the assignment
- * @param $tool: the
- *            tool object (either of type moss_tool or jplag_tool)
- * @param $scan_info: the
- *            status record object of that tool
- * @return the updated scan_info object.
+ * @param Object $assignment The record object of setting for the assignment
+ * @param Object $tool The tool object (either of type moss_tool or jplag_tool)
+ * @param Object $scaninfo The status record object of that tool
+ * @return $scaninfo The updated scan_info object.
  */
 function plagiarism_programming_check_scanning_status($assignment, $tool, $scaninfo) {
     global $DB;
@@ -379,13 +389,10 @@ function plagiarism_programming_check_scanning_status($assignment, $tool, $scani
  * The scanning must be finished and its status must be 'done'
  * after calling plagiarism_programming_check_scanning_status function
  *
- * @param $assignment: the
- *            record object of setting for the assignment
- * @param $tool: the
- *            tool need to check (either moss or jplag)
- * @param $scan_info: the
- *            status record object of that tool
- * @return the $scan_info record object with status updated to 'finished' if download has been successful
+ * @param Object $assignment The record object of setting for the assignment
+ * @param Object $tool The tool object (either of type moss_tool or jplag_tool)
+ * @param Object $scaninfo The status record object of that tool
+ * @return $scan_info Record object with status updated to 'finished' if download has been successful
  */
 function plagiarism_programming_download_result($assignment, $tool, $scaninfo) {
     global $DB;
@@ -412,8 +419,7 @@ function plagiarism_programming_download_result($assignment, $tool, $scaninfo) {
 /**
  * Check whether the assignment was sent to all the tools or not.
  *
- * @param $assignment: the
- *            object record of the plagiarism setting for the assignment
+ * @param Object $assignment The record object of setting for the assignment
  * @return true if the assignment has been sent to all the selected tools
  *         false if there is one tool to which the assignment hasn't been sent
  */
@@ -440,10 +446,9 @@ function plagiarism_programming_is_uploaded($assignment) {
  * First, students' assignments are extracted (if it is a compressed files),
  * then this function forks separate processes to scan the report
  *
- * @param $assignment: the
- *            object record of the plagiarism setting for the assignment
- * @param $waitforresult wait
- *            for the scanning to finish to get the result (default true)
+ * @param Object $assignment The record object of setting for the assignment
+ * @param Boolean $waitforresult Wait for the scanning to finish to get the result (default true)
+ * @param Boolean $notificationmail If a mail should be sent
  * @return void
  */
 function plagiarism_programming_scan_assignment($assignment, $waitforresult = true, $notificationmail = false) {
@@ -522,12 +527,10 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
  * then either wait until the scanning finished to download or download it latter. In the second case, calling the function another
  * time will check the scanning status and, if finished, download it again.
  *
- * @param $assignment: the
- *            object record of the plagiarism setting for the assignment
- * @param $toolname: the
- *            name of the tool
- * @param $wait_to_download: if
- *            set to true, the scanning will wait and periodically check the status until it finish and download
+ * @param Object $assignment The record object of setting for the assignment
+ * @param String $toolname The name of the tool
+ * @param Boolean $waittodownload If set to true, the scanning will wait and periodically check the status until it finish and download
+ * @param Boolean $notificationmail If a mail should be sent
  */
 function scan_after_extract_assignment($assignment, $toolname, $waittodownload = true, $notificationmail = false) {
     global $detectiontools, $DB, $processinginfo;

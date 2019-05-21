@@ -17,10 +17,9 @@
 /**
  * The stub class making SOAP call to JPlag webservice and receive the result
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
@@ -47,9 +46,28 @@ define('WS_CONNECT_ERROR', 'connect_error');
 
 require_once(dirname(__FILE__).'/jplag_option.php');
 
+/**
+ * Wrapper class for jplag stub.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class jplag_stub{
+    /**
+     * @var $client
+     */
     private $client = null;
 
+    /**
+     * Initializes the important variables
+     * @param String $username
+     * @param String $password
+     * @param String $proxyhost
+     * @param Number $proxyport
+     * @param String $proxyuser
+     * @param String $proxypass
+     */
     public function __construct($username = null, $password = null, $proxyhost = null, $proxyport = null, $proxyuser = null, $proxypass = null) {
         $proxyparam = array();
         if (!empty($proxyhost) && !empty($proxyport)) {
@@ -72,10 +90,8 @@ class jplag_stub{
      * The credential could be also provided via the constructor. Note that this method doesn't verify the credential
      * with JPlag server
      *
-     * @param
-     *            string username JPlag username
-     * @param
-     *            string password JPlag password
+     * @param string $username JPlag username
+     * @param string $password JPlag password
      * @return void
      */
     public function set_credential($username, $password) {
@@ -91,10 +107,8 @@ class jplag_stub{
     /**
      * Check the provided username and password to see if it's a valid JPlag account.
      *
-     * @param
-     *            string username JPlag username
-     * @param
-     *            string password JPlag password
+     * @param string $username JPlag username
+     * @param string $password JPlag password
      * @return true if it is a valid credential,
      *         array('code'=><errorcode>, 'message'=><error message>) if not valid or unable to check.
      *         See the defines const at the beginning of the file for the code used
@@ -123,14 +137,11 @@ class jplag_stub{
     /**
      * Send the compressed file to jplag service using SOAP
      *
-     * @param $zipfullpath path
-     *            to the zip file
-     * @param $options options
-     *            of jplag specifying its parameters. See class jplag_option for detail
-     * @param $progresshandler a
-     *            function to inform the upload progress, with one parameter
+     * @param String $zipfullpath path to the zip file
+     * @param Object $options options of jplag specifying its parameters. See class jplag_option for detail
+     * @param Object $progresshandler a function to inform the upload progress, with one parameter
      *            that is the percentage of the progress
-     * @return string $submission_id the id of this submission, used to ask the server the scanning status of
+     * @return Number $submission_id the id of this submission, used to ask the server the scanning status of
      *         this submission and download the report
      */
     public function send_file($zipfullpath, $options, $progresshandler = null) {
@@ -213,7 +224,12 @@ class jplag_stub{
     }
 
     /**
-     * update_progress hanlder
+     * Updates the progress handler
+     *
+     * @param Object $handler Object a function to inform the upload progress, with one parameter
+     *            that is the percentage of the progress
+     * @param String $stage
+     * @param Number $percentage
      */
     private function update_progress($handler, $stage, $percentage) {
         if ($handler) {
@@ -256,6 +272,12 @@ class jplag_stub{
         }
     }
 
+    /**
+     * Gets the string to be displayed.
+     *
+     * @param String $status
+     * @return string
+     */
     public static function translate_scanning_status($status) {
         switch ($status->state) {
             case SUBMISSION_STATUS_UPLOADING:

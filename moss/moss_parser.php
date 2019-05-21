@@ -17,22 +17,39 @@
 /**
  * This class parse the result of the generated webpages of MOSS
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+use Leafo\ScssPhp\Node\Number;
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
+/**
+ * Class for the moss parser.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class moss_parser {
 
+    /**
+     * @var $cmid Number Course module id.
+     */
     private $cmid;
+    /**
+     * @var $filename string Name of the file.
+     */
     private $filename;
+    /**
+     * @var $report object Latest Scan for plagiarism.
+     */
     private $report;
 
     /**
-     * Create a moss_parser object correspond to an assignment
-     * @param int $cmid: course module id of the assignment
+     * Creates a moss_parser object correspond to an assignment.
+     * @param Number $cmid course module id of the assignment
      */
     public function __construct($cmid) {
         $this->cmid = $cmid;
@@ -42,7 +59,7 @@ class moss_parser {
     }
 
     /**
-     * Parse the index file of the report and populate the record in plagiarism_programming_reslt table
+     * Parses the index file of the report and populate the record in plagiarism_programming_reslt table.
      */
     public function parse() {
         global $DB;
@@ -114,10 +131,10 @@ class moss_parser {
     /**
      * This function extract the similar blocks of one student with another. The block is recorded in the $similarity_array
      * passed into the function.
-     * @param $studentid {number} id of the student whose similarity blocks with another is going to be extracted
-     * @param $otherstudentid {number} id of the other student
-     * @param $filename {string} the comparison file of the report of the pair
-     * @param $similarityarray {array} contain the recorded blocks and blocks that will be recorded in this call,
+     * @param Number $studentid id of the student whose similarity blocks with another is going to be extracted
+     * @param Number $otherstudentid id of the other student
+     * @param String $filename the comparison file of the report of the pair
+     * @param Array $similarityarray contain the recorded blocks and blocks that will be recorded in this call,
      *        which is a multidimensional array $similarity_array[$student][0,1...] = array('begin_line'=>?,'end_line'=>?,
      *        'student'=>?,'color'=>?,'anchor'=>?)
      */
@@ -206,8 +223,8 @@ class moss_parser {
     /**
      * Save the code of a student into one file having studentid as filename. This function is called many times for one student
      * but the file will be saved only once.
-     * @param $filename {string} the name of the file
-     * @param $studentid {number} id of the file
+     * @param String $filename the name of the file
+     * @param Number $studentid id of the file
      */
     private function save_code_file($filename, $studentid) {
         static $filearray = array();
@@ -244,7 +261,7 @@ class moss_parser {
 
     /**
      * Check to see the line is a start of a similarity block
-     * @param $line: the line to be checked
+     * @param Number $line The line to be checked
      * @return array(anchor,color) if it starts a similarity block (we need anchor to match it with the similar block of
      * another student) or false if not
      */
@@ -261,7 +278,7 @@ class moss_parser {
 
     /**
      * Check if the line is the end of a similarity block
-     * @param $line: the line to be checked
+     * @param Number $line The line to be checked
      * @return true if the line is the end of a similarity block, otherwise false
      */
     private function is_end_block($line) {
@@ -270,7 +287,7 @@ class moss_parser {
 
     /**
      * Mark the code file with the similarities for all students
-     * @param $similarity_array: array of blocks output by parse_similar_parts function
+     * @param Array $similarityarray Blocks output by parse_similar_parts function
      */
     private function save_similarity(&$similarityarray) {
         $directory = dirname($this->filename);
@@ -289,7 +306,7 @@ class moss_parser {
     /**
      * Merge the same block together, since one block can be similar to many students,
      * then sorted from the end of file to the beginning (block at the end will appear first)
-     * @param $similarities: the array of blocks of just one student
+     * @param Array $similarities The array of blocks of just one student
      */
     private function merge_and_sort_blocks(&$similarities) {
         $mergedarray = array(); // This is used as a hash table: (begin_line.end_line)=>similarity info.
@@ -311,7 +328,12 @@ class moss_parser {
         $similarities = $mergedarray;
     }
 
-    /** Compare the position of two blocks*/
+    /**
+     * Compare the position of two blocks
+     * @param Object $p1
+     * @param Object $p2
+     * @return number
+     */
     public static function position_compare($p1, $p2) {
         return $p2['begin_line'] - $p1['begin_line'];
     }
@@ -320,8 +342,8 @@ class moss_parser {
      * Mark the blocks by <span> tag. Each block will be marked by two <span/>
      * one at the beginning (<span type='begin'/> and another at the end  <span type='begin'/>
      * Each <span> has student id and color in the sid and color attribute
-     * @param $content: the content of the code file (saved by the save_code function)
-     * @param $blocks: the array of blocks of one student
+     * @param String $content The content of the code file (saved by the save_code function)
+     * @param Array $blocks The array of blocks of one student
      */
     private function mark_similarities(&$content, &$blocks) {
         $lines = explode("\n", $content);

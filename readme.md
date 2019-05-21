@@ -1,4 +1,4 @@
-Copyright: 2019 Benedikt Schneider (@Nullmann)
+Copyright: 2019 Benedikt Schneider (@Nullmann), 2014 Tri (@thantri)
 
 License: http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 

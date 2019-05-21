@@ -16,19 +16,30 @@
 
 /**
  * Build the form used for site-wide configuration
+ *
  * This form is assessible by Site Administration -> Plugins -> Plagiarism Prevention -> Programming Assignment
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 
+/**
+ * Wrapper class for this form
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class plagiarism_setup_form extends moodleform {
 
+    /**
+     * Form definition. Inherited.
+     * {@inheritDoc}
+     * @see moodleform::definition()
+     */
     protected function definition() {
         $mform = &$this->_form;
 
@@ -84,6 +95,15 @@ class plagiarism_setup_form extends moodleform {
         $this->add_action_buttons(true);
     }
 
+
+    /**
+     * For extra validation.
+     *
+     * @param array $data array of ("fieldname"=>value) of submitted data
+     * @param array $files array of uploaded files "element_name"=>tmp_file_path
+     * @return array of "element_name"=>"error_description" if there are errors,
+     *         or an empty array if everything is OK (true allowed for backwards compatibility too).
+     */
     public function validation($data, $files) {
         global $CFG;
         $errors = parent::validation($data, $files);

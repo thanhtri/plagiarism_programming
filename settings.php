@@ -17,11 +17,12 @@
 /**
  * Provide the site-wide setting
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 global $CFG, $PAGE, $OUTPUT, $USER;
 require_once(__DIR__.'/../../config.php');
@@ -30,7 +31,6 @@ require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
 
 require_login();
-defined('MOODLE_INTERNAL') || die();
 admin_externalpage_setup('plagiarismprogramming');
 
 $context = context_system::instance();

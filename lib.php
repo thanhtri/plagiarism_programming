@@ -16,11 +16,11 @@
 
 /**
  * The main entry file of the plugin.
- * Provide the site-wide setting and specific configuration for each assignment
  *
- * @package    plagiarism
- * @subpackage programming
- * @author     thanhtri
+ * Provide the site-wide setting and specific configuration for each assignment.
+ *
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,10 +34,22 @@ require_once(__DIR__.'/detection_tools.php');
 require_once(__DIR__.'/reportlib.php');
 require_once(__DIR__.'/scan_assignment.php');
 
+/**
+ * Class to integrate the plugin in the moodle submission workflow. See https://docs.moodle.org/dev/Plagiarism_plugins#Interfacing_to_APIs
+ *
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
+    /**
+     * @var $filemanageroption moodle filemanager to upload and delete files.
+     */
     private $filemanageroption;
 
+    /**
+     * Constructor which initializes the options.
+     */
     public function __construct() {
         $this->filemanageroption = array('subdir' => 0, 'maxbytes' => 20 * 1024 * 1024, 'maxfiles' => 50,
             'accepted_type' => array('*.zip', '*.rar'));
@@ -46,8 +58,10 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     /**
      * Define the configuration block of plagiarism detection in assignment setting form.
      * This method will be called by mod_assignment_mod_form class, in its definition method
-     * @param MoodleQuickForm $mform the assignment form
-     * @param stdClass $context the context record object
+     *
+     * @param object $mform  - Moodle form
+     * @param object $context - current context
+     * @param string $modulename - Name of the module
      */
     public function get_form_elements_module($mform, $context, $modulename='') {
         global $DB, $PAGE;
@@ -158,7 +172,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         include_once(__DIR__.'/jplag_tool.php');
         include_once(__DIR__.'/moss_tool.php');
         $jplagsupport = $jplagdisabled ? false : jplag_tool::get_supported_language();
-        $mosssupport = $mossdisabled ? false : moss_tool::get_supported_laguage();
+        $mosssupport = $mossdisabled ? false : moss_tool::get_supported_language();
         // Include the javascript for doing some minor interface adjustment to improve user experience.
         $jsmodule = array(
             'name' => 'plagiarism_programming',
@@ -317,7 +331,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /**
-     * Print some information on the assignment page
+     * Print the disclosure on the assignment page
+     * @param int $cmid - course module id
+     * @return string
      */
     public function print_disclosure($cmid) {
         global $OUTPUT, $DB, $USER;
@@ -365,6 +381,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
     }
 
+    /**
+     * Integrates the similarity check into the grading-page of moodle.
+     *
+     * @param object $course - full course object
+     * @param object $cm - full context module object
+     */
     public function update_status($course, $cm) {
         global $OUTPUT, $DB, $USER, $CFG, $PAGE, $detectiontools;
         $cmid = $cm->id;
@@ -494,11 +516,11 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
               .$OUTPUT->box_end();
     }
 
-    /** If the plugin is enabled or not (at Moodle level or at course level)
-     * @param $cmid {number} the course module id (can provide the course id instead)
-     * @param $courseid {number} the course id. If course_id is passed, cmid is ignored
-     * @return true: if the plugin is enabled in this course context
-     *         false:if the plugin is not enabled in this course context
+    /**
+     * If the plugin is enabled or not (at Moodle level or at course level)
+     * @param Number $cmid The course module id (can provide the course id instead)
+     * @param Number $courseid The course id. If course_id is passed, cmid is ignored
+     * @return boolean
      */
     public function is_plugin_enabled($cmid, $courseid=null) {
         global $DB;
@@ -522,10 +544,17 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /**
-     * This function will setup multiple scan date of the form.
+
+     */
+
+    /**
+     * This function will setup multiple scan dates for the form.
      * This will be similar to the repeat group of moodle form.
      * However, since just an instance of $mform is passed in,
      * it is not possible to call the protected function repeat_elements
+     *
+     * @param object $mform
+     * @param object $plagiarismconfig
      */
     private function setup_multiple_scandate($mform, $plagiarismconfig) {
         global $DB;
@@ -584,6 +613,13 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $mform->setConstants($constantvars);
     }
 
+    /**
+     * Sets up the filemanager for uploading additional libraries to compare against.
+     *
+     * @param object $mform
+     * @param object $plagiarismconfig contents of the table plagiarism_programming
+     * @param object $assignmentcontext context_module
+     */
     private function setup_code_seeding_filemanager($mform, $plagiarismconfig, $assignmentcontext) {
 
         $mform->addElement('filemanager', 'code_filemanager', get_string('additional_code', 'plagiarism_programming'),

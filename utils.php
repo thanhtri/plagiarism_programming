@@ -15,21 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Common functions which are used in many place
+ * Common functions which are used in many place.
  *
- * @package plagiarism
- * @subpackage programming
- * @author thanhtri
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 /**
- * Return an array containing the possible extensions
- * of source code file of the provided language
+ * Return an array containing the possible extensions of source code file of the provided language.
  *
- * @param $language {string}
- *            Either java, c, csharp
+ * @param String $language Either java, c, csharp
  * @return array of extensions of the language
  */
 function plagiarism_programming_get_file_extension($language) {
@@ -118,10 +115,8 @@ function plagiarism_programming_get_file_extension($language) {
 /**
  * Check if the file has the appropriate extension
  *
- * @param $filename {string}
- *            name of the file
- * @param $extension {array}
- *            an array of possible extensions
+ * @param String $filename Name of the file.
+ * @param Array $extensions An array of possible extensions
  * @return true if the file has the extension in the array
  */
 function plagiarism_programming_check_extension($filename, $extensions) {
@@ -141,10 +136,8 @@ function plagiarism_programming_check_extension($filename, $extensions) {
 /**
  * Create a file for write.
  * This function will create a directory along the file path if it doesn't exist
- *
- * @param $fullpath {string}
- *            The path of the file
- * @return {object} the write file handle. fclose have to be called when finishing with it
+ * @param String $fullpath The path of the file
+ * @return Object The write file handle. fclose have to be called when finishing with it
  */
 function plagiarism_programming_create_file($fullpath) {
     $dirpath = dirname($fullpath);
@@ -166,10 +159,8 @@ function plagiarism_programming_create_file($fullpath) {
 /**
  * Search the file to clear the students' name and clear them
  *
- * @param $filecontent: the
- *            content of a file
- * @param $student {object}
- *            the user record object of the students. Name and id occurrences will be cleared
+ * @param String $filecontent The content of a file
+ * @param Object $student The user record object of the students. Name and id occurrences will be cleared
  */
 function plagiarism_programming_annonymise_students(&$filecontent, $student) {
     if ($student == null) { // Do not have information to clear.
@@ -216,6 +207,11 @@ function plagiarism_programming_annonymise_students(&$filecontent, $student) {
     $filecontent = str_replace($finds, $replaces, $filecontent);
 }
 
+/**
+ * Sends the notification mail.
+ * @param Object $assignment
+ * @param String $toolname
+ */
 function plagiarism_programming_send_scanning_notification_email($assignment, $toolname) {
     global $CFG, $DB;
 
@@ -254,8 +250,7 @@ function plagiarism_programming_send_scanning_notification_email($assignment, $t
 /**
  * Delete a directory (taken from php.net) with all of its sub-dirs and files
  *
- * @param string $dir:
- *            the directory to be deleted
+ * @param String $dir The directory to be deleted
  */
 function plagiarism_programming_rrmdir($dir) {
     if (is_dir($dir)) {
@@ -275,18 +270,15 @@ function plagiarism_programming_rrmdir($dir) {
 }
 
 /**
- * Get a list of links in parallel.
- * curl is used to call the parallel
+ * Get a list of links in parallel. Curl is used to call the parallel.
  *
- * @param array $links:
- *            list of links
- * @param mixed $directory:
- *            if null, the contents get by the links will not be stored, if a string, the content
+ * @param Array $links List of links
+ * @param mixed $directory
+ *            If null, the contents get by the links will not be stored, if a string, the content
  *            will be stored in that directory, if an array, each link will be saved in the corresponding directory entry
  *            (must be the same size with the links array)
  *            (each directory entry should contain the full path, including the filename)
- * @param int $timeout
- *            the maximum time (in number of second) to wait
+ * @param Number $timeout Tthe maximum time (in number of second) to wait
  */
 function plagiarism_programming_curl_download($links, $directory = null, $timeout = 0) {
     $curlhandlearray = array();
@@ -343,14 +335,11 @@ function plagiarism_programming_curl_download($links, $directory = null, $timeou
  * In addition, this function also clear students' name and id if there
  * are in the comments and the name of the file
  *
- * @param string $zip_file
- *            full path of the zip file
- * @param array $extensions
- *            extension of files that should be extracted (for example, just .java file should be extracted)
- * @param string $location
- *            directory of
- * @param stdClass $user:
- *            record object of the student who submitted the file
+ * @param string $rarfile Full path of the zip file
+ * @param array $extensions Extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location directory of
+ * @param stdClass $student
+ * @param Boolean $textfileonly
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
 function plagiarism_programming_extract_rar($rarfile, $extensions, $location, $student = null, $textfileonly = false) {
@@ -403,14 +392,11 @@ function plagiarism_programming_extract_rar($rarfile, $extensions, $location, $s
  * In addition, this function also clear students' name and id if there
  * are in the comments and the name of the file
  *
- * @param string $zipfile
- *            full path of the zip file
- * @param array $extensions
- *            extension of files that should be extracted (for example, just .java file should be extracted)
- * @param string $location
- *            directory of
- * @param stdClass $user:
- *            record object of the student who submitted the file
+ * @param string $zipfile Full path of the zip file
+ * @param array $extensions Extension of files that should be extracted (for example, just .java file should be extracted)
+ * @param string $location directory of
+ * @param stdClass $user
+ * @param Boolean $textfileonly
  * @return true if the file has appropriate extensions, otherwise false (i.e. empty code)
  */
 function plagiarism_programming_extract_zip($zipfile, $extensions, $location, $user = null, $textfileonly = true) {
@@ -457,6 +443,8 @@ function plagiarism_programming_extract_zip($zipfile, $extensions, $location, $u
  * Since the plugin supports only zip and
  * rar files, every other compression type will be considered not compressed.
  * Just a simple extension check is performed (zip or rar)
+ * @param String $filename
+ * @return Boolean
  */
 function plagiarism_programming_is_compressed_file($filename) {
     $ext = substr($filename, -4, 4);
@@ -466,7 +454,7 @@ function plagiarism_programming_is_compressed_file($filename) {
 /**
  * Count the number of line and the number of characters at the final line in the provided string
  *
- * @param: the string to countstring
+ * @param String $text The string to countstring
  */
 function plagiarism_programming_count_line(&$text) {
     $linecount = substr_count($text, "\n");
@@ -479,21 +467,27 @@ function plagiarism_programming_count_line(&$text) {
 
 /**
  * This class is used to inform the progress of something (scanning, downloading).
- * It is passed to the stub and
- * used by the stub to inform the progress by calling update_progress. It decouples the generic stubs, which contain
- * client code with the database.
+ *
+ * It is passed to the stub and used by the stub to inform the progress by calling update_progress.
+ * It decouples the generic stubs, which contain client code with the database.
+ * @package    plagiarism_programming
+ * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class progress_handler{
+    /**
+     * @var String $toolname The tool need progress update (either JPlag or MOSS)
+     */
     private $toolname;
+    /**
+     * @var Object $tool_param The record object of MOSS param status
+     */
     private $toolparam;
 
     /**
      * Construct the object
-     *
-     * @param $toolname {string}
-     *            The tool need progress update (either JPlag or MOSS)
-     * @param $tool_param: the
-     *            record object of MOSS param status
+     * @param String $toolname The tool need progress update (either JPlag or MOSS)
+     * @param Object $toolparam The record object of MOSS param status
      */
     public function __construct($toolname, $toolparam) {
         $this->toolname = $toolname;
@@ -502,9 +496,8 @@ class progress_handler{
 
     /**
      * Update the progress of the tool indicated in the constructor
-     *
-     * @param $stage {string} The stage the scanning is in (upload, download, scanning...)
-     * @param $progress {number} The percentage finished (between 0 and 100)
+     * @param String $stage The stage the scanning is in (upload, download, scanning...)
+     * @param Number $progress The percentage finished (between 0 and 100)
      */
     public function update_progress($stage, $progress) {
         global $DB;
