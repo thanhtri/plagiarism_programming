@@ -95,8 +95,7 @@ $string['detection_tools_hlp_help'] = 'Select the detection tool(s) to use. Each
 $string['date_selector_hlp'] = '';
 $string['date_selector_hlp_help'] = 'Select the date that the submissions will be scanned. You can select multiple dates. '.
     'To allow draft submission, you can select some dates before the due date so that students can see the report and modify '.
-    'their assignments before it due. Alternatively, you can manually trigger the scanning by pressing the Scan button on '.
-    'the assignment page';
+    'their assignments. Alternatively, you can manually trigger the scanning by pressing the Scan button on the assignment page';
 $string['auto_publish_hlp'] = '';
 $string['auto_publish_hlp_help'] = 'Allowing the students to see the plagiarism report';
 $string['notification_hlp'] = '';
@@ -131,12 +130,12 @@ $string['jplag_cancel_error'] = 'Cannot cancel submission';
 $string['start_scanning'] = 'Scan now';
 $string['rescanning'] = 'Rescan';
 $string['no_tool_selected'] = 'No detector was selected. Please select at least one among MOSS and JPlag';
-$string['not_enough_submission'] = 'Not enough submissions to scan!';
+$string['not_enough_submission'] = 'Not enough submissions to scan! At least 2 are needed';
 $string['scheduled_scanning'] = 'The next scanning is scheduled on';
 $string['no_scheduled_scanning'] = 'There is no scanning scheduled!';
 $string['latestscan'] = 'Latest scanning occurred at ';
 $string['manual_scheduling_help'] = 'If you want to trigger the scanning immediately (in case of late submissions, extension...), '
-    .'please click the button below! (note that it doesn\'t affect the scheduled scanning)';
+    .'please click the button below! Note that it does not affect the scheduled scanning';
 $string['credential_not_provided'] = 'Credential not provided. Please provide this information in '
     .'Administrator -> Plugin -> Plagiarism -> Programming assignment';
 $string['unexpected_error_extract'] = 'An unexpected error occurred while extracting the assignments! This may be due to corrupted data or unsupported format...';
@@ -204,20 +203,17 @@ $string['no_similarity'] = 'No similarity';
 
 $string['scanning_complete_email_notification_subject'] =
     '{$a->course_short_name} {$a->assignment_name}: similarity scanning available';
-$string['scanning_complete_email_notification_body_html'] = 'Dear {$a->recipientname}, <br/>
-This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}
-has finished at {$a->time}.
-
-You could access the similarity report by following this link: <a href="{$a->report_link}">{$a->report_link}</a>.
-';
-$string['scanning_complete_email_notification_body_txt'] = 'Dear {$a->recipientname},
-This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}
-has finished at {$a->time}.
-
-You could access the similarity report by using this link: {$a->report_link}';
+$string['scanning_complete_email_notification_body_html'] = 'Dear {$a->recipientname}, <br/>'
+.'This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}'
+.'has finished at {$a->time}.'
+.'You could access the similarity report by following this link: <a href="{$a->report_link}">{$a->report_link}</a>.';
+$string['scanning_complete_email_notification_body_txt'] = 'Dear {$a->recipientname},'
+.'This is a notification that the code similarity scanning of "{$a->assignment_name}" in {$a->course_name}'
+.'has finished at {$a->time}.'
+.'You could access the similarity report by using this link: {$a->report_link}';
 
 $string['similarity_report'] = 'Similarity result report';
-$string['include_repository'] = 'Include repository';
+$string['include_repository'] = 'Include additional code';
 $string['course_select'] = 'Select courses using code plagiarism scanning';
 $string['by_name'] = 'By name ';
 $string['search'] = 'Search';
