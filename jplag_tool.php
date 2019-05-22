@@ -93,7 +93,7 @@ class jplag_tool implements plagiarism_tool{
      *            the record object of assignment config
      * @param stdClass $scaninfo
      *            the record object of the status of jplag
-     * @return the same updated record object of jplag status
+     * @return Object $scaninfo The same updated record object of jplag status
      */
     public function submit_assignment($inputdir, $assignment, $scaninfo) {
         if (!$this->stub_init($scaninfo)) {
@@ -280,7 +280,7 @@ class jplag_tool implements plagiarism_tool{
     /**
      * The supported languages of jplag
      *
-     * @return the supported languages of JPlag under an array('language', 'code')
+     * @return Array The supported languages of JPlag under an array('language', 'code')
      *         - code is used by the server to identify the language
      */
     public static function get_supported_language() {

@@ -43,7 +43,7 @@ require_once(__DIR__.'/scan_assignment.php');
 class plagiarism_plugin_programming extends plagiarism_plugin {
 
     /**
-     * @var $filemanageroption moodle filemanager to upload and delete files.
+     * @var Object $filemanageroption moodle filemanager to upload and delete files.
      */
     private $filemanageroption;
 

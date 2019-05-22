@@ -82,7 +82,7 @@ $string['auto_publish'] = 'Publish similarity report';
 $string['notification'] = 'Display notification';
 $string['notification_text'] = 'Notification text';
 $string['notification_text_default'] = 'This assignment will be scanned for code similarity';
-$string['additional_code'] = 'Additional code to compare against';
+$string['additional_code'] = 'Additional code to compare against (only .zip or .rar!)';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Enable programming plagiarism detection for this assignment';

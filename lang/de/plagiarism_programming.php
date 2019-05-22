@@ -18,7 +18,7 @@
  * The language strings for the english version for this plugin.
  *
  * @package    plagiarism_programming
- * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @copyright  2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -82,7 +82,7 @@ $string['auto_publish'] = 'Ähnlichkeitsbericht veröffentlichen';
 $string['notification'] = 'Benachrichtigung anzeigen';
 $string['notification_text'] = 'Benachrichtigungstext';
 $string['notification_text_default'] = 'Diese Abgabe wird nach Code-Ähnlichkeit gescannt';
-$string['additional_code'] = 'Zusätzlicher Code zum Vergleich';
+$string['additional_code'] = 'Zusätzlicher Code zum Vergleich (Nur .zip oder .rar!)s';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Plagiaterkennung von Quellcode für diese Aufgabe aktivieren';
