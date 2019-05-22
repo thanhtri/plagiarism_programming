@@ -21,9 +21,6 @@
  * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
-
 global $CFG, $PAGE, $OUTPUT, $USER;
 require_once(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
