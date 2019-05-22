@@ -67,7 +67,8 @@ require_login($course, true, $coursemodule);
 
 // Authorisation: only teacher can see the names.
 $context = context_module::instance($cmid);
-$isteacher = has_capability('mod/assignment:grade', $context);
+$isteacher = require_capability('mod/assignment:grade', $context);
+/* Students are not allowed to see any other code
 if (!$isteacher) {
     // Check if he is allowed to see the assignment.
     if (!has_capability('mod/assignment:submit', $context) || // Must have submission right to his assignment.
@@ -78,16 +79,17 @@ if (!$isteacher) {
     }
 
     if ($resultrecord->student1_id == $USER->id) {
-        $student1 = 'yours';
-        $student2 = 'another\'s';
+        $student1 = get_string('yours', 'plagiarism_programming');
+        $student2 = get_string('another', 'plagiarism_programming');
     } else if ($resultrecord->student2_id == $USER->id) {
-        $student1 = 'another\'s';
-        $student2 = 'yours';
+        $student1 = get_string('yours', 'plagiarism_programming');
+        $student2 = get_string('another', 'plagiarism_programming');
     } else {
         // This condition cannot happen unless users fabricate the link.
         redirect($CFG->wwwroot, "You can only see the report on your work");
     }
 } else {
+*/
     // Teacher can see the students' name.
     $users = $DB->get_records_list('user', 'id', array(
         $resultrecord->student1_id,
@@ -95,7 +97,7 @@ if (!$isteacher) {
     ), 'firstname,lastname,idnumber');
     $student1 = isset($users[$resultrecord->student1_id]) ? fullname($users[$resultrecord->student1_id]) : $resultrecord->student1_id;
     $student2 = isset($users[$resultrecord->student2_id]) ? fullname($users[$resultrecord->student2_id]) : $resultrecord->student2_id;
-}
+//}
 
 // End of authorization.
 
