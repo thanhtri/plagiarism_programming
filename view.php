@@ -130,13 +130,13 @@ $result = $DB->get_records_sql($select, $params);
 $result = plagiarism_programming_transform_similarity_pair($result);
 
 $studentnames = null;
-// This will create the array id=>name in $student_names.
+// This will create the array id=>name in $studentnames.
 plagiarism_programming_create_student_lookup_table($result, $isteacher, $studentnames, $coursemodule->course);
 
 if ($displaymode == 'group') {
     $table = plagiarism_programming_create_table_grouping_mode($result, $studentnames);
 } else {
-    $table = plagiarism_programming_create_table_list_mode($result, $studentnames, $studentid);
+    $table = plagiarism_programming_create_table_list_mode($result, $studentnames, $studentid, $isteacher);
 }
 
 $header = get_string('result', 'plagiarism_programming');

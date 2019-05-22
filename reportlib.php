@@ -109,12 +109,14 @@ function plagiarism_programming_create_table_grouping_mode(&$list, &$studentname
  * @param Array $studentnames Associative array id=>name of the students in this assignment. Not altered by the function.
  *            Passed by reference for performance only
  * @param Number $anchor ID of anchor student. If anchor is specified, the anchored student will always appear on the left.
+ * @param Boolean $isteacher
  * @return $table The html_table object.
  */
-function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $anchor = null) {
+function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $anchor = null, $isteacher) {
     $table = new html_table();
     $table->attributes['class'] = 'plagiarism_programming_result_table generaltable';
     $rownum = 1;
+
     foreach ($list as $pair) {
 
         $student1 = $studentnames[$pair->student1_id];
@@ -131,18 +133,34 @@ function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $
         $cell = new html_table_cell($rownum ++);
         $row->cells[] = $cell;
 
+        // First Row, student 1.
         $cell = new html_table_cell();
-        $cell->text = plagiarism_programming_create_student_link($student1, $pair->student1_id);
+        if ($isteacher) {
+            $cell->text = plagiarism_programming_create_student_link($student1, $pair->student1_id);
+        } else {
+            $cell->text = $student1;
+        }
         $row->cells[] = $cell;
 
+        // Second Row, student 2.
         $cell = new html_table_cell();
-        $cell->text = plagiarism_programming_create_student_link($student2, $pair->student2_id);
+        if ($isteacher) {
+            $cell->text = plagiarism_programming_create_student_link($student2, $pair->student1_id);
+        } else {
+            $cell->text = $student2;
+        }
         $row->cells[] = $cell;
 
+        // Third Row, Percentage
         $cell = new html_table_cell();
-        $cell->text = html_writer::link("view_compare.php?id=$pair->id", round($pair->similarity, 2) . '%', array(
-            'class' => 'compare_link'
-        ));
+        if ($isteacher) {
+            $cell->text = html_writer::link("view_compare.php?id=$pair->id", round($pair->similarity, 2) . '%', array(
+                'class' => 'compare_link'
+            ));
+        } else {
+            $cell->text = round($pair->similarity, 2) . '%';
+        }
+
         $row->cells[] = $cell;
 
         $mark = $pair->mark;
@@ -254,8 +272,8 @@ function plagiarism_programming_create_student_lookup_table(&$resulttable, $iste
         }
     } else {
         foreach ($resulttable as $pair) {
-            $studentnames[$pair->student1_id] = "someone's";
-            $studentnames[$pair->student2_id] = "someone's";
+            $studentnames[$pair->student1_id] = get_string('another', 'plagiarism_programming');
+            $studentnames[$pair->student2_id] = get_string('another', 'plagiarism_programming');
         }
     }
 
@@ -267,7 +285,7 @@ function plagiarism_programming_create_student_lookup_table(&$resulttable, $iste
             $studentnames[$student->id] = fullname($student);
         }
     } else { // If user is a student.
-        $studentnames[$USER->id] = 'Yours';
+        $studentnames[$USER->id] = get_string('yours', 'plagiarism_programming');
     }
 }
 
