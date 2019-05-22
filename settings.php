@@ -71,6 +71,7 @@ $mform->set_data($plagiarismprogrammingsetting);
 
 echo $OUTPUT->header();
 
+/*
 // Include the javascript if the plugin is only activated for specific courses.
 $jsmodule = array(
     'name' => 'plagiarism_programming',
@@ -84,6 +85,7 @@ $jsmodule = array(
     )
 );
 $PAGE->requires->js_init_call('M.plagiarism_programming.select_course.init', null, true, $jsmodule);
+*/
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
 echo $notification;

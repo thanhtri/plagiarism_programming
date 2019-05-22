@@ -43,9 +43,11 @@ class plagiarism_setup_form extends moodleform {
     protected function definition() {
         $mform = &$this->_form;
 
-        $mform->addElement('html', get_string('programmingexplain', 'plagiarism_programming'));
+        $mform->addElement('header', 'explanation', get_string('programmingexplain', 'plagiarism_programming'));
         // If the plugin is used.
         $mform->addElement('checkbox', 'programming_use', get_string('use_programming', 'plagiarism_programming'));
+
+        /* Course selection is crappy javascript and superseeded by moodle capabilites.
 
         // Enable the plugin at the course level or for whole moodle.
         $enablelevel = array();
@@ -61,18 +63,19 @@ class plagiarism_setup_form extends moodleform {
         $mform->setDefault('level_enabled', 'global');
 
         $mform->addElement('html', html_writer::tag('div', get_string('account_instruction', 'plagiarism_programming')));
+        */
 
         /*
-         * Jplag is currently not supported!
-         *
-         * $mform->addElement('header', 'jplag_config', get_string('jplag', 'plagiarism_programming'));
-         * $jplag_link = html_writer::link('https://www.ipd.uni-karlsruhe.de/jplag/', ' https://www.ipd.uni-karlsruhe.de/jplag/');
-         * $mform->addElement('html', html_writer::tag('div',
-         * get_string('jplag_account_instruction', 'plagiarism_programming'). $jplag_link));
-         * $mform->addElement('text', 'jplag_user', get_string('jplag_username', 'plagiarism_programming'));
-         * $mform->setType('jplag_user', PARAM_TEXT);
-         * $mform->addElement('password', 'jplag_pass', get_string('jplag_password', 'plagiarism_programming'));
-         * $mform->setType('jplag_pass', PARAM_TEXT);
+         Jplag is currently not supported!
+
+         $mform->addElement('header', 'jplag_config', get_string('jplag', 'plagiarism_programming'));
+         $jplag_link = html_writer::link('https://www.ipd.uni-karlsruhe.de/jplag/', ' https://www.ipd.uni-karlsruhe.de/jplag/');
+         $mform->addElement('html', html_writer::tag('div',
+         get_string('jplag_account_instruction', 'plagiarism_programming'). $jplag_link));
+         $mform->addElement('text', 'jplag_user', get_string('jplag_username', 'plagiarism_programming'));
+         $mform->setType('jplag_user', PARAM_TEXT);
+         $mform->addElement('password', 'jplag_pass', get_string('jplag_password', 'plagiarism_programming'));
+         $mform->setType('jplag_pass', PARAM_TEXT);
          */
 
         $mform->addElement('header', 'moss_config', get_string('moss', 'plagiarism_programming'));

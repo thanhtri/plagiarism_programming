@@ -97,7 +97,8 @@ $string['date_selector_hlp_help'] = 'Select the date that the submissions will b
     'To allow draft submission, you can select some dates before the due date so that students can see the report and modify '.
     'their assignments. Alternatively, you can manually trigger the scanning by pressing the Scan button on the assignment page';
 $string['auto_publish_hlp'] = '';
-$string['auto_publish_hlp_help'] = 'Allowing the students to see the plagiarism report';
+$string['auto_publish_hlp_help'] = 'Allow the students to see the plagiarism report.'
+    .' They can see the similarity percentage but neither their code of nor their names.';
 $string['notification_hlp'] = '';
 $string['notification_hlp_help'] = 'Notify the student that their submission will be scanned for plagiarism';
 $string['programming_language_missing'] = 'Programming language is required';
@@ -175,15 +176,15 @@ $string['rate_type_hlp_help'] = 'Since two assignments can have substantially di
 $string['tool_hlp'] = '';
 $string['tool_hlp_help'] = 'Select the tool to show the result';
 $string['display_mode_hlp'] = '';
-$string['display_mode_hlp_help'] = 'Select the display mode. "Grouping students" mode shows all the students similar with one '
+$string['display_mode_hlp_help'] = 'Select the display mode. "Matrix" mode shows all the students similar with one '
     .'student in one row. "Ordered table" shows a list of pairs with descending similarity rate';
 $string['version_hlp'] = '';
 $string['version_hlp_help'] = 'See the report of previous scans';
-$string['pair'] = 'number of pairs';
+$string['pair'] = 'Amount of pairs';
 
 // In the report.
-$string['yours'] = 'Yours';
-$string['another'] = "Someone's";
+$string['yours'] = 'Own submission';
+$string['another'] = 'Another submission';
 $string['chart_legend'] = 'Similarity rate distribution of the whole course';
 $string['result'] = 'Similarity scanning result';
 $string['comparison_title'] = 'Similarities';
@@ -218,6 +219,11 @@ $string['scanning_complete_email_notification_body_txt'] = 'Dear {$a->recipientn
 $string['similarity_report'] = 'Similarity result report';
 $string['include_repository'] = 'Include additional code (is presented as "library")';
 $string['course_select'] = 'Select courses using code plagiarism scanning';
-$string['by_name'] = 'By name ';
+$string['by_name'] = 'By name';
 $string['search'] = 'Search';
 $string['search_by_category'] = 'Course search by category';
+
+// Capabilites
+$string['programming:enable'] = 'Enable the plugin in the settings of a submission';
+$string['programming:manualscan'] = 'Manually trigger a scan by pressing the "Scan"-Button in grading overview';
+$string['programming:markpairs'] = 'Mark two pairs as either normal of suspicious';

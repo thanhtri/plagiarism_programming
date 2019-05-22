@@ -70,6 +70,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // When creating an assignment, cmid does not exist, but course id is provided via "course" param.
         $cmid = optional_param('update', 0, PARAM_INT);
         $courseid = optional_param('course', 0, PARAM_INT);
+
         if (!$this->is_plugin_enabled($cmid, $courseid)) {
             return;
         }
@@ -82,6 +83,14 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         $mform->addElement('header', 'programming_header',  get_string('plagiarism_header', 'plagiarism_programming'));
+
+        // Do not show the settings if the user is not allowed to.
+        $context = context_module::instance($cmid);
+        if (!has_capability('plagiarism/programming:changesettings', $context)) {
+            //$mform->addElement('text', 'somenameiguess', "You are not allowed to do anything here");
+            $mform->addElement('html', html_writer::tag('div', get_string('notallowedtoedit', 'blog')));
+            return $mform;
+        }
 
         // Enable or disable plagiarism checking.
         $enablechecking = array();
@@ -284,6 +293,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
 
         $cmid = $linkarray['cmid'];
         $studentid = $linkarray['userid'];
+
         if ($canshow == null) { // Those computed values are cached in static variables and reused.
             $canshow = $this->is_plugin_enabled($cmid);
             if ($canshow) {
@@ -473,8 +483,12 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $content .= html_writer::tag('div', get_string('no_scheduled_scanning', 'plagiarism_programming'));
         }
 
-        $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
-            array('style' => 'margin-top:5px'));
+        // Only display help for the rescan button if the user is allowed to.
+        $context = context_module::instance($cmid);
+        if (has_capability('plagiarism/programming:manualscan', $context)) {
+            $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
+                array('style' => 'margin-top:5px'));
+        }
 
         // Check that at least two assignments are submitted.
         $filerecords = plagiarism_programming_get_submitted_files($context);
@@ -482,21 +496,24 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));
             $buttondisabled = true;
         }
-        // Write the rescan button.
-        $buttonlabel = ($alreadyscanned) ?
-                get_string('rescanning', 'plagiarism_programming') :
-                get_string('start_scanning', 'plagiarism_programming');
-        $buttonattr = array('type' => 'submit',
-                'id' => 'plagiarism_programming_scan',
-                'value' => $buttonlabel);
-        if ($buttondisabled) {
-            $buttonattr['disabled'] = 'disabled';
+
+        if (has_capability('plagiarism/programming:manualscan', $context)) {
+            // Write the rescan button if the user has the capability to do so.
+            $buttonlabel = ($alreadyscanned) ?
+                    get_string('rescanning', 'plagiarism_programming') :
+                    get_string('start_scanning', 'plagiarism_programming');
+            $buttonattr = array('type' => 'submit',
+                    'id' => 'plagiarism_programming_scan',
+                    'value' => $buttonlabel);
+            if ($buttondisabled) {
+                $buttonattr['disabled'] = 'disabled';
+            }
+            $scanbutton = html_writer::empty_tag('input', $buttonattr);
+            $content .= html_writer::tag('form', $scanbutton, array('method' => 'post',
+                'action' => "$CFG->wwwroot/plagiarism/programming/start_scanning.php?task=scan&cmid=$cmid"));
+            $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
+                array('style' => 'display:none', 'id' => 'scan_message'));
         }
-        $scanbutton = html_writer::empty_tag('input', $buttonattr);
-        $content .= html_writer::tag('form', $scanbutton, array('method' => 'post',
-            'action' => "$CFG->wwwroot/plagiarism/programming/start_scanning.php?task=scan&cmid=$cmid"));
-        $content .= html_writer::tag('span', get_string('scanning_in_progress', 'plagiarism_programming'),
-            array('style' => 'display:none', 'id' => 'scan_message'));
 
         // Include the javascript.
         $PAGE->requires->js('/plagiarism/programming/progressbar.js');

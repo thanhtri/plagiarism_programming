@@ -134,7 +134,7 @@ echo html_writer::tag('div', $content . "<div class='simiarity_table_holder'></d
 ));
 
 $content = '';
-if ($isteacher) { // If the user is a teacher, add the box to mark as suspicious or normal.
+if (has_capability('plagiarism/programming:markpairs', $context)) { // If the user has the capability, add the box to mark as suspicious or normal.
     $actions = array(
         'Y' => get_string('mark_suspicious', 'plagiarism_programming'),
         'N' => get_string('mark_nonsuspicious', 'plagiarism_programming')

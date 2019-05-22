@@ -7,6 +7,8 @@ This plugin was forked from @thantri and last updated 5 years ago.
 In the meantime, the jplag-service was discontinued.
 As such, there will be legacy code left behind.
 
+The second big change is that there is no course selection in the settings anymore. It is replaced by plugin-specific capabilities.
+
 ## 1. Registering a MOSS account
 The plugin relies on MOSS engine in the background to carry out the scanning for similarity.
 

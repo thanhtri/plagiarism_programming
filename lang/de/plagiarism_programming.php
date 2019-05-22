@@ -97,9 +97,10 @@ $string['date_selector_hlp_help'] = 'Wählen Sie das Datum, an dem die Beiträge
     .'Um die Einreichung von Entwürfen zu ermöglichen, können Sie einige Daten vor dem Fälligkeitsdatum auswählen, damit die Schüler den Bericht sehen und ihre Abgabe ändern können.'
     .'Alternativ können Sie den Scanvorgang auch manuell auslösen, indem Sie die Schaltfläche "Scannen" auf der Abgabeübersicht drücken';
 $string['auto_publish_hlp'] = '';
-$string['auto_publish_hlp_help'] = 'Den Schülern erlauben, den Plagiatbericht zu sehen'.
+$string['auto_publish_hlp_help'] = 'Den Studenten erlauben, den Plagiatbericht zu sehen'
+    .'Sie können die Ähnlichkeitsprozente sehen, aber weder den Code noch die Namen anderer Studierender';
 $string['notification_hlp'] = '';
-$string['notification_hlp_help'] = 'Benachrichtigen Sie den Schüler, dass seine Einreichung auf Plagiate Überprüft wird';
+$string['notification_hlp_help'] = 'Benachrichtigen Sie die Studierenden, dass seine Einreichung auf Plagiate Überprüft wird';
 $string['programming_language_missing'] = 'Programmiersprache ist erforderlich';
 $string['notification_text_hlp'] = '';
 $string['notification_text_hlp_help'] = 'Setzt den anzuzeigenden Benachrichtigungstext';
@@ -134,7 +135,7 @@ $string['not_enough_submission'] = 'Nicht genügend Einreichungen zum Scannen! E
 $string['scheduled_scanning'] = 'Die nächste Überprüfung ist geplant für';
 $string['no_scheduled_scanning'] = 'Es ist kein Scan geplant!';
 $string['latestscan'] = 'Letzter Scan erfolgte um ';
-$string['manual_scheduling_help'] = 'Wenn Sie das Scannen sofort auslösen wollen (bei verspäteten Einreichungen, Erweiterung, ...), '
+$string['manual_scheduling_help'] = 'Wenn Sie das Scannen sofort auslösen wollen (bei verspäteten Einreichungen, Verlängerung, ...), '
     .'bitte klicken Sie auf den untenstehenden Button!';
 $string['credential_not_provided'] = 'Zugansgdaten sind nicht eingegeben. Bitte geben Sie diese Informationen in'
     .'Administrator -> Plugin -> Plagiatsuche -> Quellcode Plagiarismus Plugin ein';
@@ -175,15 +176,15 @@ $string['rate_type_hlp_help'] = 'Da zwei Zuweisungen wesentlich unterschiedliche
 $string['tool_hlp'] = '';
 $string['tool_hlp_help'] = 'Wählen Sie das Werkzeug aus, um das Ergebnis anzuzeigen';
 $string['display_mode_hlp'] = '';
-$string['display_mode_hlp_help'] = 'Wählen Sie den Anzeigemodus aus. Der Modus "Gruppierung der Schüler" zeigt alle Schüler, die mit Diesem.'
-    .'Schüler ähnlich sind in einer Reihe. "Geordnete Tabelle" zeigt eine Liste von Paaren mit absteigender Ähnlichkeitsrate';
+$string['display_mode_hlp_help'] = 'Wählen Sie den Anzeigemodus aus. Der Modus "Matrix" zeigt alle Studierende, die mit diesem.'
+    .'Studierenden ähnlich sind in einer Reihe. "Sortierte Tabelle" zeigt eine Liste von Paaren mit absteigender Ähnlichkeitsrate';
 $string['version_hlp'] = '';
 $string['version_hlp_help'] = 'Siehe den Bericht über frühere Scans';
 $string['pair'] = 'Anzahl an Paaren';
 
 // Im Bericht.
-$string['yours'] = 'Dein'; // TODO Passt das im Kontext?
-$string['another'] = "Der/die Andere"; // TODO Kontext?
+$string['yours'] = 'Eigene Abgabe';
+$string['another'] = 'Andere Abgabe';
 $string['chart_legend'] = 'Ähnlichkeitsverteilung des gesamten Kurses';
 $string['result'] = 'Ergebnis des Ähnlichkeitsscans';
 $string['comparison_title'] = 'Ähnlichkeiten';
@@ -217,6 +218,11 @@ $string['scanning_complete_email_notification_body_txt'] = 'Sehr geehrte/r {$a->
 $string['similarity_report'] = 'Ähnlichkeitsbericht';
 $string['include_repository'] = 'Zusätzlichen Code inkludieren (wird als "library" angezeigt)';
 $string['course_select'] = 'Kurse mit Codeplagiatsprüfung auswählen';
-$string['by_name'] = 'Nach Name ';
-$string['search'] = 'Scuhe';
+$string['by_name'] = 'Nach Name';
+$string['search'] = 'Suche';
 $string['search_by_category'] = 'Kurssuche nach Kategorie';
+
+// Capabilites, Berechtigungen
+$string['programming:enable'] = 'Das Plugin in den Einstellungen einer Abgabe aktivieren und die Einstellungen ändern dürfen';
+$string['programming:manualscan'] = 'Manuell einen Scan starten, indem der "Scan"-Button in der grading-Übersicht gedrückt wird';
+$string['programming:markpairs'] = 'Zwei Paare als normal oder verdächtig markieren';
