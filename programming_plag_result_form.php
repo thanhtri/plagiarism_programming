@@ -72,8 +72,8 @@ class programming_plag_result_form extends moodleform {
 
         // Select the similarity type average or maximal.
         $ratetype = array(
-            'max' => 'Maximum similarity',
-            'avg' => 'Average similarity'
+            'avg' => get_string('avg_similarity', 'plagiarism_programming'),
+            'max' => get_string('max_similarity', 'plagiarism_programming')
         );
         $mform->addElement('select', 'rate_type', get_string('similarity_type', 'plagiarism_programming'), $ratetype);
 
@@ -91,6 +91,10 @@ class programming_plag_result_form extends moodleform {
             'group' => 'Grouping students',
             'table' => 'Ordered table'
         );
+        $displaymodes = array(
+            'group' => get_string('display_group', 'plagiarism_programming'),
+            'table' => get_string('display_table', 'plagiarism_programming')
+        );
         $mform->addElement('select', 'display_mode', get_string('display_mode', 'plagiarism_programming'), $displaymodes);
 
         // Select the version history.
@@ -99,8 +103,12 @@ class programming_plag_result_form extends moodleform {
             'detector' => $this->detector
         ), 'time_created DESC');
         $reportselect = array();
+
+        global $USER;
+        // Get user's preferred language to transform time string.
+        setlocale(LC_TIME, $USER->lang);
         foreach ($reports as $report) {
-            $reportselect[$report->version] = date('d M h.i A', $report->time_created);
+            $reportselect[$report->version] = strftime("%c", $report->time_created);
         }
         $mform->addElement('select', 'version', get_string('version', 'plagiarism_programming'), $reportselect);
 

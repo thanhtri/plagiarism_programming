@@ -150,10 +150,12 @@ $string['invalid_file_type'] = 'Einreichungen müssen Dateierweiterungen besitze
 
 // Optionen fuer die Anzeige der Ergebnisse.
 $string['option_header'] = 'Optionen';
-$string['threshold'] = 'Gleichheitsfilter (%)';
+$string['threshold'] = 'Untere Schwelle (%)';
 $string['similarity_type'] = 'Gleichheitstyp';
 $string['Detektoren'] = 'Detektor';
-$string['display_mode'] = 'Darstellung';
+$string['display_mode'] = 'Darstellungsart';
+$string['display_group'] = 'Matrix';
+$string['display_table'] = 'Sortierte Tabelle';
 $string['version'] = 'Historie';
 $string['similarity_history'] = 'Historie der Ähnlichkeitsrate';
 $string['submit'] = 'Filter';
@@ -191,13 +193,14 @@ $string['plagiarism_action'] = 'Aktion';
 $string['mark_select_title'] = 'Dieses Paar markieren als';
 $string['mark_suspicious'] = 'verdächtig';
 $string['mark_nonuspicious'] = 'normal';
-$string['show_similarity_to_others'] = 'Zeige Ähnlichkeit von {student} mit anderen Schülern';
+$string['show_similarity_to_others'] = 'Zeige Ähnlichkeit von "{student}" mit anderen Schülern';
 $string['history_char'] = 'Ähnlichkeitshistorie anzeigen';
 
 // Benachrichtigung.
 $string['high_similarity_warning'] = 'Deine Aufgabe wurde als Ähnlich mit einigen anderen markiert';
 $string['report'] = 'Bericht';
 $string['max_similarity'] = 'Maximale Ähnlichkeit';
+$string['avg_similarity'] = 'Durchschnittliche Ähnlichkeit';
 $string['suspicious'] = 'verdächtig';
 $string['no_similarity'] = 'Keine Ähnlichkeit';
 
@@ -212,7 +215,7 @@ $string['scanning_complete_email_notification_body_txt'] = 'Sehr geehrte/r {$a->
 .'Sie können auf den Ähnlichkeitsbericht zugreifen, indem Sie diesem Link folgen: {$a->report_link}';
 
 $string['similarity_report'] = 'Ähnlichkeitsbericht';
-$string['include_repository'] = 'Zusätzlichen Code inkludieren';
+$string['include_repository'] = 'Zusätzlichen Code inkludieren (wird als "library" angezeigt)';
 $string['course_select'] = 'Kurse mit Codeplagiatsprüfung auswählen';
 $string['by_name'] = 'Nach Name ';
 $string['search'] = 'Scuhe';

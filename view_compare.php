@@ -138,7 +138,7 @@ if ($isteacher) { // If the user is a teacher, add the box to mark as suspicious
         'N' => get_string('mark_nonsuspicious', 'plagiarism_programming')
     );
     $content .= html_writer::label(get_string('mark_select_title', 'plagiarism_programming'), 'action_menu') . ' ';
-    $content .= html_writer::select($actions, 'mark', $resultrecord->mark, 'Action...', array(
+    $content .= html_writer::select($actions, 'mark', $resultrecord->mark, get_string('choosedots'), array(
         'id' => 'action_menu'
     ));
 }
@@ -157,8 +157,12 @@ $content .= html_writer::empty_tag('img', array(
 // Select the report history.
 $similarityhistory = plagiarism_programming_get_student_similarity_history($resultrecord);
 $reportselect = array();
+
+global $USER;
+// Get user's preferred language to transform time string.
+setlocale(LC_TIME, $USER->lang);
 foreach ($similarityhistory as $pair) {
-    $reportselect[$pair->id] = date('d M h.i A', $pair->time_created);
+    $reportselect[$pair->id] = strftime("%c", $pair->time_created);
 }
 $content .= '<br/><br/>';
 $content .= html_writer::label(get_string('version'), 'report_version') . ' ';

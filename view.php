@@ -27,16 +27,17 @@ require_once(__DIR__ . '/reportlib.php');
 
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
 
+// Standard settings when no filters are selected
 $cmid = required_param('cmid', PARAM_INT);
 $studentid = optional_param('student', null, PARAM_TEXT);
 $lowerthreshold = optional_param('lower_threshold', 20, PARAM_FLOAT); // Rate will be above this similarity.
 $upperthreshold = optional_param('upper_threshold', 100, PARAM_FLOAT);
 $tool = optional_param('tool', '', PARAM_TEXT);
 $reportversion = optional_param('version', -1, PARAM_INT);
-$ratetype = optional_param('rate_type', 'avg', PARAM_TEXT);
+$ratetype = optional_param('rate_type', 'max', PARAM_TEXT);
 $includerepository = optional_param('include_repository', 1, PARAM_INT);
 
-// Display_mode is either table (similar to JPlag style)  or group (similar to MOSS style).
+// Display_mode is either table (similar to JPlag style) or a group (similar to MOSS style).
 $displaymode = optional_param('display_mode', 'group', PARAM_TEXT);
 
 if (!$coursemodule = $DB->get_record('course_modules', array(

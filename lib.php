@@ -382,7 +382,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
     }
 
     /**
-     * Integrates the similarity check into the grading-page of moodle.
+     * Integrates the similarity check into the grading-page of moodle (overview of all users submissions).
      *
      * @param object $course - full course object
      * @param object $cm - full context module object
@@ -411,7 +411,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         $alreadyscanned = false;
 
         $buttondisabled = false;
-        // Check at least one detector is selected.
+        // Check if at least one detector is selected.
         if (!$setting->moss && !$setting->jplag) {
             $content .= $OUTPUT->notification(get_string('no_tool_selected', 'plagiarism_programming'), 'notifyproblem');
             $buttondisabled = true;
@@ -456,8 +456,11 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $alreadyscanned |= $scanninginfo->status == 'finished'||$scanninginfo->status == 'error';
         }
 
+        global $USER;
+        // Get user's preferred language to transform time string.
+        setlocale(LC_TIME, $USER->lang);
         if ($setting->latestscan) {
-            $content .= get_string('latestscan', 'plagiarism_programming').' '.  date('h.i A D j M', $setting->latestscan);
+            $content .= get_string('latestscan', 'plagiarism_programming').' '.strftime("%c", $setting->latestscan);
         }
         $scandates = $DB->get_records('plagiarism_programming_date', array('settingid' => $setting->id, 'finished' => 0),
                 'scan_date ASC');
@@ -465,15 +468,15 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             // Get the first scan date.
             $scandate = array_shift($scandates);
             $content .= html_writer::tag('div', get_string('scheduled_scanning', 'plagiarism_programming').' '.
-                date('D j M', $scandate->scan_date));
+                strftime("%c", $scandate->scan_date));
         } else {
             $content .= html_writer::tag('div', get_string('no_scheduled_scanning', 'plagiarism_programming'));
         }
 
         $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
             array('style' => 'margin-top:5px'));
-        // Check at least two assignments submitted.
 
+        // Check that at least two assignments are submitted.
         $filerecords = plagiarism_programming_get_submitted_files($context);
         if (count($filerecords) < 2) {
             $content .= html_writer::tag('div', get_string('not_enough_submission', 'plagiarism_programming'));

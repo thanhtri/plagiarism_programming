@@ -150,10 +150,12 @@ $string['invalid_file_type'] = 'Submissions must have file extensions: ';
 
 // Options for displaying results.
 $string['option_header'] = 'Options';
-$string['threshold'] = 'Similarity filter (%)';
+$string['threshold'] = 'Lower threshold (%)';
 $string['similarity_type'] = 'Similarity type';
 $string['detectors'] = 'Detector';
 $string['display_mode'] = 'Display';
+$string['display_group'] = 'Matrix';
+$string['display_table'] = 'Ordered table';
 $string['version'] = 'History';
 $string['similarity_history'] = 'History of similarity rate';
 $string['submit'] = 'Filter';
@@ -191,13 +193,14 @@ $string['plagiarism_action'] = 'Action';
 $string['mark_select_title'] = 'Mark this pair as';
 $string['mark_suspicious'] = 'suspicious';
 $string['mark_nonsuspicious'] = 'normal';
-$string['show_similarity_to_others'] = 'Show similarity of {student} with other students';
+$string['show_similarity_to_others'] = 'Show similarity of "{student}" with other students';
 $string['history_char'] = 'Show similarity history';
 
 // Notification.
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';
 $string['report'] = 'Report';
-$string['max_similarity'] = 'max similarity';
+$string['max_similarity'] = 'Max similarity';
+$string['avg_similarity'] = 'Average similarity';
 $string['suspicious'] = 'suspicious';
 $string['no_similarity'] = 'No similarity';
 
@@ -213,7 +216,7 @@ $string['scanning_complete_email_notification_body_txt'] = 'Dear {$a->recipientn
 .'You could access the similarity report by using this link: {$a->report_link}';
 
 $string['similarity_report'] = 'Similarity result report';
-$string['include_repository'] = 'Include additional code';
+$string['include_repository'] = 'Include additional code (is presented as "library")';
 $string['course_select'] = 'Select courses using code plagiarism scanning';
 $string['by_name'] = 'By name ';
 $string['search'] = 'Search';

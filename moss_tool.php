@@ -154,13 +154,13 @@ class moss_tool implements plagiarism_tool {
         return $mossparam;
     }
     /**
-     * Display the link to the report. This function return html <a> tag of the link
+     * Display the link to the report in assign/view.php. This function return html <a> tag of the link.
      * @param Object $setting
      */
     public function display_link($setting) {
         global $CFG;
         $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$setting->cmid&tool=moss";
-        return "<a target='_blank' href='$link'>MOSS report</a>";
+        return "<a target='_blank' href='$link'>MOSS ".get_string('report', 'plagiarism_programming')."</a>";
     }
 
     /**

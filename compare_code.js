@@ -76,31 +76,19 @@ M.plagiarism_programming.compare_code = {
         this.change_image(Y.one('#action_menu').get('value'));
     },
 
-    init_links : function (Y) {
-        Y
-                .all(
-                        'div.programming_result_comparison_top_left a.similarity_link')
-                .each(
-                        function (link) {
-                            if (link.get('href') != null) {
-                                link
-                                        .on(
-                                                'click',
-                                                function (e) {
-                                                    e.preventDefault();
-                                                    M.plagiarism_programming.compare_code
-                                                            .move_frame(
-                                                                    'programming_result_comparison_bottom_left',
-                                                                    link
-                                                                            .getAttribute('href'));
-                                                    M.plagiarism_programming.compare_code
-                                                            .move_frame(
-                                                                    'programming_result_comparison_bottom_right',
-                                                                    link
-                                                                            .getAttribute('href'));
-                                                });
-                            }
+        init_links : function (Y) {
+        Y.all('div.programming_result_comparison_top_left a.similarity_link').each(
+                function (link) {
+                    if (link.get('href') != null) {
+                        link.on('click', function (e) {
+                            e.preventDefault();
+                            M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left', link
+                                    .getAttribute('href'));
+                            M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right', link
+                                    .getAttribute('href'));
                         });
+                    }
+                });
     },
 
     init_compare_code : function (Y) {
@@ -113,9 +101,9 @@ M.plagiarism_programming.compare_code = {
             checkbox1.set('id', 'chk_student_1');
             div.append(checkbox1);
             div.append('<label for="chk_student_1">'
+                    + '&nbsp'
                     + M.str.plagiarism_programming.show_similarity_to_others
-                            .replace('{student}',
-                                    this.name_table[this.student1])
+                            .replace('{student}', this.name_table[this.student1])
                     + '</label>');
         }
 
@@ -126,9 +114,9 @@ M.plagiarism_programming.compare_code = {
             checkbox2.set('id', 'chk_student_2');
             div.append(checkbox2);
             div.append('<label for="chk_student_2">'
+                    + '&nbsp'
                     + M.str.plagiarism_programming.show_similarity_to_others
-                            .replace('{student}',
-                                    this.name_table[this.student2])
+                            .replace('{student}', this.name_table[this.student2])
                     + '</label>');
         }
 
@@ -165,26 +153,16 @@ M.plagiarism_programming.compare_code = {
         });
     },
 
-    action_menu_onchange : function (e) {
+        action_menu_onchange : function (e) {
         var action = this.get('value');
         var Y = M.plagiarism_programming.compare_code.Y;
-        Y.io('mark_result.php', {
-            method : 'POST',
-            data : {
-                task : 'mark',
-                id : M.plagiarism_programming.compare_code.id,
-                action : action,
-                sesskey : M.cfg.sesskey
-            },
-            on : {
-                complete : function (id, res) {
-                    if (res.responseText == 'OK') {
-                        M.plagiarism_programming.compare_code
-                                .change_image(action);
-                    }
+        Y.io('mark_result.php', { method : 'POST',
+            data : { task : 'mark', id : M.plagiarism_programming.compare_code.id, action : action, sesskey : M.cfg.sesskey },
+            on : { complete : function (id, res) {
+                if (res.responseText == 'OK') {
+                    M.plagiarism_programming.compare_code.change_image(action);
                 }
-            }
-        });
+            } } });
     },
 
     change_image : function (action) {
