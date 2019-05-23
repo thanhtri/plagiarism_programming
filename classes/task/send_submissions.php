@@ -15,17 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file of the plugin
+ * The main entry file of the plugin.
+ *
+ * Provide the site-wide setting and specific configuration for each assignment.
  *
  * @package    plagiarism_programming
- * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @copyright  2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace plagiarism_programming\task;
 
-$plugin->version = 2019052302;
-$plugin->requires = 2018120303.12; // Moodle 3.6.3+ or above. Can be lowered if you have to but was not tested on lower releases.
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '1.3';
-$plugin->component = 'plagiarism_programming';
+class send_submissions extends \core\task\scheduled_task {
+
+    /**
+     * Get a descriptive name for this task (shown to admins).
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('task_name', 'plagiarism_programming');
+    }
+    /**
+     * Run scorm cron.
+     */
+    public function execute() {
+        global $CFG;
+        include($CFG->dirroot . '/plagiarism/programming/programming_task.php');
+    }
+
+}

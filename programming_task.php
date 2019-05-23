@@ -38,7 +38,7 @@ $currenttime = time();
 $settngids = $DB->get_fieldset_select('plagiarism_programming_date', 'settingid', "finished=0 AND scan_date<=$currenttime");
 $settngids = array_unique($settngids);
 
-echo "Start sending submissions to plagiarism tools\n";
+echo "[".date(DATE_RFC822)."] Start sending submissions to plagiarism tools \n";
 foreach ($settngids as $settingid) {
     $assignmentconfig = $DB->get_record('plagiarism_programming', array(
         'id' => $settingid
@@ -92,7 +92,7 @@ foreach ($settngids as $settingid) {
         $DB->update_record('plagiarism_programming_date', $scandate);
     }
 }
-echo "Finished sending submissions to plagiarism tools\n";
+echo "[".date(DATE_RFC822)."] Finished sending submissions to plagiarism tools \n";
 
 /**
  * Returns if the scanning is still in progress by getting the status from the databse.

@@ -242,7 +242,7 @@ function process_code_file_directory_format($decompresseddir, array $extensions,
 function plagiarism_programming_extract_assignment($assignment) {
     global $DB;
 
-    echo get_string('extract', 'plagiarism_programming');
+    echo "[".date(DATE_RFC822)."] ".get_string('extract', 'plagiarism_programming')."\n";
     // Make a subdir for this assignment in the plugin subdir and emptying it.
     $tempsubmissiondir = plagiarism_programming_get_assignment_dir($assignment, true);
 
@@ -272,8 +272,6 @@ function plagiarism_programming_extract_assignment($assignment) {
             'id' => $file->get_userid()
         ));
         // Check if the file is zipped files.
-        mtrace("File " . $file->get_filename() . " has mime type: " . $file->get_mimetype());
-
         if (plagiarism_programming_is_compressed_file($file->get_filename())) { // Decompress file.
             $validfile = plagiarism_programming_extract_file($file, $extensions, $userdir, $student);
         } else if (plagiarism_programming_check_extension($file->get_filename(), $extensions)) {
@@ -351,13 +349,13 @@ function plagiarism_programming_submit_assignment($assignment, $tool, $scaninfo)
     $scaninfo->progress = 0;
     $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
 
-    mtrace("Start sending to $toolname");
+    mtrace("[".date(DATE_RFC822)."] Start sending to $toolname");
     $tempsubmissiondir = plagiarism_programming_get_assignment_dir($assignment);
 
     // Submit the assignment.
     $scaninfo = $tool->submit_assignment($tempsubmissiondir, $assignment, $scaninfo);
     $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
-    mtrace("Finish sending to $toolname. Status: $scaninfo->status");
+    mtrace("[".date(DATE_RFC822)."] Finish sending to $toolname. Status: $scaninfo->status");
 
     // Note that scan_info is the object containing the corresponding record in table plagiarism_programming_jplag.
     return $scaninfo;
@@ -405,13 +403,13 @@ function plagiarism_programming_download_result($assignment, $tool, $scaninfo) {
     $scaninfo->progress = 0;
     $DB->update_record('plagiarism_programming_' . $tool->get_name(), $scaninfo);
 
-    mtrace("Download begin!");
+    mtrace("[".date(DATE_RFC822)."] Download begin!");
     $scaninfo = $tool->download_result($assignment, $scaninfo);
-    mtrace("Download finish!");
+    mtrace("[".date(DATE_RFC822)."] Download finish!");
 
-    mtrace("Parse begin");
+    mtrace("[".date(DATE_RFC822)."] Parse begin");
     $scaninfo = $tool->parse_result($assignment, $scaninfo);
-    mtrace("Parse end");
+    mtrace("[".date(DATE_RFC822)."] Parse end");
     $DB->update_record('plagiarism_programming_' . $tool->get_name(), $scaninfo);
     return $scaninfo;
 }
@@ -459,7 +457,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
     if (!plagiarism_programming_is_uploaded($assignment)) {
         $extractresult = plagiarism_programming_extract_assignment($assignment);
         if ($extractresult === true) {
-            // TODO: What should be done here? It was empty...
+            // TODO: What should be done here? Empty if
         } else if ($extractresult == NOT_SUFFICIENT_SUBMISSION || $extractresult == CONTEXT_NOT_EXIST) {
             return;
         } else if ($extractresult == NOT_CORRECT_FILE_TYPE) {
@@ -468,9 +466,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
                 if (!$assignment->$toolname) { // This detector is not selected.
                     continue;
                 }
-                $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
-                    'settingid' => $assignment->id
-                ));
+                $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array('settingid' => $assignment->id));
                 $scaninfo->message = $message;
                 $scaninfo->status = 'error';
                 $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
@@ -491,9 +487,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
         if (!$assignment->$toolname) { // This detector is not selected.
             continue;
         }
-        $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array(
-            'settingid' => $assignment->id
-        ));
+        $scaninfo = $DB->get_record('plagiarism_programming_' . $toolname, array('settingid' => $assignment->id));
         $scaninfo->token = $token;
         $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
@@ -507,9 +501,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
     }
 
     // Register the start scanning time.
-    $assignment = $DB->get_record('plagiarism_programming', array(
-        'id' => $assignment->id
-    ));
+    $assignment = $DB->get_record('plagiarism_programming', array('id' => $assignment->id));
     $assignment->latestscan = time();
     $DB->update_record('plagiarism_programming', $assignment);
 
@@ -559,13 +551,16 @@ function scan_after_extract_assignment($assignment, $toolname, $waittodownload =
     }
 
     if ($scaninfo->status == 'done') {
-        debugging("Start downloading with $toolname \n");
+        mtrace("[".date(DATE_RFC822)."] Start downloading with $toolname \n");
         plagiarism_programming_download_result($assignment, $toolclass, $scaninfo);
-        debugging("Finish downloading with $toolname. Status: $scaninfo->status \n");
+        mtrace("[".date(DATE_RFC822)."] Finish downloading with $toolname. Status: $scaninfo->status \n");
 
+        /* Do not send emails as this cannot be changed in settings and task API is used instead of legacy cron
+         * It also triggers a bug because of removed functions
         if ($notificationmail) {
             plagiarism_programming_send_scanning_notification_email($assignment, $toolname);
         }
+        */
     }
 }
 
@@ -626,7 +621,7 @@ function plagiarism_programming_handle_shutdown() {
         $scaninfo = $DB->get_record('plagiarism_programming_' . $tool, array(
             'settingid' => $assignment->id
         ));
-        echo 'Before shutdown: status: ' . $scaninfo->status;
+        echo "[".date(DATE_RFC822)."] Before shutdown: status: " . $scaninfo->status;
         if ($scaninfo->status != 'error' && $scaninfo->status != 'finished') {
             $scaninfo->status = 'error';
             $scaninfo->message = 'An unknown error has occurred!';

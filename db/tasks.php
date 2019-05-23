@@ -15,17 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version file of the plugin
+ * The main entry file of the plugin.
+ *
+ * Provide the site-wide setting and specific configuration for each assignment.
  *
  * @package    plagiarism_programming
- * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
+ * @copyright  2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-$plugin->version = 2019052302;
-$plugin->requires = 2018120303.12; // Moodle 3.6.3+ or above. Can be lowered if you have to but was not tested on lower releases.
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = '1.3';
-$plugin->component = 'plagiarism_programming';
+$tasks = [
+    [
+        'classname' => 'plagiarism_programming\task\send_submissions',
+        'blocking' => 0,
+        'minute' => '*/5', // Execute task every 5 minutes.
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*'
+    ],
+];

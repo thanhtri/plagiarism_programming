@@ -204,6 +204,7 @@ $string['max_similarity'] = 'Max similarity';
 $string['avg_similarity'] = 'Average similarity';
 $string['suspicious'] = 'suspicious';
 $string['no_similarity'] = 'No similarity';
+$string['error_falseresponse'] = '(Moss) Server response was false. You have to trigger a new scan, except if this is a task.';
 
 $string['scanning_complete_email_notification_subject'] =
     '{$a->course_short_name} {$a->assignment_name}: similarity scanning available';
@@ -230,3 +231,6 @@ $string['programming:markpairs'] = 'Mark two pairs as either normal of suspiciou
 $string['caperror_changesettings'] = 'You do not have the permission to change the settings of this plugin.';
 $string['caperror_manualscan'] = 'You do not have the permission to manually trigger a plagiarism-scan.';
 $string['caperror_markpairs'] = 'You do not have the permission to mark pairs as normal or suspicious.';
+
+// Task API
+$string['task_name'] = 'Sends scheduled scans to moss and saves the result.';

@@ -26,7 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-
 // Get global class.
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
@@ -270,13 +269,6 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         } else { // Plugin not enabled, delete the records if there are.
             plagiarism_programming_delete_config($cmid);
         }
-    }
-
-    /**
-     * Called by the cron process
-     */
-    public function cron() {
-        include('programming_cron.php');
     }
 
     /**

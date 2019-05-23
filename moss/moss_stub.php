@@ -100,38 +100,34 @@ class moss_stub {
 
         $socket = $this->create_connection_to_moss();
         if (! $socket) {
+            // TODO: If an error occures, do not update the scan date to finished
+            mtrace('ERROR: '.get_string('moss_connection_error', 'plagiarism_programming'));
             return array(
                 'status' => 'KO',
                 'error' => get_string('moss_connection_error', 'plagiarism_programming')
             );
         }
 
-        echo "moss $userid\n";
         fwrite($socket, "moss $userid\n");
         // If userid is invalid, MOSS will automatically close the connection and the next write return false.
 
-        echo "directory 1\n";
         $result = fwrite($socket, "directory 1\n");
         // Send other parameters. Should normally success unless connection is interrupted in the middle.
-        echo "X 0\n";
         $result = fwrite($socket, "X 0\n");
-        echo "maxmatches 1000\n";
         $result = fwrite($socket, "maxmatches 1000\n");
-        echo "show 250\n";
         $result = fwrite($socket, "show 250\n");
-        echo "language $language\n";
         $result = fwrite($socket, "language $language\n");
 
         $answer = fgets($socket);
-        echo "$answer\n";
 
         if ($answer == 'no') {
             fwrite($socket, "end\n");
+            throw new moodle_exception('moss_unsupported_feature', 'plagiarism_programming');
             return array(
                 'status' => 'KO',
                 'error' => get_string('moss_unsupported_feature', 'plagiarism_programming')
             );
-        } // TODO ? Add else ?
+        }
         $fileid = 1;
         $currentlyuploaded = 0;
         foreach ($filelist as $path => $mossdir) {
@@ -154,9 +150,11 @@ class moss_stub {
         $answer = fgets($socket);
         $this->update_progress($handler, 'done', 0, $totalsize);
         if ($answer !== false) {
-            echo "Response from server: $answer\n";
+            echo "[".date(DATE_RFC822)."] Response from server: $answer\n";
         } else {
-            echo "Response from server: false";
+            echo "[".date(DATE_RFC822)."] Response from server: false";
+            // TODO: Test exception and if it is run again if there was one.
+            throw new moodle_exception('error_falseresponse', 'plagiarism_programming');
         }
         fwrite($socket, "end\n");
         fflush($socket);

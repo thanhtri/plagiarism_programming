@@ -204,6 +204,8 @@ $string['max_similarity'] = 'Maximale Ähnlichkeit';
 $string['avg_similarity'] = 'Durchschnittliche Ähnlichkeit';
 $string['suspicious'] = 'verdächtig';
 $string['no_similarity'] = 'Keine Ähnlichkeit';
+$string['error_falseresponse'] = '(Moss) Server response was false. If this is triggered by a task, it will be retried.';
+$string['error_falseresponse'] = '(Moss) Server Antwort war false. Sie müssen erneut einen Scan starten, außer dies ist ein task.';
 
 $string['scanning_complete_email_notification_subject'] = '{$a->course_short_name} {$a->assignment_name}: Ähnlichkeitsprüfung verfügbar';
 $string['scanning_complete_email_notification_body_html'] = 'Sehr geehrte/r {$a->recipientname}, <br/>'
@@ -229,3 +231,6 @@ $string['programming:markpairs'] = 'Zwei Paare als normal oder verdächtig marki
 $string['caperror_changesettings'] = 'Sie haben nicht die Berechtigung, die Einstellungen dieses Plugins zu ändern.';
 $string['caperror_manualscan'] = 'Sie haben nicht die Berechtigung, einen Plagiat-Scan manuell auszulösen.';
 $string['caperror_markpairs'] = 'Sie haben nicht die Berechtigung, Paare als normal oder verdächtig zu markieren.';
+
+// Task API
+$string['task_name'] = 'Sendet geplante Scans an Moss und speichert das Ergebnis.';

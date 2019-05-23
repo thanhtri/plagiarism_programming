@@ -412,11 +412,11 @@ function plagiarism_programming_extract_zip($zipfile, $extensions, $location, $u
     while ($zipentry = zip_read($ziphandle)) {
         $entryname = zip_entry_name($zipentry);
 
-        // Ff an entry name contain the student id, hide it.
+        // If an entry name contains the student id, hide it.
         if ($user) {
             $entryname = str_replace($user->idnumber, '_id_', $entryname);
         }
-        // Ff it's a file (skip directory entry since directories along the path will be created when writing to the files.
+        // If it's a file, skip directory entry since directories along the path will be created when writing to the files.
         if (substr($entryname, -1) != '/' && plagiarism_programming_check_extension($entryname, $extensions)) {
             if (zip_entry_open($ziphandle, $zipentry, 'r')) {
                 $buf = zip_entry_read($zipentry, zip_entry_filesize($zipentry));
