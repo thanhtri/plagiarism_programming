@@ -185,7 +185,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->rename_field($table, $field, 'cmid');
         }
 
-        upgrade_plugin_savepoint(true, 2014040101, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');
     }
 
     if ($oldversion < 2012062900) {
@@ -227,7 +227,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
         }
 
         // Programming savepoint reached.
-        upgrade_plugin_savepoint(true, 2012062001, 'plagiarism', 'programming');
+        upgrade_plugin_savepoint(true, 2012062900, 'plagiarism', 'programming');
     }
 
     if ($oldversion < 2012120700) {
