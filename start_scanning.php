@@ -50,6 +50,7 @@ session_write_close();
 $assignment = $DB->get_record('plagiarism_programming', array(
     'cmid' => $cmid
 ));
+
 if (!$assignment) {
     echo 'Invalid assignment!';
 }
@@ -87,7 +88,7 @@ function start_scan_assignment($assignment, $time) {
 
     echo get_string('scanning_in_progress', 'plagiarism_programming') . "\n";
     // Reset the status of all tools to pending and clear the error message if it is finished or error.
-    foreach ($detectiontools as $toolname => $tool) {
+    foreach ($detectiontools as $toolname) {
         if (isset($assignment->$toolname)) {
             $toolrecord = $DB->get_record('plagiarism_programming_' . $toolname, array(
                 'settingid' => $assignment->id

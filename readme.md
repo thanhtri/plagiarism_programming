@@ -2,12 +2,14 @@ Copyright: 2019 Benedikt Schneider (@Nullmann), 2014 Tri (@thantri)
 
 License: http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
-# Revived and reworked version
-This plugin was forked from @thantri and last updated 5 years ago. 
-In the meantime, the jplag-service was discontinued.
-As such, there will be legacy code left behind.
+# Moodle-Plagiarism_Programming [![Build Status](https://travis-ci.org/Nullmann/moodle-plagiarism_programming.svg?branch=travis_support)](https://travis-ci.org/Nullmann/moodle-plagiarism_programming)
 
-The second big change is that there is no course selection in the settings anymore. It is replaced by plugin-specific capabilities.
+## Revived and reworked version
+This plugin was forked from @thantri who last updated it 5 years ago. There are two major changes made to the plugin:
+
+1) The jplag-service was discontinued. As such, this feature was dropped and only moss is supported. The jplag-code is still there, but commented out.
+
+2) There is no course selection in the settings anymore. It is replaced by plugin-specific capabilities.
 
 ## 1. Registering a MOSS account
 The plugin relies on MOSS engine in the background to carry out the scanning for similarity.
@@ -47,6 +49,11 @@ Tick the “Enable Plagiarism plugins” checkbox at the end of the page. Then, 
 Go to Site Administrator → Plugin → Plagiarism Prevention → Programming Assignment to configure the plugin. The following options are provided:
 * Enable this plugin globally or for specific courses.
 * MOSS Userid: the userid emailed to you when registered for MOSS. If you find it difficult to locate the userid in that email. Just copy the entire email to the textbox below (you need either find the user id or copy the email. You don't need to do both)
+
+### 5.2.1 Capabilites
+There are 3 new capabilites for this plugins: Change settings (in submission settings), trigger manual scan and mark pair (as suspicious or normal). 
+
+The standard settings are pretty conservative, only allowing teachers and managers to have alle rights. You probably want to give non-editing teachers the mark pairs-capability.
 
 ## 6. Assignment settings
 Once the plugin is enabled, users will see the 'Source code plagiarism detection' block when creating or editing an assignment.

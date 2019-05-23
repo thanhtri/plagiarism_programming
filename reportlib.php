@@ -262,7 +262,7 @@ function plagiarism_programming_create_chart($reportid, $similaritytype) {
  * @param Number $courseid
  */
 function plagiarism_programming_create_student_lookup_table(&$resulttable, $isteacher, &$studentnames, $courseid) {
-    global $USER, $DB;
+    global $USER;
 
     $studentnames = array();
     if ($isteacher) {
@@ -346,7 +346,7 @@ function plagiarism_programming_get_students_similarity_info($cmid, $studid = nu
     ));
     // Get the latest report version.
     $reports = array();
-    foreach ($detectiontools as $toolname => $toolinfo) {
+    foreach ($detectiontools as $toolname) {
         if ($setting->$toolname) {
             $report = plagiarism_programming_get_latest_report($cmid, $toolname);
             if ($report) {

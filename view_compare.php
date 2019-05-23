@@ -68,6 +68,7 @@ require_login($course, true, $coursemodule);
 // Authorisation: only teacher can see the names.
 $context = context_module::instance($cmid);
 $isteacher = require_capability('mod/assignment:grade', $context);
+
 /* Students are not allowed to see any other code.
 if (!$isteacher) {
     // Check if he is allowed to see the assignment.
@@ -92,6 +93,7 @@ if (!$isteacher) {
 
 }
 */
+
 // Teacher can see the students' name.
 $users = $DB->get_records_list('user', 'id', array(
     $resultrecord->student1_id,

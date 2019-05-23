@@ -269,7 +269,7 @@ class moss_stub {
      */
     private function calculate_total_size(&$filelist) {
         $totalsize = 0;
-        foreach ($filelist as $path => $file) {
+        foreach ($filelist as $path) {
             $totalsize += filesize($path);
         }
         return $totalsize;

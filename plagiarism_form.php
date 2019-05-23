@@ -65,8 +65,7 @@ class plagiarism_setup_form extends moodleform {
         $mform->addElement('html', html_writer::tag('div', get_string('account_instruction', 'plagiarism_programming')));
         */
 
-        /*
-         Jplag is currently not supported!
+        /* Jplag is currently not supported!
 
          $mform->addElement('header', 'jplag_config', get_string('jplag', 'plagiarism_programming'));
          $jplag_link = html_writer::link('https://www.ipd.uni-karlsruhe.de/jplag/', ' https://www.ipd.uni-karlsruhe.de/jplag/');

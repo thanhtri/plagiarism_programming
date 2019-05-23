@@ -21,12 +21,13 @@
  * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-global $CFG, $PAGE, $OUTPUT, $USER;
+global $CFG, $OUTPUT, $USER;
 require_once(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/programming/plagiarism_form.php');
 
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 require_login();
 admin_externalpage_setup('plagiarismprogramming');
 

@@ -52,7 +52,7 @@ foreach ($settngids as $settingid) {
     }
 
     if (! scanning_in_progress($assignmentconfig)) { // Reset the scanning.
-        foreach ($detectiontools as $toolname => $toolinfo) {
+        foreach ($detectiontools as $toolname) {
             if ($assignmentconfig->$toolname) {
                 $toolstatus = $DB->get_record('plagiarism_programming_' . $toolname, array(
                     'settingid' => $assignmentconfig->id

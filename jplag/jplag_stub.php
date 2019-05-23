@@ -68,7 +68,9 @@ class jplag_stub{
      * @param String $proxyuser
      * @param String $proxypass
      */
-    public function __construct($username = null, $password = null, $proxyhost = null, $proxyport = null, $proxyuser = null, $proxypass = null) {
+    public function __construct($username = null, $password = null, $proxyhost = null,
+        $proxyport = null, $proxyuser = null, $proxypass = null) {
+
         $proxyparam = array();
         if (!empty($proxyhost) && !empty($proxyport)) {
             $proxyparam['proxy_host'] = $proxyhost;

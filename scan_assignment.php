@@ -78,8 +78,6 @@ function plagiarism_programming_get_assignment_dir($assignment, $emptydir = fals
  * @param context_module $assignmentcontext The context of the assignment
  */
 function plagiarism_programming_get_submitted_files($assignmentcontext) {
-    global $CFG;
-
     $cm = get_coursemodule_from_id('', $assignmentcontext->instanceid);
     if ($cm->modname == 'assign') {
         $component = 'assignsubmission_file';
@@ -425,7 +423,7 @@ function plagiarism_programming_is_uploaded($assignment) {
     global $DB, $detectiontools;
 
     $uploaded = true;
-    foreach ($detectiontools as $toolname => $toolinfo) {
+    foreach ($detectiontools as $toolname) {
         if (!$assignment->$toolname) {
             continue;
         }
@@ -459,8 +457,10 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
         if ($extractresult == NOT_SUFFICIENT_SUBMISSION || $extractresult == CONTEXT_NOT_EXIST) {
             return;
         } else if ($extractresult == NOT_CORRECT_FILE_TYPE) {
-            $message = get_string('invalid_file_type', 'plagiarism_programming').implode(', ', plagiarism_programming_get_file_extension($assignment->language));
-            foreach ($detectiontools as $toolname => $tool) {
+            $message = get_string('invalid_file_type', 'plagiarism_programming')
+                .implode(', ', plagiarism_programming_get_file_extension($assignment->language));
+
+            foreach ($detectiontools as $toolname) {
                 if (!$assignment->$toolname) { // This detector is not selected.
                     continue;
                 }
@@ -481,7 +481,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
     $mail = ($notificationmail) ? 1 : 0;
     // Generating the token.
     $token = md5(time() + rand(1000000, 9999999));
-    foreach ($detectiontools as $toolname => $tool) {
+    foreach ($detectiontools as $toolname) {
         if (!$assignment->$toolname) { // This detector is not selected.
             continue;
         }
@@ -519,7 +519,8 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
  *
  * @param Object $assignment The record object of setting for the assignment
  * @param String $toolname The name of the tool
- * @param Boolean $waittodownload If set to true, the scanning will wait and periodically check the status until it finish and download
+ * @param Boolean $waittodownload If set to true, the scanning will wait and
+ *           periodically check the status until it finish and download
  * @param Boolean $notificationmail If a mail should be sent
  */
 function scan_after_extract_assignment($assignment, $toolname, $waittodownload = true, $notificationmail = false) {

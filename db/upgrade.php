@@ -185,7 +185,7 @@ function xmldb_plagiarism_programming_upgrade($oldversion = 0) {
             $dbman->rename_field($table, $field, 'cmid');
         }
 
-        // No need to call upgrade at this point since the next if will surely run.
+        upgrade_plugin_savepoint(true, 2014040101, 'plagiarism', 'programming');
     }
 
     if ($oldversion < 2012062900) {

@@ -194,7 +194,9 @@ function plagiarism_programming_annonymise_students(&$filecontent, $student) {
     $replaces = array();
 
     foreach ($allcomments as $comment) {
-        if (stripos($comment, $fname) != false || stripos($comment, $lname) != false || (!empty($idnumber) && strpos($comment, $idnumber) != false)) {
+        if (stripos($comment, $fname) != false || stripos($comment, $lname) != false || (!empty($idnumber)
+            && strpos($comment, $idnumber) != false)) {
+
             $newcomment = str_ireplace($findarray, $replacearray, $comment);
             $finds[] = $comment;
             $replaces[] = $newcomment;

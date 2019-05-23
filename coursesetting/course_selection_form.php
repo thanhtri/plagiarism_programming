@@ -24,8 +24,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use Leafo\ScssPhp\Node\Number;
-
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -73,8 +71,6 @@ class course_selection_form extends moodleform {
      * @see moodleform::definition()
      */
     protected function definition() {
-        global $DB;
-
         $courses = $this->course_search($totalnum);
         $mform = $this->_form;
 
@@ -98,7 +94,6 @@ class course_selection_form extends moodleform {
 
         $nextlink = '';
         $islastpage = ($this->page * PAGE_SIZE) >= $totalnum;
-        $page = $this->page;
         if (!$islastpage) {
             $nextlink = html_writer::link('', get_string('next'), array('class' => 'changepagelink', 'page' => $this->page + 1));
         }

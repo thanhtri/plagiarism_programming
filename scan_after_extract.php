@@ -30,7 +30,7 @@
 require_once(__DIR__.'/../../config.php');
 require_once(__DIR__.'/scan_assignment.php');
 require_once(__DIR__.'/detection_tools.php');
-global $DB, $CFG;
+global $DB;
 
 /*
  * This global is used to store the assignment currently processed

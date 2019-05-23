@@ -21,7 +21,6 @@
  * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-use Leafo\ScssPhp\Node\Number;
 defined('MOODLE_INTERNAL') || die('Access to internal script forbidden');
 
 require_once(__DIR__ . '/../utils.php');
@@ -62,8 +61,6 @@ class jplag_parser{
      * Parses the input to the jplag format, I guess.
      */
     public function parse() {
-        global $DB;
-
         $directory = dirname($this->filename);
 
         $dom = new DOMDocument();
@@ -132,14 +129,6 @@ class jplag_parser{
 
             $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file0, $similarityarray, $filearray);
             $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file1, $similarityarray, $filearray);
-
-            /* Only used for debugging.
-            if (!debugging()) {
-                unlink($file);
-                unlink($file0);
-                unlink($file1);
-            }
-            */
         }
         $this->save_code($filearray, $similarityarray, $path);
     }
@@ -309,11 +298,12 @@ class jplag_parser{
         // Mark in the reverse order so that it does not affect the char count if two marks are on the same line.
         foreach ($similarities as $position) {
             $anchor = implode(',', $position['anchor']);
-            $studentid = implode(',', $position['student']);
+            $studid = implode(',', $position['student']);
             $color = implode(',', $position['color']);
             $type = $position['type'];
             $line = $lines[$position['line'] - 1];
-            $line = substr($line, 0, $position['char'] - 1)."<span sid='$studentid' anchor='$anchor' type='$type' color='$color'></span>".substr($line, $position['char'] - 1);
+            $line = substr($line, 0, $position['char'] - 1)
+                ."<span sid='$studid' anchor='$anchor' type='$type' color='$color'></span>".substr($line, $position['char'] - 1);
             $lines[$position['line'] - 1] = $line;
         }
         $content = implode("\n", $lines);

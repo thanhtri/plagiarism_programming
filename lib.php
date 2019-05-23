@@ -64,7 +64,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
      * @param object $context - current context
      * @param string $modulename - Name of the module
      */
-    public function get_form_elements_module($mform, $context, $modulename='') {
+    public function get_form_elements_module($mform, $context, $modulename = '') {
         global $DB, $PAGE;
 
         // When updating an assignment, cmid of the assignment is passed by "update" param.
@@ -257,7 +257,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             }
 
             // Either save in *_jplag or *_moss table.
-            foreach ($detectiontools as $toolname => $info) {
+            foreach ($detectiontools as $toolname) {
                 if ($setting->$toolname && !$DB->get_record('plagiarism_programming_'.$toolname,
                     array('settingid' => $setting->id))) {
 
@@ -460,7 +460,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
 
         // Add link to MOSS / stanford.
-        $content .= '<a target="_blank" href='.$scanninginfo->resultlink.'>'.get_string('stanford_link', 'plagiarism_programming').'</a> <br>';
+        $content .= '<a target="_blank" href='.$scanninginfo->resultlink.'>'
+            .get_string('stanford_link', 'plagiarism_programming').'</a> <br>';
 
         // Get user's preferred language to transform time string.
         setlocale(LC_TIME, $USER->lang);
@@ -548,8 +549,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             return false;
         }
 
-        $plagiarismprogrammingsetting = (array) get_config('plagiarism_programming');
-        if ($plagiarismprogrammingsetting['level_enabled'] == 'global') { // Globally enabled.
+        $programmingsettings = (array) get_config('plagiarism_programming');
+        if ($programmingsettings['level_enabled'] == 'global') { // Globally enabled.
             return true;
         }
 
