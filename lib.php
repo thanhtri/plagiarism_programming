@@ -87,8 +87,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         // Do not show the settings if the user is not allowed to.
         $context = context_module::instance($cmid);
         if (!has_capability('plagiarism/programming:changesettings', $context)) {
-            //$mform->addElement('text', 'somenameiguess', "You are not allowed to do anything here");
-            $mform->addElement('html', html_writer::tag('div', get_string('notallowedtoedit', 'blog')));
+            $mform->addElement('html', html_writer::tag('div', get_string('caperror_changesettings', 'plagiarism_programming')));
             return $mform;
         }
 
@@ -488,6 +487,8 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         if (has_capability('plagiarism/programming:manualscan', $context)) {
             $content .= html_writer::tag('div', get_string('manual_scheduling_help', 'plagiarism_programming'),
                 array('style' => 'margin-top:5px'));
+        } else {
+            $content .= html_writer::tag('div', get_string('caperror_manualscan', 'plagiarism_programming'));
         }
 
         // Check that at least two assignments are submitted.

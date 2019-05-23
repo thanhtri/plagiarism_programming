@@ -224,6 +224,9 @@ $string['search'] = 'Search';
 $string['search_by_category'] = 'Course search by category';
 
 // Capabilites
-$string['programming:enable'] = 'Enable the plugin in the settings of a submission';
+$string['programming:changesettings'] = 'Enable the plugin in the settings of a submission';
 $string['programming:manualscan'] = 'Manually trigger a scan by pressing the "Scan"-Button in grading overview';
 $string['programming:markpairs'] = 'Mark two pairs as either normal of suspicious';
+$string['caperror_changesettings'] = 'You do not have the permission to change the settings of this plugin.';
+$string['caperror_manualscan'] = 'You do not have the permission to manually trigger a plagiarism-scan.';
+$string['caperror_markpairs'] = 'You do not have the permission to mark pairs as normal or suspicious.';

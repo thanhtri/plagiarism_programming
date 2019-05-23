@@ -223,6 +223,9 @@ $string['search'] = 'Suche';
 $string['search_by_category'] = 'Kurssuche nach Kategorie';
 
 // Capabilites, Berechtigungen
-$string['programming:enable'] = 'Das Plugin in den Einstellungen einer Abgabe aktivieren und die Einstellungen ändern dürfen';
+$string['programming:changesettings'] = 'Das Plugin in den Einstellungen einer Abgabe aktivieren und die Einstellungen ändern dürfen';
 $string['programming:manualscan'] = 'Manuell einen Scan starten, indem der "Scan"-Button in der grading-Übersicht gedrückt wird';
 $string['programming:markpairs'] = 'Zwei Paare als normal oder verdächtig markieren';
+$string['caperror_changesettings'] = 'Sie haben nicht die Berechtigung, die Einstellungen dieses Plugins zu ändern.';
+$string['caperror_manualscan'] = 'Sie haben nicht die Berechtigung, einen Plagiat-Scan manuell auszulösen.';
+$string['caperror_markpairs'] = 'Sie haben nicht die Berechtigung, Paare als normal oder verdächtig zu markieren.';

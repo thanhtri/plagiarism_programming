@@ -143,7 +143,10 @@ if (has_capability('plagiarism/programming:markpairs', $context)) { // If the us
     $content .= html_writer::select($actions, 'mark', $resultrecord->mark, get_string('choosedots'), array(
         'id' => 'action_menu'
     ));
+} else {
+    $content .= html_writer::tag('div', get_string('caperror_markpairs', 'plagiarism_programming'));
 }
+
 $imgsrc = '';
 if ($resultrecord->mark == 'Y') {
     $imgsrc = 'pix/suspicious.png';
