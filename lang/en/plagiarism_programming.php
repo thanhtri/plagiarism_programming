@@ -200,6 +200,7 @@ $string['history_char'] = 'Show similarity history';
 // Notification.
 $string['high_similarity_warning'] = 'Your assignment was found to be similar with some others\'';
 $string['report'] = 'Report';
+$string['stanford_link'] = 'Original Report on stanford.edu';
 $string['max_similarity'] = 'Max similarity';
 $string['avg_similarity'] = 'Average similarity';
 $string['suspicious'] = 'suspicious';

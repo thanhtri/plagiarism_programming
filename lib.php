@@ -459,7 +459,9 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
             $alreadyscanned |= $scanninginfo->status == 'finished'||$scanninginfo->status == 'error';
         }
 
-        global $USER;
+        // Add link to MOSS / stanford.
+        $content .= '<a target="_blank" href='.$scanninginfo->resultlink.'>'.get_string('stanford_link', 'plagiarism_programming').'</a> <br>';
+
         // Get user's preferred language to transform time string.
         setlocale(LC_TIME, $USER->lang);
         if ($setting->latestscan) {

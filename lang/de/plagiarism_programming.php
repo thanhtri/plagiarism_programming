@@ -200,11 +200,11 @@ $string['history_char'] = 'Ähnlichkeitshistorie anzeigen';
 // Benachrichtigung.
 $string['high_similarity_warning'] = 'Deine Aufgabe wurde als Ähnlich mit einigen anderen markiert';
 $string['report'] = 'Bericht';
+$string['stanford_link'] = 'Original Bericht auf stanford.edu';
 $string['max_similarity'] = 'Maximale Ähnlichkeit';
 $string['avg_similarity'] = 'Durchschnittliche Ähnlichkeit';
 $string['suspicious'] = 'verdächtig';
 $string['no_similarity'] = 'Keine Ähnlichkeit';
-$string['error_falseresponse'] = '(Moss) Server response was false. If this is triggered by a task, it will be retried.';
 $string['error_falseresponse'] = '(Moss) Server Antwort war false. Sie müssen erneut einen Scan starten, außer dies ist ein task.';
 
 $string['scanning_complete_email_notification_subject'] = '{$a->course_short_name} {$a->assignment_name}: Ähnlichkeitsprüfung verfügbar';

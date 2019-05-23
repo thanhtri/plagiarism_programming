@@ -160,7 +160,7 @@ class moss_tool implements plagiarism_tool {
     public function display_link($setting) {
         global $CFG;
         $link = "$CFG->wwwroot/plagiarism/programming/view.php?cmid=$setting->cmid&tool=moss";
-        return "<a target='_blank' href='$link'>MOSS ".get_string('report', 'plagiarism_programming')."</a>";
+        return "<a target='_blank' href='$link'>Moodle MOSS ".get_string('report', 'plagiarism_programming')."</a>";
     }
 
     /**
