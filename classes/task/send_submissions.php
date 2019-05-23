@@ -26,6 +26,8 @@
 
 namespace plagiarism_programming\task;
 
+defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
+
 class send_submissions extends \core\task\scheduled_task {
 
     /**

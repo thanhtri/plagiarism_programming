@@ -119,11 +119,12 @@ class moss_parser {
             $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file0, $similarityarray);
             $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file1, $similarityarray);
 
-            // TODO: Uncomment to delete these files after debugging.
+            /* Only used for debugging.
             if (!debugging()) {
                 unlink($file0);
                 unlink($file1);
             }
+            */
         }
         $this->save_similarity($similarityarray);
     }

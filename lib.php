@@ -34,7 +34,9 @@ require_once(__DIR__.'/reportlib.php');
 require_once(__DIR__.'/scan_assignment.php');
 
 /**
- * Class to integrate the plugin in the moodle submission workflow. See https://docs.moodle.org/dev/Plagiarism_plugins#Interfacing_to_APIs
+ * Class to integrate the plugin in the moodle submission workflow.
+ *
+ * See https://docs.moodle.org/dev/Plagiarism_plugins#Interfacing_to_APIs
  *
  * @copyright  2015 thanhtri, 2019 Benedikt Schneider (@Nullmann)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -465,6 +467,7 @@ class plagiarism_plugin_programming extends plagiarism_plugin {
         }
         $scandates = $DB->get_records('plagiarism_programming_date', array('settingid' => $setting->id, 'finished' => 0),
                 'scan_date ASC');
+
         if (count($scandates) > 0) {
             // Get the first scan date.
             $scandate = array_shift($scandates);

@@ -75,20 +75,19 @@ M.plagiarism_programming.compare_code = {
 
         this.change_image(Y.one('#action_menu').get('value'));
     },
-
-        init_links : function (Y) {
+    init_links : function (Y) {
         Y.all('div.programming_result_comparison_top_left a.similarity_link').each(
-                function (link) {
-                    if (link.get('href') != null) {
-                        link.on('click', function (e) {
-                            e.preventDefault();
-                            M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left', link
-                                    .getAttribute('href'));
-                            M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right', link
-                                    .getAttribute('href'));
-                        });
-                    }
-                });
+            function (link) {
+                if (link.get('href') != null) {
+                    link.on('click', function (e) {
+                        e.preventDefault();
+                        M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_left', link
+                                .getAttribute('href'));
+                        M.plagiarism_programming.compare_code.move_frame('programming_result_comparison_bottom_right', link
+                                .getAttribute('href'));
+                    });
+                }
+            });
     },
 
     init_compare_code : function (Y) {
@@ -152,8 +151,7 @@ M.plagiarism_programming.compare_code = {
             M.plagiarism_programming.compare_code.history_overlay.show();
         });
     },
-
-        action_menu_onchange : function (e) {
+    action_menu_onchange : function (e) {
         var action = this.get('value');
         var Y = M.plagiarism_programming.compare_code.Y;
         Y.io('mark_result.php', { method : 'POST',

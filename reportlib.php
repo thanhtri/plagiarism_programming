@@ -151,7 +151,7 @@ function plagiarism_programming_create_table_list_mode(&$list, &$studentnames, $
         }
         $row->cells[] = $cell;
 
-        // Third Row, Percentage
+        // Third Row, Percentage.
         $cell = new html_table_cell();
         if ($isteacher) {
             $cell->text = html_writer::link("view_compare.php?id=$pair->id", round($pair->similarity, 2) . '%', array(

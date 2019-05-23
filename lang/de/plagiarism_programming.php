@@ -82,7 +82,7 @@ $string['auto_publish'] = 'Ähnlichkeitsbericht veröffentlichen';
 $string['notification'] = 'Benachrichtigung anzeigen';
 $string['notification_text'] = 'Benachrichtigungstext';
 $string['notification_text_default'] = 'Diese Abgabe wird nach Code-Ähnlichkeit gescannt';
-$string['additional_code'] = 'Zusätzlicher Code zum Vergleich (Nur .zip oder .rar!)s';
+$string['additional_code'] = 'Zusätzlicher Code zum Vergleich (Nur .zip oder .rar!)';
 
 $string['programmingYN_hlp'] = '';
 $string['programmingYN_hlp_help'] = 'Plagiaterkennung von Quellcode für diese Aufgabe aktivieren';
@@ -104,7 +104,7 @@ $string['notification_hlp_help'] = 'Benachrichtigen Sie die Studierenden, dass s
 $string['programming_language_missing'] = 'Programmiersprache ist erforderlich';
 $string['notification_text_hlp'] = '';
 $string['notification_text_hlp_help'] = 'Setzt den anzuzeigenden Benachrichtigungstext';
-$string['additional_code_hlp'] = 'Code Seeding'; // TODO: Kontext herausfinden und uebersetzten
+$string['additional_code_hlp'] = '';
 $string['additional_code_hlp_help'] = 'Anderen Code zum Vergeleich uploaden (z.B. Code aus dem Internet oder frühere Aufgaben). '
     .'Es werden nur Zip- und Rar-Dateien unterstützt. Eine komprimierte Datei muss eine Anzahl von Verzeichnissen oder komprimierten Dateien enthalten, die jeweils einer Zuordnung entsprechen';
 
@@ -125,7 +125,7 @@ $string['parsing_on_server'] = 'Eingaben parsen';
 $string['generating_report_on_server'] = 'Generierung des Berichts';
 $string['error_bad_language'] = 'Fehler: Falsche Programmiersprache';
 $string['error_not_enough_submission'] = 'Nicht genügend Einreichungen zum Scannen. Dies ist wahrscheinlich zu viele Einsendungen können nicht analysiert werden. '
-        .'Bitte überprüfen Sie Ihre Sprachkonfiguration'; // TODO: Kontext herausfinden. Sehr konfus, auch im Englischem. Sprache = Programmiersprache
+        .'Bitte überprüfen Sie Ihre Sprachkonfiguration';
 $string['jplag_cancel_error'] = 'Die Übermittlung kann nicht abgebrochen werden.';
 
 $string['start_scanning'] = 'Jetzt scannen';
@@ -224,7 +224,7 @@ $string['by_name'] = 'Nach Name';
 $string['search'] = 'Suche';
 $string['search_by_category'] = 'Kurssuche nach Kategorie';
 
-// Capabilites, Berechtigungen
+// Capabilites, Berechtigungen.
 $string['programming:changesettings'] = 'Das Plugin in den Einstellungen einer Abgabe aktivieren und die Einstellungen ändern dürfen';
 $string['programming:manualscan'] = 'Manuell einen Scan starten, indem der "Scan"-Button in der grading-Übersicht gedrückt wird';
 $string['programming:markpairs'] = 'Zwei Paare als normal oder verdächtig markieren';
@@ -232,5 +232,5 @@ $string['caperror_changesettings'] = 'Sie haben nicht die Berechtigung, die Eins
 $string['caperror_manualscan'] = 'Sie haben nicht die Berechtigung, einen Plagiat-Scan manuell auszulösen.';
 $string['caperror_markpairs'] = 'Sie haben nicht die Berechtigung, Paare als normal oder verdächtig zu markieren.';
 
-// Task API
+// Task API.
 $string['task_name'] = 'Sendet geplante Scans an Moss und speichert das Ergebnis.';

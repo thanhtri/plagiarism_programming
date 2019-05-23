@@ -68,7 +68,7 @@ require_login($course, true, $coursemodule);
 // Authorisation: only teacher can see the names.
 $context = context_module::instance($cmid);
 $isteacher = require_capability('mod/assignment:grade', $context);
-/* Students are not allowed to see any other code
+/* Students are not allowed to see any other code.
 if (!$isteacher) {
     // Check if he is allowed to see the assignment.
     if (!has_capability('mod/assignment:submit', $context) || // Must have submission right to his assignment.
@@ -89,15 +89,16 @@ if (!$isteacher) {
         redirect($CFG->wwwroot, "You can only see the report on your work");
     }
 } else {
+
+}
 */
-    // Teacher can see the students' name.
-    $users = $DB->get_records_list('user', 'id', array(
-        $resultrecord->student1_id,
-        $resultrecord->student2_id
-    ), 'firstname,lastname,idnumber');
-    $student1 = isset($users[$resultrecord->student1_id]) ? fullname($users[$resultrecord->student1_id]) : $resultrecord->student1_id;
-    $student2 = isset($users[$resultrecord->student2_id]) ? fullname($users[$resultrecord->student2_id]) : $resultrecord->student2_id;
-//}
+// Teacher can see the students' name.
+$users = $DB->get_records_list('user', 'id', array(
+    $resultrecord->student1_id,
+    $resultrecord->student2_id
+), 'firstname,lastname,idnumber');
+$student1 = isset($users[$resultrecord->student1_id]) ? fullname($users[$resultrecord->student1_id]) : $resultrecord->student1_id;
+$student2 = isset($users[$resultrecord->student2_id]) ? fullname($users[$resultrecord->student2_id]) : $resultrecord->student2_id;
 
 // End of authorization.
 
@@ -134,7 +135,8 @@ echo html_writer::tag('div', $content . "<div class='simiarity_table_holder'></d
 ));
 
 $content = '';
-if (has_capability('plagiarism/programming:markpairs', $context)) { // If the user has the capability, add the box to mark as suspicious or normal.
+// If the user has the capability, add the box to mark as suspicious or normal.
+if (has_capability('plagiarism/programming:markpairs', $context)) {
     $actions = array(
         'Y' => get_string('mark_suspicious', 'plagiarism_programming'),
         'N' => get_string('mark_nonsuspicious', 'plagiarism_programming')

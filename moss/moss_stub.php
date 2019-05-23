@@ -121,7 +121,7 @@ class moss_stub {
 
         if ($answer == 'no') {
             fwrite($socket, "end\n");
-            throw new moodle_exception('moss_unsupported_feature', 'plagiarism_programming');
+            mtrace('ERROR: '.get_string('moss_unsupported_feature', 'plagiarism_programming'));
             return array(
                 'status' => 'KO',
                 'error' => get_string('moss_unsupported_feature', 'plagiarism_programming')
@@ -152,8 +152,7 @@ class moss_stub {
             echo "[".date(DATE_RFC822)."] Response from server: $answer\n";
         } else {
             echo "[".date(DATE_RFC822)."] Response from server: false";
-            // TODO: Test exception and if it is run again if there was one.
-            throw new moodle_exception('error_falseresponse', 'plagiarism_programming');
+            mtrace('ERROR: '.get_string('error_falseresponse', 'plagiarism_programming'));
         }
         fwrite($socket, "end\n");
         fflush($socket);

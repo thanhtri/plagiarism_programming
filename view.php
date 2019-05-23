@@ -27,7 +27,7 @@ require_once(__DIR__ . '/reportlib.php');
 
 global $DB, $USER, $PAGE, $OUTPUT, $CFG;
 
-// Standard settings when no filters are selected
+// Standard settings when no filters are selected.
 $cmid = required_param('cmid', PARAM_INT);
 $studentid = optional_param('student', null, PARAM_TEXT);
 $lowerthreshold = optional_param('lower_threshold', 20, PARAM_FLOAT); // Rate will be above this similarity.

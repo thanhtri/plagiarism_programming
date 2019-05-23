@@ -164,7 +164,6 @@ class jplag_tool implements plagiarism_tool{
             return $jplagparam;
         }
 
-        // TODO: Handle network error.
         $submissionid = $jplagparam->submissionid;
         $status = $this->jplagstub->check_status($submissionid);
 

@@ -133,12 +133,13 @@ class jplag_parser{
             $this->parse_similar_parts($pair->student1_id, $pair->student2_id, $file0, $similarityarray, $filearray);
             $this->parse_similar_parts($pair->student2_id, $pair->student1_id, $file1, $similarityarray, $filearray);
 
-            // TODO Uncomment to delete these files after debugging.
+            /* Only used for debugging.
             if (!debugging()) {
                 unlink($file);
                 unlink($file0);
                 unlink($file1);
             }
+            */
         }
         $this->save_code($filearray, $similarityarray, $path);
     }
@@ -344,7 +345,9 @@ class jplag_parser{
                     continue;
                 }
                 $second = $similarities[$j];
-                if ($first['begin_line'] == $second['begin_line'] && $first['begin_char'] == $second['begin_char'] && $first['end_line'] == $second['end_line'] && $first['end_char'] == $second['end_char']) {
+                if ($first['begin_line'] == $second['begin_line'] && $first['begin_char'] == $second['begin_char']
+                    && $first['end_line'] == $second['end_line'] && $first['end_char'] == $second['end_char']) {
+
                     unset($similarities[$j]);
                     $first['student'][] = $second['student'];
                     $first['anchor'][] = $second['anchor'];

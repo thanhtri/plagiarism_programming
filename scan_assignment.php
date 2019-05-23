@@ -456,9 +456,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
     // This if prevent unnecessary extraction, since another cron can run over when the scanning hasn't finished.
     if (!plagiarism_programming_is_uploaded($assignment)) {
         $extractresult = plagiarism_programming_extract_assignment($assignment);
-        if ($extractresult === true) {
-            // TODO: What should be done here? Empty if
-        } else if ($extractresult == NOT_SUFFICIENT_SUBMISSION || $extractresult == CONTEXT_NOT_EXIST) {
+        if ($extractresult == NOT_SUFFICIENT_SUBMISSION || $extractresult == CONTEXT_NOT_EXIST) {
             return;
         } else if ($extractresult == NOT_CORRECT_FILE_TYPE) {
             $message = get_string('invalid_file_type', 'plagiarism_programming').implode(', ', plagiarism_programming_get_file_extension($assignment->language));
@@ -491,7 +489,7 @@ function plagiarism_programming_scan_assignment($assignment, $waitforresult = tr
         $scaninfo->token = $token;
         $DB->update_record('plagiarism_programming_' . $toolname, $scaninfo);
         $links[] = "$CFG->wwwroot/plagiarism/programming/scan_after_extract.php?"
-        ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait&mail=$mail";
+            ."cmid=$assignment->cmid&tool=$toolname&token=$token&wait=$wait&mail=$mail";
 
         if ($toolname == 'jplag_') {
             $logfiles[] = jplag_tool::get_report_path() . "/script_log_$assignment->id-$toolname.html";

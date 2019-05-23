@@ -104,7 +104,7 @@ $string['notification_hlp_help'] = 'Notify the student that their submission wil
 $string['programming_language_missing'] = 'Programming language is required';
 $string['notification_text_hlp'] = '';
 $string['notification_text_hlp_help'] = 'Set the notification text to be displayed';
-$string['additional_code_hlp'] = 'Code seeding';
+$string['additional_code_hlp'] = '';
 $string['additional_code_hlp_help'] = 'Upload other codes to compare against (e.g. code found on the internet or past assigments). '
     .'Only zip and rar files are supported. A compressed file must contain a number of directories or compressed files, each correspond to an assignment';
 
@@ -224,7 +224,7 @@ $string['by_name'] = 'By name';
 $string['search'] = 'Search';
 $string['search_by_category'] = 'Course search by category';
 
-// Capabilites
+// Capabilites.
 $string['programming:changesettings'] = 'Enable the plugin in the settings of a submission';
 $string['programming:manualscan'] = 'Manually trigger a scan by pressing the "Scan"-Button in grading overview';
 $string['programming:markpairs'] = 'Mark two pairs as either normal of suspicious';
@@ -232,5 +232,5 @@ $string['caperror_changesettings'] = 'You do not have the permission to change t
 $string['caperror_manualscan'] = 'You do not have the permission to manually trigger a plagiarism-scan.';
 $string['caperror_markpairs'] = 'You do not have the permission to mark pairs as normal or suspicious.';
 
-// Task API
+// Task API.
 $string['task_name'] = 'Sends scheduled scans to moss and saves the result.';
