@@ -100,7 +100,6 @@ class moss_stub {
 
         $socket = $this->create_connection_to_moss();
         if (! $socket) {
-            // TODO: If an error occures, do not update the scan date to finished
             mtrace('ERROR: '.get_string('moss_connection_error', 'plagiarism_programming'));
             return array(
                 'status' => 'KO',

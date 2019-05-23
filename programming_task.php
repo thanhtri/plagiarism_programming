@@ -77,7 +77,8 @@ foreach ($settngids as $settingid) {
             $toolstatus = $DB->get_record('plagiarism_programming_' . $toolname, array(
                 'settingid' => $assignmentconfig->id
             ));
-            if ($toolstatus->status != 'finished' && $toolstatus->status != 'error') {
+
+            if ($toolstatus->status != 'finished' && $toolstatus->status == 'error') {
                 $alltoolsfinished = false;
                 break;
             }
